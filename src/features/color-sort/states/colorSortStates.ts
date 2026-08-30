@@ -13,7 +13,7 @@ interface ColorSortStore {
   colorSortLevel: ColorSortLevel
   colorSortProgress: ColorSortProgress
   selectedBottle: number | null
-  activePour: ColorSortPour | null
+  activePours: ColorSortPour[]
   moveHistory: ColorSortMove[]
   isLevelCleared: boolean
   setColorSortProgress: (progress: Partial<NonNullable<ColorSortProgress['data']>>) => void
@@ -21,7 +21,7 @@ interface ColorSortStore {
   setColorSortLevel: (level: number) => void
   setSelectedBottle: (bottleId: number | null) => void
   setColorSortPour: (bottleId: number) => void
-  setColorSortPourDone: () => void
+  setColorSortPourDone: (pourId: number) => void
   setColorSortUndo: () => void
   setColorSortShuffle: () => void
   setColorSortAddBottle: () => void
@@ -30,41 +30,43 @@ interface ColorSortStore {
 }
 
 const CAPACITY = 4
+const TALL_CAPACITY = 6
 const MAX_COLOR = 12
 const BOOSTER_PRICE = 100
 const STORAGE_KEY = 'color-sort-progress'
 
 export const useColorSortStates = create<ColorSortStore>((set, get) => {
+  let pourSequence = 0
+
   const getRandomInt = (max: number) => Math.floor(Math.random() * max)
 
   const getLevelConfig = (level: number) => {
     const colorTotal = Math.min(MAX_COLOR, 3 + Math.floor((level - 1) / 2))
     const emptyTotal = level >= 60 ? 1 : 2
     const hiddenBottleTotal = level < 25 ? 0 : Math.min(colorTotal, 1 + Math.floor((level - 25) / 5))
-    return {
-      capacity: CAPACITY,
-      colorTotal,
-      emptyTotal,
-      hiddenBottleTotal,
-      bottleTotal: colorTotal + emptyTotal,
-    }
+    const tallTotal = level < 8 ? 0 : Math.min(colorTotal, 1 + Math.floor((level - 8) / 6))
+    return { colorTotal, emptyTotal, hiddenBottleTotal, tallTotal }
   }
 
-  const getSolvedBoard = (colorTotal: number, emptyTotal: number) => {
-    const board: number[][] = []
+  const getSolvedBoard = (colorTotal: number, emptyTotal: number, tallTotal: number) => {
+    const board: Array<{ capacity: number; units: number[] }> = []
     for (let color = 0; color < colorTotal; color += 1) {
-      board.push(new Array(CAPACITY).fill(color))
+      const capacity = color < tallTotal ? TALL_CAPACITY : CAPACITY
+      board.push({ capacity, units: new Array(capacity).fill(color) })
     }
-    for (let empty = 0; empty < emptyTotal; empty += 1) board.push([])
-    return board
+    for (let empty = 0; empty < emptyTotal; empty += 1) {
+      const capacity = empty === 0 && tallTotal ? TALL_CAPACITY : CAPACITY
+      board.push({ capacity, units: [] })
+    }
+    return board.sort(() => Math.random() - 0.5)
   }
 
-  const getTopRun = (bottle: number[]) => {
-    if (!bottle.length) return { colorIndex: -1, length: 0 }
-    const colorIndex = bottle[bottle.length - 1]
+  const getTopRun = (units: number[]) => {
+    if (!units.length) return { colorIndex: -1, length: 0 }
+    const colorIndex = units[units.length - 1]
     let length = 0
-    for (let index = bottle.length - 1; index >= 0; index -= 1) {
-      if (bottle[index] !== colorIndex) break
+    for (let index = units.length - 1; index >= 0; index -= 1) {
+      if (units[index] !== colorIndex) break
       length += 1
     }
     return { colorIndex, length }
@@ -73,58 +75,65 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
   const getIsBoardSolved = (bottles: ColorSortBottle[]) =>
     bottles.every((bottle) => {
       if (!bottle.segments.length) return true
-      if (bottle.segments.length !== CAPACITY) return false
+      if (bottle.segments.length !== bottle.capacity) return false
       return bottle.segments.every((segment) => segment.colorIndex === bottle.segments[0].colorIndex)
     })
 
-  const getScrambledBoard = (colorTotal: number, emptyTotal: number) => {
-    const board = getSolvedBoard(colorTotal, emptyTotal)
-    const totalStep = 80 + colorTotal * 30
+  const getScrambledBoard = (colorTotal: number, emptyTotal: number, tallTotal: number) => {
+    const board = getSolvedBoard(colorTotal, emptyTotal, tallTotal)
+    const totalStep = 90 + colorTotal * 30
 
     for (let step = 0; step < totalStep; step += 1) {
-      const sourceCandidates = board.map((bottle, index) => ({ bottle, index })).filter((item) => item.bottle.length)
+      const sourceCandidates = board.map((item, index) => ({ item, index })).filter((entry) => entry.item.units.length)
       if (!sourceCandidates.length) break
       const source = sourceCandidates[getRandomInt(sourceCandidates.length)]
-      const run = getTopRun(source.bottle)
+      const run = getTopRun(source.item.units)
+
       const amountCandidates: number[] = []
       for (let amount = 1; amount <= run.length; amount += 1) {
         const isPartialRun = amount < run.length
-        const isEmptying = amount === source.bottle.length
+        const isEmptying = amount === source.item.units.length
         if (isPartialRun || isEmptying) amountCandidates.push(amount)
       }
       if (!amountCandidates.length) continue
       const amount = amountCandidates[getRandomInt(amountCandidates.length)]
+
       const targetCandidates = board
-        .map((bottle, index) => ({ bottle, index }))
-        .filter((item) => {
-          if (item.index === source.index) return false
-          if (CAPACITY - item.bottle.length < amount) return false
-          if (!item.bottle.length) return true
-          return item.bottle[item.bottle.length - 1] !== run.colorIndex
+        .map((item, index) => ({ item, index }))
+        .filter((entry) => {
+          if (entry.index === source.index) return false
+          if (entry.item.capacity - entry.item.units.length < amount) return false
+          if (!entry.item.units.length) return true
+          return entry.item.units[entry.item.units.length - 1] !== run.colorIndex
         })
       if (!targetCandidates.length) continue
       const target = targetCandidates[getRandomInt(targetCandidates.length)]
       for (let unit = 0; unit < amount; unit += 1) {
-        source.bottle.pop()
-        target.bottle.push(run.colorIndex)
+        source.item.units.pop()
+        target.item.units.push(run.colorIndex)
       }
     }
 
     return board
   }
 
-  const getHiddenBoard = (board: number[][], hiddenBottleTotal: number) => {
-    const filledIndexes = board
-      .map((bottle, index) => ({ bottle, index }))
-      .filter((item) => item.bottle.length > 1 && item.bottle.some((colorIndex) => colorIndex !== item.bottle[0]))
-    const shuffled = filledIndexes.sort(() => Math.random() - 0.5).slice(0, hiddenBottleTotal)
-    const hiddenIndexes = new Set(shuffled.map((item) => item.index))
+  const getHiddenBoard = (board: Array<{ capacity: number; units: number[] }>, hiddenBottleTotal: number) => {
+    const mixedIndexes = board
+      .map((item, index) => ({ item, index }))
+      .filter((entry) => entry.item.units.length > 1 && entry.item.units.some((unit) => unit !== entry.item.units[0]))
+    const hiddenIndexes = new Set(
+      mixedIndexes
+        .sort(() => Math.random() - 0.5)
+        .slice(0, hiddenBottleTotal)
+        .map((entry) => entry.index),
+    )
 
-    return board.map<ColorSortBottle>((bottle, index) => ({
+    return board.map<ColorSortBottle>((item, index) => ({
       id: index,
-      segments: bottle.map<ColorSortSegment>((colorIndex, segmentIndex) => ({
+      capacity: item.capacity,
+      segments: item.units.map<ColorSortSegment>((colorIndex, segmentIndex) => ({
         colorIndex,
-        isHidden: hiddenIndexes.has(index) && segmentIndex !== bottle.length - 1,
+        isHidden: hiddenIndexes.has(index) && segmentIndex !== item.units.length - 1,
       })),
     }))
   }
@@ -133,7 +142,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     const config = getLevelConfig(level)
     let bottles: ColorSortBottle[] = []
     for (let attempt = 0; attempt < 20; attempt += 1) {
-      const board = getScrambledBoard(config.colorTotal, config.emptyTotal)
+      const board = getScrambledBoard(config.colorTotal, config.emptyTotal, config.tallTotal)
       bottles = getHiddenBoard(board, config.hiddenBottleTotal)
       if (!getIsBoardSolved(bottles)) break
     }
@@ -141,9 +150,11 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     const data: DataColorSortLevel = {
       level,
       capacity: CAPACITY,
+      tallCapacity: TALL_CAPACITY,
       colorTotal: config.colorTotal,
       bottleTotal: bottles.length,
       hiddenTotal: config.hiddenBottleTotal,
+      tallTotal: config.tallTotal,
       bottles,
     }
     return data
@@ -171,7 +182,20 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
   }
 
   const getClonedBottles = (bottles: ColorSortBottle[]) =>
-    bottles.map((bottle) => ({ id: bottle.id, segments: bottle.segments.map((segment) => ({ ...segment })) }))
+    bottles.map((bottle) => ({
+      id: bottle.id,
+      capacity: bottle.capacity,
+      segments: bottle.segments.map((segment) => ({ ...segment })),
+    }))
+
+  const getLockedBottles = (pours: ColorSortPour[]) => {
+    const locked = new Set<number>()
+    pours.forEach((pour) => {
+      locked.add(pour.from)
+      locked.add(pour.to)
+    })
+    return locked
+  }
 
   const getBoosterPaidProgress = (key: 'undoLeft' | 'shuffleLeft' | 'addBottleLeft') => {
     const progress = get().colorSortProgress.data
@@ -195,7 +219,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
       data: null,
     },
     selectedBottle: null,
-    activePour: null,
+    activePours: [],
     moveHistory: [],
     isLevelCleared: false,
 
@@ -232,7 +256,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
           data: next,
         },
         selectedBottle: null,
-        activePour: null,
+        activePours: [],
         moveHistory: [],
         isLevelCleared: false,
       })
@@ -243,7 +267,10 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     setColorSortPour: (bottleId) => {
       const state = get()
       const data = state.colorSortLevel.data
-      if (!data || state.activePour || state.isLevelCleared) return
+      if (!data || state.isLevelCleared) return
+
+      const locked = getLockedBottles(state.activePours)
+      if (locked.has(bottleId)) return
 
       const selected = state.selectedBottle
       if (selected === null) {
@@ -259,11 +286,14 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
 
       const source = data.bottles.find((bottle) => bottle.id === selected)
       const target = data.bottles.find((bottle) => bottle.id === bottleId)
-      if (!source || !target) return
+      if (!source || !target || locked.has(source.id)) {
+        set({ selectedBottle: null })
+        return
+      }
 
       const sourceColors = source.segments.map((segment) => segment.colorIndex)
       const run = getTopRun(sourceColors)
-      const freeSpace = data.capacity - target.segments.length
+      const freeSpace = target.capacity - target.segments.length
       const isTargetMatch =
         !target.segments.length || target.segments[target.segments.length - 1].colorIndex === run.colorIndex
 
@@ -273,21 +303,26 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
         return
       }
 
-      set({
+      pourSequence += 1
+      set((prev) => ({
         selectedBottle: null,
-        activePour: {
-          from: source.id,
-          to: target.id,
-          amount: Math.min(run.length, freeSpace),
-          colorIndex: run.colorIndex,
-          startedAt: Date.now(),
-        },
-      })
+        activePours: [
+          ...prev.activePours,
+          {
+            id: pourSequence,
+            from: source.id,
+            to: target.id,
+            amount: Math.min(run.length, freeSpace),
+            colorIndex: run.colorIndex,
+            startedAt: Date.now(),
+          },
+        ],
+      }))
     },
 
-    setColorSortPourDone: () => {
+    setColorSortPourDone: (pourId) => {
       const state = get()
-      const pour = state.activePour
+      const pour = state.activePours.find((item) => item.id === pourId)
       const data = state.colorSortLevel.data
       if (!pour || !data) return
 
@@ -330,11 +365,11 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
 
       set((prev) => ({
         colorSortLevel: { ...prev.colorSortLevel, data: { ...data, bottles } },
-        activePour: null,
+        activePours: prev.activePours.filter((item) => item.id !== pourId),
         isLevelCleared: isCleared,
         moveHistory: [
           ...prev.moveHistory,
-          { from: pour.from, to: pour.to, amount: pour.amount, colorIndex: pour.colorIndex, revealedAt },
+          { id: pour.id, from: pour.from, to: pour.to, amount: pour.amount, colorIndex: pour.colorIndex, revealedAt },
         ],
       }))
     },
@@ -343,7 +378,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
       const state = get()
       const data = state.colorSortLevel.data
       const lastMove = state.moveHistory[state.moveHistory.length - 1]
-      if (!data || !lastMove || state.activePour || state.isLevelCleared) return
+      if (!data || !lastMove || state.activePours.length || state.isLevelCleared) return
 
       const paid = getBoosterPaidProgress('undoLeft')
       if (!paid) return
@@ -373,7 +408,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     setColorSortShuffle: () => {
       const state = get()
       const data = state.colorSortLevel.data
-      if (!data || state.activePour || state.isLevelCleared) return
+      if (!data || state.activePours.length || state.isLevelCleared) return
 
       const paid = getBoosterPaidProgress('shuffleLeft')
       if (!paid) return
@@ -390,12 +425,15 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     setColorSortAddBottle: () => {
       const state = get()
       const data = state.colorSortLevel.data
-      if (!data || state.activePour || state.isLevelCleared) return
+      if (!data || state.activePours.length || state.isLevelCleared) return
 
       const paid = getBoosterPaidProgress('addBottleLeft')
       if (!paid) return
 
-      const bottles = [...getClonedBottles(data.bottles), { id: data.bottles.length, segments: [] }]
+      const bottles = [
+        ...getClonedBottles(data.bottles),
+        { id: data.bottles.length, capacity: CAPACITY, segments: [] },
+      ]
       updateStoredProgress(paid)
       set((prev) => ({
         colorSortLevel: {

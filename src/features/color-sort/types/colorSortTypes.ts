@@ -5,15 +5,18 @@ export type ColorSortSegment = {
 
 export type ColorSortBottle = {
   id: number
+  capacity: number
   segments: ColorSortSegment[]
 }
 
 export interface DataColorSortLevel {
   level: number
   capacity: number
+  tallCapacity: number
   colorTotal: number
   bottleTotal: number
   hiddenTotal: number
+  tallTotal: number
   bottles: ColorSortBottle[]
 }
 
@@ -41,6 +44,7 @@ export interface ColorSortProgress {
 }
 
 export type ColorSortMove = {
+  id: number
   from: number
   to: number
   amount: number
@@ -49,6 +53,7 @@ export type ColorSortMove = {
 }
 
 export type ColorSortPour = {
+  id: number
   from: number
   to: number
   amount: number
