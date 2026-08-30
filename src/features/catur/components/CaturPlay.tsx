@@ -160,7 +160,7 @@ export default function CaturPlay() {
           advantage={data.advantage < 0 ? -data.advantage : 0}
         />
 
-        <main className="flex min-h-0 flex-1 items-center justify-center">
+        <main className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
           {data.isLoading ? (
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a29d93]">Menyiapkan papan…</p>
           ) : (

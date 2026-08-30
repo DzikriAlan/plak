@@ -53,7 +53,7 @@ export default function CaturBoard({ board, lastMove, isLocked, onSubmitCaturSqu
   }
 
   return (
-    <div className="w-full max-w-[min(100%,72dvh)] rounded-2xl bg-[#8ca66a] p-1.5 sm:p-2.5">
+    <div className="w-full max-w-[min(100%,calc(100dvh-22rem))] rounded-2xl bg-[#8ca66a] p-1.5 sm:p-2.5">
       <div className="grid grid-cols-[1.1rem_1fr_1.1rem] grid-rows-[1.1rem_auto_1.1rem] sm:grid-cols-[1.4rem_1fr_1.4rem] sm:grid-rows-[1.4rem_auto_1.4rem]">
         <span />
         <div className="grid grid-cols-8">
