@@ -30,9 +30,9 @@ export default function ColorSortControls({
   onLoadColorSortPause,
 }: Props) {
   const buttons = [
-    { key: 'undo', label: 'UNDO', tone: 'bg-[#e63946]', booster: undoBooster, onPress: onEditColorSortUndo },
-    { key: 'shuffle', label: 'SHUFFLE', tone: 'bg-[#8b5cf6]', booster: shuffleBooster, onPress: onEditColorSortShuffle },
-    { key: 'add', label: 'TAMBAH BOTOL', tone: 'bg-[#3a86ff]', booster: addBottleBooster, onPress: onEditColorSortAddBottle },
+    { key: 'undo', label: 'UNDO', tone: 'bg-[#c2372c]', booster: undoBooster, onPress: onEditColorSortUndo },
+    { key: 'shuffle', label: 'SHUFFLE', tone: 'bg-[#6d4bc4]', booster: shuffleBooster, onPress: onEditColorSortShuffle },
+    { key: 'add', label: 'TAMBAH BOTOL', tone: 'bg-[#3b6fd4]', booster: addBottleBooster, onPress: onEditColorSortAddBottle },
   ]
 
   const getButtonIcon = (key: string) => {
@@ -47,19 +47,20 @@ export default function ColorSortControls({
   }
 
   const getBadge = (count: number, cost: number) => {
-    const base = 'absolute -right-2 -top-2 flex h-5 items-center justify-center border-[3px] border-black text-[9px] font-black'
-    if (count > 0) return <span className={`${base} w-5 bg-[#f2e9d8] text-black`}>{count}</span>
-    return <span className={`${base} bg-[#ffd23f] px-1 text-black`}>★{cost}</span>
+    const base =
+      'absolute -right-1.5 -top-1.5 flex h-5 items-center justify-center rounded-full border border-[#0a0a0b] px-[6px] text-[9px] font-semibold'
+    if (count > 0) return <span className={`${base} bg-[#f2ede1] text-[#0a0a0b]`}>{count}</span>
+    return <span className={`${base} bg-[#f0b429] text-[#0a0a0b]`}>★{cost}</span>
   }
 
   return (
     <footer className="relative z-10 flex items-stretch gap-2 px-3 pb-4 pt-2">
-      <div className="flex w-[72px] shrink-0 flex-col items-center justify-center border-[3px] border-black bg-[#ffd23f] py-1 shadow-[4px_4px_0_#000]">
-        <p className="text-[8px] font-black uppercase tracking-[0.18em] text-black">Moves</p>
-        <p className="text-[26px] font-black leading-none text-black [font-family:'Arial_Black','Archivo_Black',system-ui]">
+      <div className="flex w-[72px] shrink-0 flex-col items-center justify-center rounded-xl border border-[#26262b] bg-[#121214] py-1">
+        <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-[#a29d93]">Moves</p>
+        <p className="text-[26px] font-black leading-none text-[#f2ede1] [font-family:'Arial_Black','Archivo_Black',system-ui]">
           {moveTotal}
         </p>
-        <p className="text-[8px] font-black uppercase tracking-[0.1em] text-black">Best: {bestMove || '-'}</p>
+        <p className="text-[8px] font-semibold uppercase tracking-[0.1em] text-[#a29d93]">Best: {bestMove || '-'}</p>
       </div>
 
       <div className="grid flex-1 grid-cols-3 gap-2">
@@ -70,10 +71,10 @@ export default function ColorSortControls({
             aria-label={button.label}
             disabled={button.booster.isDisabled}
             onClick={button.onPress}
-            className={`relative flex flex-col items-center justify-center border-[3px] border-black py-2 text-[#f2e9d8] shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-40 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[4px_4px_0_#000] ${button.tone}`}
+            className={`relative flex flex-col items-center justify-center rounded-xl py-2 text-[#f2ede1] transition-opacity active:opacity-80 disabled:opacity-35 ${button.tone}`}
           >
             {getButtonIcon(button.key)}
-            <span className="mt-1 px-1 text-center text-[9px] font-black uppercase leading-[1.05] tracking-[0.08em]">
+            <span className="mt-1 px-1 text-center text-[9px] font-semibold uppercase leading-[1.05] tracking-[0.08em]">
               {button.label}
             </span>
             {getBadge(button.booster.count, button.booster.cost)}
@@ -85,10 +86,10 @@ export default function ColorSortControls({
         type="button"
         aria-label="Jeda permainan"
         onClick={onLoadColorSortPause}
-        className="flex w-[52px] shrink-0 items-center justify-center gap-1 border-[3px] border-black bg-[#f2e9d8] shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+        className="flex w-[52px] shrink-0 items-center justify-center gap-1 rounded-xl border border-[#26262b] bg-[#121214] transition-colors hover:border-[#43434d]"
       >
-        <span className="h-5 w-[5px] bg-black" />
-        <span className="h-5 w-[5px] bg-black" />
+        <span className="h-5 w-[4px] rounded-sm bg-[#f2ede1]" />
+        <span className="h-5 w-[4px] rounded-sm bg-[#f2ede1]" />
       </button>
     </footer>
   )

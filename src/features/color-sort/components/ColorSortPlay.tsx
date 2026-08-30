@@ -7,7 +7,6 @@ import ColorSortHeader from './ColorSortHeader'
 import ColorSortControls from './ColorSortControls'
 
 const ColorSortBoard = dynamic(() => import('./ColorSortBoard'), { ssr: false })
-const ColorSortStars = dynamic(() => import('./ColorSortStars'), { ssr: false })
 const ColorSortAudio = dynamic(() => import('./ColorSortAudio'), { ssr: false })
 
 export default function ColorSortPlay() {
@@ -122,7 +121,9 @@ export default function ColorSortPlay() {
     setFilters((prev) => ({ ...prev, isSoundOn: !prev.isSoundOn }))
   }
   const editColorSortPageActive = (isPageActive: boolean) => {
-    setFilters((prev) => ({ ...prev, isPageActive, isPauseOpen: isPageActive ? prev.isPauseOpen : true }))
+    // Hanya menghentikan render & audio saat tab tidak aktif.
+    // Dialog jeda tidak ikut dibuka: itu murni aksi tombol jeda.
+    setFilters((prev) => ({ ...prev, isPageActive }))
   }
   const submitColorSortReward = () => {
     setColorSortProgress({
@@ -167,8 +168,7 @@ export default function ColorSortPlay() {
   }, [])
 
   return (
-    <div className="relative flex min-h-screen w-full justify-center bg-black">
-      <ColorSortStars isActive={data.isPageActive} />
+    <div className="relative flex min-h-screen w-full justify-center bg-[#0a0a0b]">
       <ColorSortAudio
         isActive={data.isPageActive}
         isMusicOn={data.isMusicOn}
@@ -192,7 +192,7 @@ export default function ColorSortPlay() {
 
         <section className="relative z-0 min-h-0 flex-1">
           {data.isLoading ? (
-            <div className="flex h-full items-center justify-center text-sm font-black uppercase tracking-[0.3em] text-[#f2e9d8]/60">
+            <div className="flex h-full items-center justify-center text-sm font-black uppercase tracking-[0.3em] text-[#f2ede1]/50">
               Memuat…
             </div>
           ) : (
@@ -207,7 +207,7 @@ export default function ColorSortPlay() {
           )}
 
           {data.isHintVisible ? (
-            <p className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 border-[3px] border-black bg-[#f2e9d8] px-3 py-[2px] text-center text-[10px] font-black uppercase leading-tight tracking-[0.12em] text-black shadow-[3px_3px_0_#000]">
+            <p className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-[#26262b] bg-[#121214]/90 px-4 py-1 text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a29d93] backdrop-blur-sm">
               Pilih botol untuk menuang
             </p>
           ) : null}
@@ -226,23 +226,23 @@ export default function ColorSortPlay() {
         />
 
         {data.isCleared ? (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/85 px-6">
-            <div className="w-full border-[3px] border-black bg-[#f2e9d8] p-6 text-center shadow-[8px_8px_0_#ff5a1f]">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black">Level Selesai</p>
-              <p className="mt-1 text-5xl font-black leading-none text-black [font-family:'Arial_Black','Archivo_Black',system-ui]">
+          <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
+            <div className="w-full max-w-[360px] rounded-2xl border border-[#26262b] bg-[#121214] p-6 text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a29d93]">Level Selesai</p>
+              <p className="mt-1 text-5xl font-black leading-none text-[#f2ede1] [font-family:'Arial_Black','Archivo_Black',system-ui]">
                 {data.levelNumber}
               </p>
-              <p className="mt-2 text-xl tracking-[0.2em] text-black">
+              <p className="mt-2 text-xl tracking-[0.2em] text-[#f0b429]">
                 {'★'.repeat(data.star)}
-                <span className="text-black/20">{'★'.repeat(3 - data.star)}</span>
+                <span className="text-[#f2ede1]/15">{'★'.repeat(3 - data.star)}</span>
               </p>
-              <p className="mt-2 inline-block border-[3px] border-black bg-[#ffd23f] px-2 text-[10px] font-black uppercase tracking-[0.1em] text-black">
+              <p className="mt-3 inline-block rounded-md border border-[#3a3a42] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a29d93]">
                 {data.moveTotal} moves · +{data.clearedReward} koin
               </p>
               <button
                 type="button"
                 onClick={submitColorSortNextLevel}
-                className="mt-5 w-full border-[3px] border-black bg-[#ff5a1f] py-3 text-sm font-black uppercase tracking-[0.1em] text-black shadow-[5px_5px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                className="mt-6 w-full rounded-xl bg-[#f2ede1] py-3 text-[13px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
               >
                 Level Berikutnya
               </button>
@@ -251,20 +251,20 @@ export default function ColorSortPlay() {
         ) : null}
 
         {data.isPauseOpen ? (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/85 px-6">
-            <div className="w-full border-[3px] border-black bg-[#f2e9d8] p-6 text-center shadow-[8px_8px_0_#2ec4b6]">
-              <p className="text-2xl font-black uppercase tracking-[0.25em] text-black">Jeda</p>
+          <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
+            <div className="w-full max-w-[360px] rounded-2xl border border-[#26262b] bg-[#121214] p-6 text-center">
+              <p className="text-lg font-black uppercase tracking-[0.24em] text-[#f2ede1]">Jeda</p>
               <button
                 type="button"
                 onClick={loadColorSortPause}
-                className="mt-5 w-full border-[3px] border-black bg-[#3a86ff] py-3 text-sm font-black uppercase tracking-[0.1em] text-black shadow-[5px_5px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                className="mt-6 w-full rounded-xl bg-[#f2ede1] py-3 text-[13px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
               >
                 Lanjutkan
               </button>
               <button
                 type="button"
                 onClick={clearColorSortLevel}
-                className="mt-3 w-full border-[3px] border-black bg-[#8b5cf6] py-3 text-sm font-black uppercase tracking-[0.1em] text-black shadow-[5px_5px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                className="mt-3 w-full rounded-xl border border-[#3a3a42] py-3 text-[13px] font-medium text-[#f2ede1] transition-colors hover:border-[#f2ede1]"
               >
                 Ulangi Level
               </button>
@@ -272,8 +272,10 @@ export default function ColorSortPlay() {
                 <button
                   type="button"
                   onClick={editColorSortMusic}
-                  className={`border-[3px] border-black py-2 text-[10px] font-black uppercase tracking-[0.1em] text-black shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
-                    data.isMusicOn ? 'bg-[#2ec4b6]' : 'bg-[#f2e9d8]'
+                  className={`rounded-xl border py-2 text-[11px] font-medium transition-colors ${
+                    data.isMusicOn
+                      ? 'border-[#f2ede1] bg-[#f2ede1] text-[#0a0a0b]'
+                      : 'border-[#3a3a42] text-[#a29d93]'
                   }`}
                 >
                   Musik: {data.isMusicOn ? 'On' : 'Off'}
@@ -281,8 +283,10 @@ export default function ColorSortPlay() {
                 <button
                   type="button"
                   onClick={editColorSortSound}
-                  className={`border-[3px] border-black py-2 text-[10px] font-black uppercase tracking-[0.1em] text-black shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
-                    data.isSoundOn ? 'bg-[#ffd23f]' : 'bg-[#f2e9d8]'
+                  className={`rounded-xl border py-2 text-[11px] font-medium transition-colors ${
+                    data.isSoundOn
+                      ? 'border-[#f2ede1] bg-[#f2ede1] text-[#0a0a0b]'
+                      : 'border-[#3a3a42] text-[#a29d93]'
                   }`}
                 >
                   Sfx: {data.isSoundOn ? 'On' : 'Off'}
@@ -293,23 +297,23 @@ export default function ColorSortPlay() {
         ) : null}
 
         {data.isShopOpen ? (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/85 px-6">
-            <div className="w-full border-[3px] border-black bg-[#f2e9d8] p-6 text-center shadow-[8px_8px_0_#ffd23f]">
-              <p className="text-xl font-black uppercase tracking-[0.15em] text-black">Paket Hadiah</p>
-              <p className="mt-1 text-[10px] font-black uppercase tracking-[0.08em] text-black/70">
+          <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
+            <div className="w-full max-w-[360px] rounded-2xl border border-[#26262b] bg-[#121214] p-6 text-center">
+              <p className="text-lg font-black uppercase tracking-[0.18em] text-[#f2ede1]">Paket Hadiah</p>
+              <p className="mt-2 text-[12px] font-medium text-[#9aa3b2]">
                 500 koin + 3 booster tiap jenis
               </p>
               <button
                 type="button"
                 onClick={submitColorSortReward}
-                className="mt-5 w-full border-[3px] border-black bg-[#ffd23f] py-3 text-sm font-black uppercase tracking-[0.1em] text-black shadow-[5px_5px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                className="mt-6 w-full rounded-xl bg-[#f2ede1] py-3 text-[13px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
               >
                 Klaim Gratis
               </button>
               <button
                 type="button"
                 onClick={loadColorSortShop}
-                className="mt-3 w-full border-[3px] border-black bg-[#f2e9d8] py-2 text-[10px] font-black uppercase tracking-[0.1em] text-black"
+                className="mt-3 w-full rounded-xl border border-[#3a3a42] py-3 text-[13px] font-medium text-[#f2ede1] transition-colors hover:border-[#f2ede1]"
               >
                 Tutup
               </button>

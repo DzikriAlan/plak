@@ -28,12 +28,14 @@ const PALETTE = [
   '#e8e6e0',
 ]
 
-const STROKE = '#f1ede4'
-const GLASS = '#2b2b33'
-const GLASS_EDGE = '#3d3d47'
-const MYSTERY = '#111114'
-const SHELF = '#1b1b20'
-const SHELF_EDGE = '#33333c'
+const STROKE = '#f2ede1'
+const GLASS = '#ffffff'
+const GLASS_OPACITY = 0.14
+const GLASS_EDGE = '#ffffff'
+const GLASS_EDGE_OPACITY = 0.3
+const MYSTERY = '#0f0f11'
+const SHELF = '#08080a'
+const SHELF_EDGE = '#2a2a2e'
 const CORK = '#c9a06a'
 const CORK_TOP = '#e0bd8e'
 const CORK_GRAIN = '#a2794a'
@@ -303,9 +305,36 @@ export default function ColorSortBoard({
       disposables.push(mesh.geometry, mesh.material as THREE.Material)
     }
 
-    const getShapeMesh = (inset: number, color: string, depth: number, height: number) => {
+    const getShapeMesh = (inset: number, color: string, depth: number, height: number, opacity = 1) => {
       const geometry = new THREE.ShapeGeometry(getBottleShape(inset, height), 12)
-      const material = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide })
+      const material = new THREE.MeshBasicMaterial({
+        color,
+        side: THREE.DoubleSide,
+        transparent: opacity < 1,
+        opacity,
+      })
+      const mesh = new THREE.Mesh(geometry, material)
+      mesh.position.z = depth
+      return mesh
+    }
+
+    const getRingMesh = (
+      outerInset: number,
+      innerInset: number,
+      color: string,
+      depth: number,
+      height: number,
+      opacity = 1,
+    ) => {
+      const shape = getBottleShape(outerInset, height)
+      shape.holes.push(getBottleShape(innerInset, height))
+      const geometry = new THREE.ShapeGeometry(shape, 12)
+      const material = new THREE.MeshBasicMaterial({
+        color,
+        side: THREE.DoubleSide,
+        transparent: opacity < 1,
+        opacity,
+      })
       const mesh = new THREE.Mesh(geometry, material)
       mesh.position.z = depth
       return mesh
@@ -318,16 +347,16 @@ export default function ColorSortBoard({
       group.position.copy(base)
       root.add(group)
 
-      const outline = getShapeMesh(0, STROKE, 0, height)
-      const glassEdge = getShapeMesh(OUTLINE, GLASS_EDGE, 0.01, height)
-      const glass = getShapeMesh(OUTLINE + 0.03, GLASS, 0.02, height)
+      const outline = getRingMesh(0, OUTLINE, STROKE, 0, height)
+      const glassEdge = getRingMesh(OUTLINE, OUTLINE + 0.03, GLASS_EDGE, 0.01, height, GLASS_EDGE_OPACITY)
+      const glass = getShapeMesh(OUTLINE + 0.03, GLASS, 0.02, height, GLASS_OPACITY)
       pushDisposable(outline)
       pushDisposable(glassEdge)
       pushDisposable(glass)
       group.add(outline, glassEdge, glass)
 
       const shineGeometry = new THREE.PlaneGeometry(0.09, height * 0.55)
-      const shineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22 })
+      const shineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.28 })
       const shine = new THREE.Mesh(shineGeometry, shineMaterial)
       shine.position.set(-BOTTLE_HALF_WIDTH * 0.52, height * 0.42, 0.08)
       disposables.push(shineGeometry, shineMaterial)
