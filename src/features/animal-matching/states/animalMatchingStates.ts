@@ -16,7 +16,11 @@ interface AnimalMatchingStore {
   setAnimalMatchingRestart: () => void
 }
 
-const ANIMALS = ['🐤', '🦁', '🐵', '🦒', '🐬', '🐟', '🐗', '🐮', '🐻', '🐭', '🐷', '🐯', '🦊', '🐰', '🐑', '🐘', '🦏', '🦔', '🐴', '🦜']
+const ANIMALS = [
+  '🐤', '🦁', '🐵', '🦒', '🐬', '🐟', '🐗', '🐮',
+  '🐻', '🐭', '🐷', '🐯', '🦊', '🐰', '🐑', '🐘',
+  '🦏', '🦔', '🐴', '🦜', '🐨', '🐼', '🦉', '🐧',
+]
 const EMPTY = ''
 
 export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) => {
@@ -38,16 +42,20 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
   }
 
   const getLayout = (levelNumber: number) => {
-    const colTotal = Math.min(8, 4 + Math.floor((levelNumber - 1) / 2))
-    const rowTotal = Math.min(10, 4 + Math.floor(levelNumber / 2))
-    const iconTotal = Math.min(ANIMALS.length, 4 + Math.floor(levelNumber / 2))
-    return { colTotal, rowTotal: rowTotal % 2 === 0 || colTotal % 2 === 0 ? rowTotal : rowTotal + 1, iconTotal }
+    // Papan tetap 8x12 seperti contoh; level mengatur seberapa padat terisi.
+    const colTotal = 8
+    const rowTotal = 12
+    const cellTotal = colTotal * rowTotal
+    const fillRatio = Math.min(1, 0.5 + (levelNumber - 1) * 0.06)
+    const pairTotal = Math.floor((cellTotal * fillRatio) / 2)
+    const iconTotal = Math.min(ANIMALS.length, pairTotal)
+    return { colTotal, rowTotal, pairTotal, iconTotal }
   }
 
   const getFilledGrid = (levelNumber: number) => {
     const layout = getLayout(levelNumber)
     const cellTotal = layout.rowTotal * layout.colTotal
-    const pairTotal = Math.floor(cellTotal / 2)
+    const pairTotal = layout.pairTotal
     const icons: string[] = []
     for (let index = 0; index < pairTotal; index += 1) {
       const icon = ANIMALS[index % layout.iconTotal]

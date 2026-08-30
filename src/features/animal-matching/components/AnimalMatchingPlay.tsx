@@ -17,6 +17,7 @@ export default function AnimalMatchingPlay() {
     setAnimalMatchingRestart,
   } = useAnimalMatchingStates()
   const [filters, setFilters] = useState({
+    startLevel: 0,
     startTotal: 0,
     pagination: { currentPage: 1, perPage: 0, totalItem: 0, totalPage: 1 },
   })
@@ -69,7 +70,10 @@ export default function AnimalMatchingPlay() {
   useEffect(() => {
     const game = animalMatchingGame.data
     if (!game || !game.remainingTotal) return
-    setFilters((prev) => (prev.startTotal ? prev : { ...prev, startTotal: game.remainingTotal }))
+    // Papan membesar tiap beberapa level, jadi patokan progres direset per level.
+    setFilters((prev) =>
+      prev.startLevel === game.level ? prev : { ...prev, startLevel: game.level, startTotal: game.remainingTotal },
+    )
   }, [animalMatchingGame])
 
   return (

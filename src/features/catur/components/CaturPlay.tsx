@@ -7,9 +7,9 @@ import CaturHeader from './CaturHeader'
 import CaturBoard from './CaturBoard'
 
 const LEVELS = [
-  { id: 0, label: 'Santai', skill: 2, depth: 4, movetime: 300 },
-  { id: 1, label: 'Serius', skill: 12, depth: 10, movetime: 900 },
-  { id: 2, label: 'Kelas Dunia', skill: 20, depth: 22, movetime: 2500 },
+  { id: 0, label: 'Santai', skill: 2, depth: 4, movetime: 200 },
+  { id: 1, label: 'Serius', skill: 12, depth: 10, movetime: 500 },
+  { id: 2, label: 'Kelas Dunia', skill: 20, depth: 20, movetime: 1200 },
 ]
 const PROMOTION_CHOICES = [
   { piece: 'q', label: 'Menteri', glyph: '♛' },
@@ -32,6 +32,7 @@ export default function CaturPlay() {
     const getStatusLabel = (board: CaturCell[]) => {
       if (!board.length) return 'Menyiapkan papan'
       if (game?.isFinished) return game.resultTitle
+      if (!filters.isEngineReady) return 'Memuat mesin catur…'
       if (filters.isThinking) return 'Lawan sedang berpikir…'
       if (game?.isCheck) return game.turn === 'w' ? 'Anda diskak!' : 'Skak untuk lawan'
       return game?.turn === 'w' ? 'Giliran Anda (putih)' : 'Giliran lawan'
@@ -60,7 +61,13 @@ export default function CaturPlay() {
       moveTotal: game?.moveTotal ?? 0,
       advantage,
       advantageLabel: advantage > 0 ? `+${advantage}` : `${advantage}`,
-      isLocked: !game || game.isFinished || game.turn !== 'w' || filters.isThinking || !!game.pendingPromotion,
+      isLocked:
+        !game ||
+        !filters.isEngineReady ||
+        game.isFinished ||
+        game.turn !== 'w' ||
+        filters.isThinking ||
+        !!game.pendingPromotion,
       isUndoDisabled: !game || filters.isThinking || game.moveTotal < 2,
       isPromotionOpen: !!game?.pendingPromotion,
       isFinished: !!game?.isFinished,
