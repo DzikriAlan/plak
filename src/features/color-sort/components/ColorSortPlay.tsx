@@ -15,7 +15,7 @@ export default function ColorSortPlay() {
     colorSortLevel,
     colorSortProgress,
     selectedBottle,
-    activePour,
+    activePours,
     moveHistory,
     isLevelCleared,
     setColorSortInit,
@@ -46,7 +46,7 @@ export default function ColorSortPlay() {
       const bottles = level?.bottles ?? []
       return bottles.filter(
         (bottle) =>
-          bottle.segments.length === (level?.capacity ?? 4) &&
+          bottle.segments.length === bottle.capacity &&
           bottle.segments.every((segment) => segment.colorIndex === bottle.segments[0].colorIndex),
       ).length
     }
@@ -76,23 +76,24 @@ export default function ColorSortPlay() {
       moveTotal,
       bestMove: progress?.bestMoves?.[String(level?.level ?? 1)] ?? 0,
       star: getStarTotal(moveTotal, colorTotal),
-      isBoosterDisabled: !!activePour || isLevelCleared,
-      isHintVisible: !moveTotal && !activePour && !isLevelCleared,
+      isBoosterDisabled: !!activePours.length || isLevelCleared,
+      isHintVisible: !moveTotal && !activePours.length && !isLevelCleared,
       isShopOpen: filters.isShopOpen,
       isPauseOpen: filters.isPauseOpen,
       isMusicOn: filters.isMusicOn,
       isSoundOn: filters.isSoundOn,
       sealedTotal: getSealedTotal(),
-      pourKey: activePour?.startedAt ?? 0,
+      tallTotal: level?.tallTotal ?? 0,
+      pourKey: activePours.length ? Math.max(...activePours.map((pour) => pour.id)) : 0,
       isCleared: isLevelCleared,
       clearedReward: 25 + (level?.level ?? 1) * 2,
     }
-  }, [colorSortLevel, colorSortProgress, activePour, isLevelCleared, moveHistory, filters])
+  }, [colorSortLevel, colorSortProgress, activePours, isLevelCleared, moveHistory, filters])
   const editColorSortBottle = (bottleId: number) => {
     setColorSortPour(bottleId)
   }
-  const editColorSortPourDone = () => {
-    setColorSortPourDone()
+  const editColorSortPourDone = (pourId: number) => {
+    setColorSortPourDone(pourId)
   }
   const loadColorSortShop = () => {
     setFilters((prev) => ({ ...prev, isShopOpen: !prev.isShopOpen }))
@@ -168,9 +169,8 @@ export default function ColorSortPlay() {
           ) : (
             <ColorSortBoard
               bottles={data.data}
-              capacity={data.capacity}
               selectedBottle={selectedBottle}
-              activePour={activePour}
+              activePours={activePours}
               onEditColorSortBottle={editColorSortBottle}
               onEditColorSortPourDone={editColorSortPourDone}
             />
