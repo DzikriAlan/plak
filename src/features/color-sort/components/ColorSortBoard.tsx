@@ -369,6 +369,20 @@ export default function ColorSortBoard({
         capGroup.add(grain)
       })
 
+      if (bottle.isGiant) {
+        const arrowShape = new THREE.Shape()
+        arrowShape.moveTo(-0.14, 0.16)
+        arrowShape.lineTo(0.14, 0.16)
+        arrowShape.lineTo(0, -0.06)
+        arrowShape.lineTo(-0.14, 0.16)
+        const arrowGeometry = new THREE.ShapeGeometry(arrowShape)
+        const arrowMaterial = new THREE.MeshBasicMaterial({ color: STROKE, transparent: true, opacity: 0.55 })
+        const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial)
+        arrow.position.set(0, height + 0.24, 0.12)
+        disposables.push(arrowGeometry, arrowMaterial)
+        group.add(arrow)
+      }
+
       const hitGeometry = new THREE.PlaneGeometry(BOTTLE_HALF_WIDTH * 2.6, height * 1.15)
       const hitMaterial = new THREE.MeshBasicMaterial({ visible: false })
       const hit = new THREE.Mesh(hitGeometry, hitMaterial)
@@ -780,6 +794,10 @@ export default function ColorSortBoard({
         const capGroup = capGroups.get(bottle.id)
         const height = bottleHeights.get(bottle.id)
         if (!capGroup || !height) return
+        if (bottle.isGiant) {
+          capGroup.visible = false
+          return
+        }
 
         const isComplete =
           bottle.segments.length === bottle.capacity &&
