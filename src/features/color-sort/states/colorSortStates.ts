@@ -35,7 +35,6 @@ const MAX_PER_ROW = 6
 const BOTTLE_UNIT_HEIGHT = 0.445
 const BOTTLE_FIXED_HEIGHT = 0.72
 const ROW_GAP = 0.9
-const GIANT_START_UNITS = 8
 const BOOSTER_PRICE = 100
 const STORAGE_KEY = 'color-sort-progress'
 
@@ -49,12 +48,13 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     const emptyTotal = level >= 60 ? 1 : 2
     const hiddenBottleTotal = level < 25 ? 0 : Math.min(colorTotal, 1 + Math.floor((level - 25) / 5))
     const giantTotal = level >= 30 ? 1 : 0
-    const normalTotal = colorTotal + emptyTotal - giantTotal
+    const normalTotal = colorTotal + emptyTotal
     const perRow = normalTotal <= MAX_PER_ROW ? normalTotal : Math.ceil(normalTotal / Math.ceil(normalTotal / MAX_PER_ROW))
     const rowTotal = Math.ceil(normalTotal / perRow)
     const normalHeight = BOTTLE_FIXED_HEIGHT + CAPACITY * BOTTLE_UNIT_HEIGHT
     const boardHeight = rowTotal * normalHeight + (rowTotal - 1) * ROW_GAP
-    const giantCapacity = Math.floor((boardHeight - BOTTLE_FIXED_HEIGHT) / BOTTLE_UNIT_HEIGHT)
+    const giantSlotTotal = Math.floor((boardHeight - BOTTLE_FIXED_HEIGHT) / BOTTLE_UNIT_HEIGHT)
+    const giantCapacity = Math.max(CAPACITY, Math.floor(giantSlotTotal / CAPACITY) * CAPACITY)
     return { colorTotal, emptyTotal, hiddenBottleTotal, giantTotal, giantCapacity }
   }
 
@@ -63,7 +63,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     for (let color = 0; color < colorTotal; color += 1) {
       board.push({ capacity: CAPACITY, isGiant: false, units: new Array(CAPACITY).fill(color) })
     }
-    for (let empty = 0; empty < emptyTotal - giantTotal; empty += 1) {
+    for (let empty = 0; empty < emptyTotal; empty += 1) {
       board.push({ capacity: CAPACITY, isGiant: false, units: [] })
     }
     const shuffled = board.sort(() => Math.random() - 0.5)
@@ -84,6 +84,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
 
   const getIsBoardSolved = (bottles: ColorSortBottle[]) =>
     bottles.every((bottle) => {
+      if (bottle.isGiant) return true
       if (!bottle.segments.length) return true
       if (bottle.segments.length !== bottle.capacity) return false
       return bottle.segments.every((segment) => segment.colorIndex === bottle.segments[0].colorIndex)
@@ -94,7 +95,9 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     const totalStep = 90 + colorTotal * 30
 
     for (let step = 0; step < totalStep; step += 1) {
-      const sourceCandidates = board.map((item, index) => ({ item, index })).filter((entry) => entry.item.units.length)
+      const sourceCandidates = board
+        .map((item, index) => ({ item, index }))
+        .filter((entry) => !entry.item.isGiant && entry.item.units.length)
       if (!sourceCandidates.length) break
       const source = sourceCandidates[getRandomInt(sourceCandidates.length)]
       const run = getTopRun(source.item.units)
@@ -111,7 +114,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
       const targetCandidates = board
         .map((item, index) => ({ item, index }))
         .filter((entry) => {
-          if (entry.index === source.index) return false
+          if (entry.index === source.index || entry.item.isGiant) return false
           if (entry.item.capacity - entry.item.units.length < amount) return false
           if (!entry.item.units.length) return true
           return entry.item.units[entry.item.units.length - 1] !== run.colorIndex
@@ -163,9 +166,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     for (let attempt = 0; attempt < 24; attempt += 1) {
       const board = getScrambledBoard(config.colorTotal, config.emptyTotal, config.giantTotal, config.giantCapacity)
       bottles = getHiddenBoard(board, config.hiddenBottleTotal)
-      const giant = bottles.find((bottle) => bottle.isGiant)
-      const isGiantOverfilled = !!giant && giant.segments.length > GIANT_START_UNITS
-      if (!getIsBoardSolved(bottles) && !isGiantOverfilled) break
+      if (!getIsBoardSolved(bottles)) break
     }
 
     const data: DataColorSortLevel = {
@@ -297,7 +298,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
       const selected = state.selectedBottle
       if (selected === null) {
         const source = data.bottles.find((bottle) => bottle.id === bottleId)
-        if (!source || !source.segments.length) return
+        if (!source || source.isGiant || !source.segments.length) return
         set({ selectedBottle: bottleId })
         return
       }
@@ -318,9 +319,13 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
       const freeSpace = target.capacity - target.segments.length
       const isTargetMatch =
         !target.segments.length || target.segments[target.segments.length - 1].colorIndex === run.colorIndex
+      const isGiantPour = target.isGiant
+      const isPourAllowed = isGiantPour
+        ? run.length >= CAPACITY && freeSpace >= CAPACITY
+        : !!run.length && !!freeSpace && isTargetMatch
 
-      if (!run.length || !freeSpace || !isTargetMatch) {
-        const isSelectable = !!target.segments.length
+      if (!isPourAllowed) {
+        const isSelectable = !!target.segments.length && !target.isGiant
         set({ selectedBottle: isSelectable ? bottleId : null })
         return
       }
@@ -334,7 +339,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
             id: pourSequence,
             from: source.id,
             to: target.id,
-            amount: Math.min(run.length, freeSpace),
+            amount: isGiantPour ? CAPACITY : Math.min(run.length, freeSpace),
             colorIndex: run.colorIndex,
             startedAt: Date.now(),
           },
