@@ -95,6 +95,25 @@ export default function StoreCover({ gameId, tone, accent }: Props) {
     )
   }
 
+  if (gameId === 'animal-matching') {
+    const animals = ['\u{1F42E}', '\u{1F42F}', '\u{1F438}', '\u{1F435}', '\u{1F430}', '\u{1F98A}']
+    return (
+      <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={frame} aria-hidden="true">
+        <rect width="320" height="200" fill={tone} />
+        <circle cx="286" cy="26" r="40" fill={accent} />
+        {animals.map((animal, index) => (
+          <g key={animal} transform={`translate(${52 + (index % 3) * 78} ${64 + Math.floor(index / 3) * 74})`}>
+            <rect x="-30" y="-30" width="60" height="60" rx="10" fill={PAPER} stroke={INK} strokeWidth="3" />
+            <text x="0" y="12" textAnchor="middle" fontSize="34">
+              {animal}
+            </text>
+          </g>
+        ))}
+        {grain}
+      </svg>
+    )
+  }
+
   if (gameId === 'catur') {
     const squares = [0, 1, 2, 3, 4, 5].flatMap((column) =>
       [0, 1, 2].map((row) => ({ column, row, isDark: (column + row) % 2 === 1 })),
