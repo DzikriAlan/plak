@@ -16,16 +16,16 @@ const PIECE_GLYPH: Record<string, string> = {
   n: '♞',
   p: '♟',
 }
-const LIGHT_SQUARE = '#eed9b2'
-const DARK_SQUARE = '#b77d4b'
-const HIGHLIGHT = '#f7f0e4'
+const LIGHT_SQUARE = '#e8d39a'
+const DARK_SQUARE = '#b77a49'
+const HIGHLIGHT = '#f4ead7'
 
 export default function CaturBoard({ board, isLocked, onSubmitCaturSquare }: Props) {
   const getSquareStyle = (cell: CaturCell) => {
     const base = cell.isDark ? DARK_SQUARE : LIGHT_SQUARE
     const grain = cell.isDark
-      ? 'rgba(70,40,16,0.14), rgba(70,40,16,0) 42%, rgba(255,255,255,0.04) 58%, rgba(70,40,16,0.09)'
-      : 'rgba(130,95,59,0.08), rgba(130,95,59,0) 42%, rgba(255,255,255,0.12) 58%, rgba(130,95,59,0.08)'
+      ? 'rgba(92,54,22,0.14), rgba(92,54,22,0) 42%, rgba(255,255,255,0.04) 58%, rgba(92,54,22,0.09)'
+      : 'rgba(135,97,52,0.08), rgba(135,97,52,0) 42%, rgba(255,255,255,0.16) 58%, rgba(135,97,52,0.08)'
     return {
       backgroundColor: cell.isCheck ? '#d05a4a' : base,
       backgroundImage: `repeating-linear-gradient(90deg, ${grain})`,
@@ -34,14 +34,14 @@ export default function CaturBoard({ board, isLocked, onSubmitCaturSquare }: Pro
   }
   const getPieceTone = (color: string) =>
     color === 'w'
-      ? 'text-[#f7f3ee] [text-shadow:0_1px_0_#7f5e3e,0_2px_2px_rgba(0,0,0,0.55),0_0_1px_rgba(0,0,0,0.8)]'
-      : 'text-[#1b120d] [text-shadow:0_1px_0_rgba(255,255,255,0.28),0_1px_2px_rgba(0,0,0,0.75)]'
+      ? 'text-[#f8f4ee] [text-shadow:0_1px_0_#7f6142,0_2px_3px_rgba(0,0,0,0.6),0_0_1px_rgba(0,0,0,0.8)]'
+      : 'text-[#1c120e] [text-shadow:0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.7)]'
 
   return (
-    <div className="w-full max-w-[560px] rounded-[18px] bg-[#7d5639] p-[8px] shadow-[0_0_0_2px_rgba(55,35,21,0.78),0_18px_30px_rgba(0,0,0,0.52)] sm:p-[10px]">
+    <div className="w-full max-w-[560px] rounded-[18px] bg-[#815d38] p-[8px] shadow-[0_0_0_2px_rgba(54,36,22,0.8),0_18px_30px_rgba(0,0,0,0.5)] sm:p-[10px]">
       <div
         style={{ containerType: 'inline-size' }}
-        className="mx-auto grid aspect-square w-full max-w-[520px] grid-cols-8 overflow-hidden rounded-[10px] ring-1 ring-[#563e2d]"
+        className="mx-auto grid aspect-square w-full max-w-[520px] grid-cols-8 overflow-hidden rounded-[12px] ring-1 ring-[#563e2d]"
       >
         {board.map((cell) => (
           <button
@@ -67,8 +67,8 @@ export default function CaturBoard({ board, isLocked, onSubmitCaturSquare }: Pro
             ) : null}
             {cell.piece ? (
               <span
-                style={{ fontSize: 'clamp(1.75rem, 4.4vw, 4.3rem)' }}
-                className={`relative select-none leading-none ${getPieceTone(cell.piece.color)}`}
+                style={{ fontSize: 'clamp(2.2rem, 4.9vw, 4.8rem)' }}
+                className={`relative select-none translate-y-[-1px] leading-none ${getPieceTone(cell.piece.color)}`}
               >
                 {PIECE_GLYPH[cell.piece.type]}
               </span>
