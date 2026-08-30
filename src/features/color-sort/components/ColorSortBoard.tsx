@@ -99,7 +99,7 @@ export default function ColorSortBoard({
     let bestPerRow = normalTotal
     let bestRatio = 0
 
-    for (let perRow = 2; perRow <= Math.min(normalTotal, 7); perRow += 1) {
+    for (let perRow = 2; perRow <= Math.min(normalTotal, 5); perRow += 1) {
       const ratio = getFillRatio(perRow)
       if (ratio > bestRatio) {
         bestRatio = ratio

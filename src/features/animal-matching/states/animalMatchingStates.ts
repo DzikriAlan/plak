@@ -42,11 +42,11 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
 
   const getLayout = () => {
     // Papan tetap 8x12 seperti contoh; level mengatur seberapa padat terisi.
-    const colTotal = 8
-    const rowTotal = 12
+    const colTotal = 9
+    const rowTotal = 13
     const cellTotal = colTotal * rowTotal
-    // Papan selalu penuh dengan seluruh ragam hewan; tiap level = susunan acak baru.
-    const pairTotal = cellTotal / 2
+    // Sel ganjil -> satu sel dibiarkan kosong agar semua ubin tetap berpasangan.
+    const pairTotal = Math.floor(cellTotal / 2)
     const iconTotal = ANIMALS.length
     return { colTotal, rowTotal, pairTotal, iconTotal }
   }
