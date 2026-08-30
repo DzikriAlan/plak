@@ -68,7 +68,7 @@ export default function ColorSortPlay() {
       isError: colorSortLevel.status === 'error',
       isEmpty: colorSortLevel.status === 'success' && !level?.bottles.length,
       emptyTitle: 'Level tidak tersedia',
-      emptySubtitle: 'Coba muat ulang halaman untuk memulai permainan.',
+      emptySubtitle: 'Reload the page to start a new game.',
       emptyImage: '',
       pagination: { currentPage: level?.level ?? 1, perPage: 1, totalItem: 0, totalPage: 0 },
       capacity: level?.capacity ?? 4,
@@ -193,7 +193,7 @@ export default function ColorSortPlay() {
         <section className="relative z-0 min-h-0 flex-1">
           {data.isLoading ? (
             <div className="flex h-full items-center justify-center text-sm font-black uppercase tracking-[0.3em] text-[#f2ede1]/50">
-              Memuat…
+              Loading…
             </div>
           ) : (
             <ColorSortBoard
@@ -208,7 +208,7 @@ export default function ColorSortPlay() {
 
           {data.isHintVisible ? (
             <p className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-[#26262b] bg-[#121214]/90 px-4 py-1 text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a29d93] backdrop-blur-sm">
-              Pilih botol untuk menuang
+              Tap a bottle to pour
             </p>
           ) : null}
         </section>
@@ -228,7 +228,7 @@ export default function ColorSortPlay() {
         {data.isCleared ? (
           <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
             <div className="w-full max-w-[360px] rounded-2xl border border-[#26262b] bg-[#121214] p-6 text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a29d93]">Level Selesai</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a29d93]">Level complete</p>
               <p className="mt-1 text-5xl font-black leading-none text-[#f2ede1] [font-family:'Arial_Black','Archivo_Black',system-ui]">
                 {data.levelNumber}
               </p>
@@ -244,7 +244,7 @@ export default function ColorSortPlay() {
                 onClick={submitColorSortNextLevel}
                 className="mt-6 w-full rounded-xl bg-[#f2ede1] py-3 text-[13px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
               >
-                Level Berikutnya
+                Next level
               </button>
             </div>
           </div>
@@ -253,20 +253,20 @@ export default function ColorSortPlay() {
         {data.isPauseOpen ? (
           <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
             <div className="w-full max-w-[360px] rounded-2xl border border-[#26262b] bg-[#121214] p-6 text-center">
-              <p className="text-lg font-black uppercase tracking-[0.24em] text-[#f2ede1]">Jeda</p>
+              <p className="text-lg font-black uppercase tracking-[0.24em] text-[#f2ede1]">Pause</p>
               <button
                 type="button"
                 onClick={loadColorSortPause}
                 className="mt-6 w-full rounded-xl bg-[#f2ede1] py-3 text-[13px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
               >
-                Lanjutkan
+                Resume
               </button>
               <button
                 type="button"
                 onClick={clearColorSortLevel}
                 className="mt-3 w-full rounded-xl border border-[#3a3a42] py-3 text-[13px] font-medium text-[#f2ede1] transition-colors hover:border-[#f2ede1]"
               >
-                Ulangi Level
+                Restart level
               </button>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <button
@@ -278,7 +278,7 @@ export default function ColorSortPlay() {
                       : 'border-[#3a3a42] text-[#a29d93]'
                   }`}
                 >
-                  Musik: {data.isMusicOn ? 'On' : 'Off'}
+                  Music: {data.isMusicOn ? 'On' : 'Off'}
                 </button>
                 <button
                   type="button"
@@ -299,23 +299,23 @@ export default function ColorSortPlay() {
         {data.isShopOpen ? (
           <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
             <div className="w-full max-w-[360px] rounded-2xl border border-[#26262b] bg-[#121214] p-6 text-center">
-              <p className="text-lg font-black uppercase tracking-[0.18em] text-[#f2ede1]">Paket Hadiah</p>
+              <p className="text-lg font-black uppercase tracking-[0.18em] text-[#f2ede1]">Reward Pack</p>
               <p className="mt-2 text-[12px] font-medium text-[#9aa3b2]">
-                500 koin + 3 booster tiap jenis
+                500 coins + 3 of each booster
               </p>
               <button
                 type="button"
                 onClick={submitColorSortReward}
                 className="mt-6 w-full rounded-xl bg-[#f2ede1] py-3 text-[13px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
               >
-                Klaim Gratis
+                Claim free
               </button>
               <button
                 type="button"
                 onClick={loadColorSortShop}
                 className="mt-3 w-full rounded-xl border border-[#3a3a42] py-3 text-[13px] font-medium text-[#f2ede1] transition-colors hover:border-[#f2ede1]"
               >
-                Tutup
+                Close
               </button>
             </div>
           </div>

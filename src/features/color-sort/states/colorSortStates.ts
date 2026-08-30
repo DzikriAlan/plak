@@ -231,14 +231,14 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
   return {
     colorSortLevel: {
       status: 'loading',
-      statusTitle: 'Menyiapkan level',
-      statusSubtitle: 'Mohon tunggu sebentar.',
+      statusTitle: 'Preparing level',
+      statusSubtitle: 'Please wait a moment.',
       data: null,
     },
     colorSortProgress: {
       status: 'loading',
-      statusTitle: 'Menyiapkan progres',
-      statusSubtitle: 'Mohon tunggu sebentar.',
+      statusTitle: 'Preparing progress',
+      statusSubtitle: 'Please wait a moment.',
       data: null,
     },
     selectedBottle: null,

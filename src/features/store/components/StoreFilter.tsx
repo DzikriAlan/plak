@@ -21,7 +21,7 @@ export default function StoreFilter({ categories, activeCategory, onEditStoreCat
         </svg>
       )
     }
-    if (categoryId === 'papan') {
+    if (categoryId === 'board') {
       return (
         <svg viewBox="0 0 16 16" className="h-[14px] w-[14px]" fill={tone} aria-hidden="true">
           <rect x="1.5" y="1.5" width="13" height="13" rx="1.6" opacity="0.35" />
@@ -33,7 +33,7 @@ export default function StoreFilter({ categories, activeCategory, onEditStoreCat
         </svg>
       )
     }
-    if (categoryId === 'kartu') {
+    if (categoryId === 'cards') {
       return (
         <svg viewBox="0 0 16 16" className="h-[14px] w-[14px]" fill="none" stroke={tone} strokeWidth="1.5">
           <rect x="5.5" y="2.5" width="8" height="11" rx="1.6" />
@@ -47,7 +47,7 @@ export default function StoreFilter({ categories, activeCategory, onEditStoreCat
   return (
     <nav
       className="flex shrink-0 gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      aria-label="Filter kategori"
+      aria-label="Category filter"
     >
       {categories.map((category) => {
         const isActive = category.id === activeCategory

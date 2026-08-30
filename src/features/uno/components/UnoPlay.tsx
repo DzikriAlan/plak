@@ -9,10 +9,10 @@ import UnoHand from './UnoHand'
 
 const BOT_TONE = ['bg-[#ffd23f]', 'bg-[#7c3aed]', 'bg-[#23a94a]']
 const COLOR_CHOICES: Array<{ color: UnoColor; label: string; tone: string }> = [
-  { color: 'red', label: 'Merah', tone: 'bg-[#e8202a]' },
-  { color: 'yellow', label: 'Kuning', tone: 'bg-[#f7c600]' },
-  { color: 'green', label: 'Hijau', tone: 'bg-[#23a94a]' },
-  { color: 'blue', label: 'Biru', tone: 'bg-[#2f5ce0]' },
+  { color: 'red', label: 'Red', tone: 'bg-[#e8202a]' },
+  { color: 'yellow', label: 'Yellow', tone: 'bg-[#f7c600]' },
+  { color: 'green', label: 'Green', tone: 'bg-[#23a94a]' },
+  { color: 'blue', label: 'Blue', tone: 'bg-[#2f5ce0]' },
 ]
 
 export default function UnoPlay() {
@@ -43,8 +43,8 @@ export default function UnoPlay() {
       isLoading: unoGame.status === 'loading',
       isError: unoGame.status === 'error',
       isEmpty: unoGame.status === 'success' && !handCards.length,
-      emptyTitle: 'Kartu habis',
-      emptySubtitle: 'Kartu Anda sudah habis, permainan selesai.',
+      emptyTitle: 'Out of cards',
+      emptySubtitle: 'You have no cards left, the game is over.',
       emptyImage: '',
       pagination: { currentPage: 1, perPage: 7, totalItem: handCards.length, totalPage: 1 },
       roomCode: game?.roomCode ?? '------',
@@ -132,7 +132,7 @@ export default function UnoPlay() {
 
         {data.isLoading ? (
           <div className="flex flex-1 items-center justify-center text-xs font-semibold uppercase tracking-[0.3em] text-[#a29d93]">
-            Menyiapkan meja…
+            Preparing the table…
           </div>
         ) : (
           <UnoBoard
@@ -163,7 +163,7 @@ export default function UnoPlay() {
       {data.isColorPickerOpen ? (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
           <div className="w-full max-w-[360px] rounded-xl border border-[#26262b] bg-[#121214] p-6 text-center">
-            <p className="text-lg font-black uppercase tracking-[0.18em] text-[#f2ede1]">Pilih warna</p>
+            <p className="text-lg font-black uppercase tracking-[0.18em] text-[#f2ede1]">Pick a color</p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               {COLOR_CHOICES.map((choice) => (
                 <button
@@ -185,7 +185,7 @@ export default function UnoPlay() {
           <div className="w-full max-w-[360px] rounded-xl border border-[#26262b] bg-[#121214] p-6 text-center">
             <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a29d93]">Permainan selesai</p>
             <p className="mt-2 text-3xl font-black uppercase leading-none text-[#f2ede1] [font-family:'Arial_Black','Archivo_Black',system-ui]">
-              {data.isWinner ? 'Anda menang!' : `${data.winnerName} menang`}
+              {data.isWinner ? 'You win!' : `${data.winnerName} wins`}
             </p>
             <button
               type="button"

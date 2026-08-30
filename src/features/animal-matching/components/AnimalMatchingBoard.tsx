@@ -47,7 +47,7 @@ export default function AnimalMatchingBoard({
 
   return (
     <div
-      className="relative grid w-full gap-[3px] sm:gap-1.5"
+      className="relative grid w-full gap-[3px] sm:gap-[5px]"
       style={{
         gridTemplateColumns: `repeat(${colTotal}, minmax(0, 1fr))`,
         aspectRatio: `${colTotal} / ${rowTotal}`,
@@ -82,9 +82,9 @@ export default function AnimalMatchingBoard({
           key={tile.id}
           type="button"
           disabled={tile.isEmpty}
-          aria-label={tile.isEmpty ? 'Kotak kosong' : `Hewan ${tile.icon}`}
+          aria-label={tile.isEmpty ? 'Empty cell' : `Animal ${tile.icon}`}
           onClick={() => onSubmitAnimalMatchingTile(tile.id)}
-          className={`flex aspect-square items-center justify-center rounded-[4px] border-2 p-[8%] transition-transform active:scale-95 ${getTileTone(
+          className={`flex aspect-square items-center justify-center rounded-[5px] border-2 p-[4%] transition-transform active:scale-95 ${getTileTone(
             tile,
           )}`}
         >

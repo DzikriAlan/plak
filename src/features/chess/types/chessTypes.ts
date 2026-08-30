@@ -1,13 +1,13 @@
-export type CaturColor = 'w' | 'b'
+export type ChessColor = 'w' | 'b'
 
-export type CaturPiece = {
+export type ChessPiece = {
   type: string
-  color: CaturColor
+  color: ChessColor
 }
 
-export type CaturCell = {
+export type ChessCell = {
   square: string
-  piece: CaturPiece | null
+  piece: ChessPiece | null
   isDark: boolean
   isSelected: boolean
   isTarget: boolean
@@ -16,20 +16,20 @@ export type CaturCell = {
   isCheck: boolean
 }
 
-export type CaturPromotion = {
+export type ChessPromotion = {
   from: string
   to: string
 }
 
-export interface DataCaturGame {
-  board: CaturCell[]
-  turn: CaturColor
+export interface DataChessGame {
+  board: ChessCell[]
+  turn: ChessColor
   selected: string | null
-  lastMove: CaturPromotion | null
+  lastMove: ChessPromotion | null
   moveTotal: number
   capturedByPlayer: string[]
   capturedByEngine: string[]
-  pendingPromotion: CaturPromotion | null
+  pendingPromotion: ChessPromotion | null
   isCheck: boolean
   isFinished: boolean
   resultTitle: string
@@ -37,9 +37,9 @@ export interface DataCaturGame {
   fen: string
 }
 
-export interface CaturGame {
+export interface ChessGame {
   status: string
   statusTitle: string
   statusSubtitle: string
-  data: DataCaturGame | null
+  data: DataChessGame | null
 }

@@ -1,20 +1,20 @@
 import { create } from 'zustand'
 import { Chess } from 'chess.js'
-import type { CaturCell, CaturColor, DataCaturGame, CaturGame } from '../types/caturTypes'
+import type { ChessCell, ChessColor, DataChessGame, ChessGame } from '../types/chessTypes'
 
-interface CaturStore {
-  caturGame: CaturGame
-  setCaturInit: () => void
-  setCaturSelect: (square: string) => void
-  setCaturMove: (from: string, to: string, promotion?: string) => void
-  setCaturPromotion: (piece: string) => void
-  setCaturUndo: () => void
-  setCaturRestart: () => void
+interface ChessStore {
+  chessGame: ChessGame
+  setChessInit: () => void
+  setChessSelect: (square: string) => void
+  setChessMove: (from: string, to: string, promotion?: string) => void
+  setChessPromotion: (piece: string) => void
+  setChessUndo: () => void
+  setChessRestart: () => void
 }
 
-const PLAYER_COLOR: CaturColor = 'w'
+const PLAYER_COLOR: ChessColor = 'w'
 
-export const useCaturStates = create<CaturStore>((set, get) => {
+export const useChessStates = create<ChessStore>((set, get) => {
   const chess = new Chess()
 
   const getTargets = (square: string | null) => {
@@ -32,7 +32,7 @@ export const useCaturStates = create<CaturStore>((set, get) => {
     return found ? found.square : null
   }
 
-  const getBoard = (selected: string | null): CaturCell[] => {
+  const getBoard = (selected: string | null): ChessCell[] => {
     const targets = getTargets(selected)
     const targetMap = new Map(targets.map((move) => [move.to, !!move.captured]))
     const history = chess.history({ verbose: true }) as Array<{ from: string; to: string }>
@@ -48,7 +48,7 @@ export const useCaturStates = create<CaturStore>((set, get) => {
         const square = `${'abcdefgh'[file]}${8 - rank}`
         return {
           square,
-          piece: cell ? { type: cell.type, color: cell.color as CaturColor } : null,
+          piece: cell ? { type: cell.type, color: cell.color as ChessColor } : null,
           isDark: (file + rank) % 2 === 1,
           isSelected: square === selected,
           isTarget: targetMap.has(square),
@@ -59,7 +59,7 @@ export const useCaturStates = create<CaturStore>((set, get) => {
       })
   }
 
-  const getCaptured = (color: CaturColor) =>
+  const getCaptured = (color: ChessColor) =>
     (chess.history({ verbose: true }) as Array<{ color: string; captured?: string }>)
       .filter((move) => move.color === color && move.captured)
       .map((move) => move.captured as string)
@@ -68,25 +68,25 @@ export const useCaturStates = create<CaturStore>((set, get) => {
     if (chess.isCheckmate()) {
       const isPlayerWin = chess.turn() !== PLAYER_COLOR
       return {
-        title: isPlayerWin ? 'Skakmat! Anda menang' : 'Skakmat',
-        subtitle: isPlayerWin ? 'Luar biasa, rajanya terkunci.' : 'Raja Anda terkunci. Coba lagi.',
+        title: isPlayerWin ? 'Checkmate! You win' : 'Checkmate',
+        subtitle: isPlayerWin ? 'Well played, the king is trapped.' : 'Raja Anda terkunci. Try again.',
       }
     }
-    if (chess.isStalemate()) return { title: 'Remis', subtitle: 'Stalemate, tidak ada langkah sah.' }
-    if (chess.isInsufficientMaterial()) return { title: 'Remis', subtitle: 'Materi tidak cukup untuk skakmat.' }
-    if (chess.isThreefoldRepetition()) return { title: 'Remis', subtitle: 'Posisi berulang tiga kali.' }
-    if (chess.isDraw()) return { title: 'Remis', subtitle: 'Aturan lima puluh langkah tercapai.' }
+    if (chess.isStalemate()) return { title: 'Draw', subtitle: 'Stalemate, no legal moves left.' }
+    if (chess.isInsufficientMaterial()) return { title: 'Draw', subtitle: 'Insufficient material to checkmate.' }
+    if (chess.isThreefoldRepetition()) return { title: 'Draw', subtitle: 'Threefold repetition.' }
+    if (chess.isDraw()) return { title: 'Draw', subtitle: 'Fifty-move rule reached.' }
     return { title: '', subtitle: '' }
   }
 
-  const getData = (selected: string | null, pendingPromotion: DataCaturGame['pendingPromotion']): DataCaturGame => {
+  const getData = (selected: string | null, pendingPromotion: DataChessGame['pendingPromotion']): DataChessGame => {
     const history = chess.history({ verbose: true }) as Array<{ from: string; to: string }>
     const last = history[history.length - 1] ?? null
     const result = getResult()
 
     return {
       board: getBoard(selected),
-      turn: chess.turn() as CaturColor,
+      turn: chess.turn() as ChessColor,
       selected,
       lastMove: last ? { from: last.from, to: last.to } : null,
       moveTotal: history.length,
@@ -101,9 +101,9 @@ export const useCaturStates = create<CaturStore>((set, get) => {
     }
   }
 
-  const updateGame = (selected: string | null, pendingPromotion: DataCaturGame['pendingPromotion'] = null) =>
+  const updateGame = (selected: string | null, pendingPromotion: DataChessGame['pendingPromotion'] = null) =>
     set({
-      caturGame: {
+      chessGame: {
         status: 'success',
         statusTitle: '',
         statusSubtitle: '',
@@ -117,25 +117,25 @@ export const useCaturStates = create<CaturStore>((set, get) => {
   }
 
   return {
-    caturGame: {
+    chessGame: {
       status: 'loading',
-      statusTitle: 'Menyiapkan papan',
-      statusSubtitle: 'Mohon tunggu sebentar.',
+      statusTitle: 'Preparing board',
+      statusSubtitle: 'Please wait a moment.',
       data: null,
     },
 
-    setCaturInit: () => {
+    setChessInit: () => {
       chess.reset()
       updateGame(null)
     },
 
-    setCaturRestart: () => {
+    setChessRestart: () => {
       chess.reset()
       updateGame(null)
     },
 
-    setCaturSelect: (square) => {
-      const data = get().caturGame.data
+    setChessSelect: (square) => {
+      const data = get().chessGame.data
       if (!data || data.isFinished || data.pendingPromotion) return
 
       const piece = chess.get(square as never)
@@ -146,8 +146,8 @@ export const useCaturStates = create<CaturStore>((set, get) => {
       updateGame(null)
     },
 
-    setCaturMove: (from, to, promotion) => {
-      const data = get().caturGame.data
+    setChessMove: (from, to, promotion) => {
+      const data = get().chessGame.data
       if (!data || data.isFinished) return
 
       if (!promotion && getIsPromotion(from, to)) {
@@ -164,8 +164,8 @@ export const useCaturStates = create<CaturStore>((set, get) => {
       updateGame(null)
     },
 
-    setCaturPromotion: (piece) => {
-      const data = get().caturGame.data
+    setChessPromotion: (piece) => {
+      const data = get().chessGame.data
       if (!data?.pendingPromotion) return
       const { from, to } = data.pendingPromotion
       try {
@@ -177,8 +177,8 @@ export const useCaturStates = create<CaturStore>((set, get) => {
       updateGame(null)
     },
 
-    setCaturUndo: () => {
-      const data = get().caturGame.data
+    setChessUndo: () => {
+      const data = get().chessGame.data
       if (!data) return
       chess.undo()
       if (chess.turn() !== PLAYER_COLOR) chess.undo()

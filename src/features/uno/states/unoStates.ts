@@ -104,7 +104,7 @@ export const useUnoStates = create<UnoStore>((set, get) => {
   const getNewGame = () => {
     let deck = getDeck()
     const players: UnoPlayer[] = [
-      { id: 0, name: 'Anda', isHuman: true, hand: [], hasCalledUno: false },
+      { id: 0, name: 'You', isHuman: true, hand: [], hasCalledUno: false },
       ...BOT_NAMES.map((name, index) => ({
         id: index + 1,
         name,
@@ -137,7 +137,7 @@ export const useUnoStates = create<UnoStore>((set, get) => {
       pendingWildCardId: null,
       hasDrawnThisTurn: false,
       winnerId: null,
-      lastAction: 'Permainan dimulai. Giliran Anda!',
+      lastAction: 'Game started. Your turn!',
     }
     return data
   }
@@ -153,16 +153,16 @@ export const useUnoStates = create<UnoStore>((set, get) => {
     let workingDiscard = discardPile
     let direction = data.direction
     let step = 1
-    let lastAction = `${actor.name} membuang ${card.value}`
+    let lastAction = `${actor.name} played ${card.value}`
 
     if (card.value === 'reverse') {
       direction = total > 2 ? -direction : direction
       step = total > 2 ? 1 : 2
-      lastAction = `${actor.name} membalik arah`
+      lastAction = `${actor.name} reversed the direction`
     }
     if (card.value === 'skip') {
       step = 2
-      lastAction = `${actor.name} melewati pemain berikutnya`
+      lastAction = `${actor.name} skipped the next player`
     }
     if (card.value === 'draw2' || card.value === 'wild4') {
       const victimIndex = getNextPlayer(playerIndex, direction, total, 1)
@@ -173,7 +173,7 @@ export const useUnoStates = create<UnoStore>((set, get) => {
       players[victimIndex].hand = [...players[victimIndex].hand, ...result.drawn]
       players[victimIndex].hasCalledUno = false
       step = 2
-      lastAction = `${players[victimIndex].name} ambil ${total4} kartu`
+      lastAction = `${players[victimIndex].name} draws ${total4} cards`
     }
 
     if (actor.hand.length === 1 && !actor.hasCalledUno) {
@@ -181,7 +181,7 @@ export const useUnoStates = create<UnoStore>((set, get) => {
       drawPile = penalty.drawPile
       workingDiscard = penalty.discardPile
       actor.hand = [...actor.hand, ...penalty.drawn]
-      lastAction = `${actor.name} lupa bilang UNO, ambil 2 kartu`
+      lastAction = `${actor.name} forgot to call UNO, draws 2 cards`
     }
     if (actor.hand.length !== 1) actor.hasCalledUno = false
 
@@ -199,7 +199,7 @@ export const useUnoStates = create<UnoStore>((set, get) => {
       pendingWildCardId: null,
       hasDrawnThisTurn: false,
       winnerId,
-      lastAction: winnerId === null ? lastAction : `${actor.name} menang!`,
+      lastAction: winnerId === null ? lastAction : `${actor.name} wins!`,
     }
   }
 
@@ -232,8 +232,8 @@ export const useUnoStates = create<UnoStore>((set, get) => {
   return {
     unoGame: {
       status: 'loading',
-      statusTitle: 'Menyiapkan meja',
-      statusSubtitle: 'Mohon tunggu sebentar.',
+      statusTitle: 'Preparing the table',
+      statusSubtitle: 'Please wait a moment.',
       data: null,
     },
 
@@ -255,7 +255,7 @@ export const useUnoStates = create<UnoStore>((set, get) => {
         set((state) => ({ unoGame: { ...state.unoGame, data: { ...data, lastAction: message } } }))
 
       if (data.currentPlayer !== 0) {
-        getRejected('Tunggu giliran Anda')
+        getRejected('Wait for your turn')
         return
       }
 
@@ -264,7 +264,7 @@ export const useUnoStates = create<UnoStore>((set, get) => {
       const topCard = data.discardPile[data.discardPile.length - 1]
       if (!card) return
       if (!getIsPlayable(card, data.activeColor, topCard)) {
-        getRejected('Kartu itu tidak cocok, pilih warna atau angka yang sama')
+        getRejected('That card does not match the color or number')
         return
       }
 
@@ -306,7 +306,7 @@ export const useUnoStates = create<UnoStore>((set, get) => {
             discardPile: result.discardPile,
             hasDrawnThisTurn: true,
             currentPlayer: isPlayable ? 0 : getNextPlayer(0, data.direction, players.length, 1),
-            lastAction: isPlayable ? 'Anda ambil kartu, masih bisa dimainkan' : 'Anda ambil kartu',
+            lastAction: isPlayable ? 'You drew a card and can still play it' : 'You drew a card',
           },
         },
       }))
@@ -322,7 +322,7 @@ export const useUnoStates = create<UnoStore>((set, get) => {
             ...data,
             hasDrawnThisTurn: false,
             currentPlayer: getNextPlayer(0, data.direction, data.players.length, 1),
-            lastAction: 'Anda melewati giliran',
+            lastAction: 'You passed your turn',
           },
         },
       }))
@@ -334,7 +334,7 @@ export const useUnoStates = create<UnoStore>((set, get) => {
       const players = data.players.map((player) => ({ ...player, hand: [...player.hand] }))
       players[0].hasCalledUno = true
       set((state) => ({
-        unoGame: { ...state.unoGame, data: { ...data, players, lastAction: 'Anda bilang UNO!' } },
+        unoGame: { ...state.unoGame, data: { ...data, players, lastAction: 'You called UNO!' } },
       }))
     },
 
@@ -388,7 +388,7 @@ export const useUnoStates = create<UnoStore>((set, get) => {
             drawPile: result.drawPile,
             discardPile: result.discardPile,
             currentPlayer: getNextPlayer(index, data.direction, players.length, 1),
-            lastAction: `${player.name} ambil kartu`,
+            lastAction: `${player.name} draws a card`,
           },
         },
       }))

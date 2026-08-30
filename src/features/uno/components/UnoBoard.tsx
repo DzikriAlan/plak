@@ -59,7 +59,7 @@ export default function UnoBoard({
           type="button"
           disabled={isDrawDisabled}
           onClick={onLoadUnoDraw}
-          aria-label="Ambil kartu dari tumpukan"
+          aria-label="Draw a card from the pile"
           className="relative shrink-0 active:translate-y-[2px] disabled:opacity-50"
         >
           <span className="absolute -left-1 -top-1 block h-[78px] w-[52px] rounded-lg border border-[#3a3a42] bg-[#1b1b1f]" />

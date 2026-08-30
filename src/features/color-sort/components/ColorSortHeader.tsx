@@ -46,7 +46,7 @@ export default function ColorSortHeader({
         <div className="relative shrink-0">
           <Link
             href="/"
-            aria-label="Kembali ke Plak Game Store"
+            aria-label="Back to Plak Game Store"
             className="block rounded-xl border border-[#26262b] bg-[#121214] px-3 py-2 transition-colors hover:border-[#43434d]"
           >
             <p className="flex items-center gap-1 text-[20px] font-black uppercase leading-[0.85] tracking-tighter text-[#f2ede1] [font-family:'Arial_Black','Archivo_Black',system-ui]">
@@ -58,7 +58,7 @@ export default function ColorSortHeader({
             </p>
           </Link>
           <div className="mt-2 rounded-xl border border-[#26262b] bg-[#121214] px-2 py-[3px] text-center">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#a29d93]">Pisahkan warna!</p>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#a29d93]">Sort the colors!</p>
           </div>
         </div>
 
@@ -84,7 +84,7 @@ export default function ColorSortHeader({
             <span className="flex-1 text-center text-base font-black leading-none text-[#f2ede1]">{coin}</span>
             <button
               type="button"
-              aria-label="Buka paket hadiah"
+              aria-label="Open reward pack"
               onClick={onLoadColorSortShop}
               className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#e0452a] text-sm font-black leading-none text-[#f2ede1] transition-opacity active:opacity-80"
             >
@@ -95,7 +95,7 @@ export default function ColorSortHeader({
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              aria-label="Undo langkah terakhir"
+              aria-label="Undo last move"
               disabled={undoBooster.isDisabled}
               onClick={onEditColorSortUndo}
               className="relative flex h-[46px] flex-col items-center justify-center rounded-xl border border-[#26262b] bg-[#121214] text-[#f2ede1] transition-opacity active:opacity-80 disabled:opacity-35"
@@ -107,7 +107,7 @@ export default function ColorSortHeader({
 
             <button
               type="button"
-              aria-label="Tambah botol kosong"
+              aria-label="Add an empty bottle"
               disabled={addBottleBooster.isDisabled}
               onClick={onEditColorSortAddBottle}
               className="relative flex h-[46px] flex-col items-center justify-center rounded-xl border border-[#26262b] bg-[#121214] text-[#f2ede1] transition-opacity active:opacity-80 disabled:opacity-35"
@@ -117,9 +117,9 @@ export default function ColorSortHeader({
                 <path d="M18 4v6M21 7h-6" strokeLinecap="square" />
               </svg>
               <span className="text-center text-[8px] font-semibold leading-[1.05] tracking-[0.08em]">
-                TAMBAH
+                ADD
                 <br />
-                BOTOL
+                BOTTLE
               </span>
               {getBadge(addBottleBooster)}
             </button>

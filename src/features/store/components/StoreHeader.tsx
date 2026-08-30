@@ -10,9 +10,9 @@ export default function StoreHeader() {
         Game Store
       </p>
       <p className="mt-3 max-w-[34ch] text-[12px] font-medium leading-snug text-[#9aa3b2] sm:mt-5 sm:text-[15px] sm:leading-relaxed">
-        Tebak gambar, ketahui berita.
+        Guess the picture, learn the story.
         <br />
-        Main sebentar, paham lebih banyak.
+        Play a little, understand a lot.
       </p>
     </header>
   )

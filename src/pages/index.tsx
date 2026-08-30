@@ -9,7 +9,7 @@ const Home: NextPage = () => {
         <title>Plak — Game Store</title>
         <meta
           name="description"
-          content="Kumpulan game ringan yang bisa langsung dimainkan di browser, gratis dan tanpa daftar."
+          content="A collection of light games you can play straight in the browser, free and without signing up."
         />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </Head>

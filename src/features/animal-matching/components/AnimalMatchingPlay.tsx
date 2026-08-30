@@ -29,8 +29,8 @@ export default function AnimalMatchingPlay() {
       isLoading: animalMatchingGame.status === 'loading',
       isError: animalMatchingGame.status === 'error',
       isEmpty: animalMatchingGame.status === 'success' && !tiles.length,
-      emptyTitle: 'Papan tidak tersedia',
-      emptySubtitle: 'Muat ulang halaman untuk memulai permainan.',
+      emptyTitle: 'Board unavailable',
+      emptySubtitle: 'Reload the page to start a new game.',
       emptyImage: '',
       pagination: { ...filters.pagination, perPage: tiles.length, totalItem: tiles.length },
       rowTotal: game?.rowTotal ?? 0,
@@ -96,7 +96,7 @@ export default function AnimalMatchingPlay() {
 
         <main className="flex min-h-0 flex-1 items-center justify-center">
           {data.isLoading ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a29d93]">Menyiapkan papan…</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a29d93]">Preparing board…</p>
           ) : (
             <AnimalMatchingBoard
               tiles={data.data}
@@ -114,21 +114,21 @@ export default function AnimalMatchingPlay() {
             onClick={loadAnimalMatchingHint}
             className="rounded-xl border border-[#3a3a42] py-2 text-[12px] font-medium text-[#f2ede1] transition-colors hover:border-[#f2ede1]"
           >
-            Petunjuk
+            Hint
           </button>
           <button
             type="button"
             onClick={editAnimalMatchingShuffle}
             className="rounded-xl border border-[#3a3a42] py-2 text-[12px] font-medium text-[#f2ede1] transition-colors hover:border-[#f2ede1]"
           >
-            Acak
+            Shuffle
           </button>
           <button
             type="button"
             onClick={clearAnimalMatchingLevel}
             className="rounded-xl bg-[#f2ede1] py-2 text-[12px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
           >
-            Ulang
+            Restart
           </button>
         </footer>
       </div>
@@ -136,17 +136,17 @@ export default function AnimalMatchingPlay() {
       {data.isTimeUp ? (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
           <div className="w-full max-w-[360px] rounded-2xl border border-[#26262b] bg-[#121214] p-6 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a29d93]">Waktu habis</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a29d93]">Time&rsquo;s up</p>
             <p className="mt-2 text-3xl font-black uppercase leading-none text-[#f2ede1]">Level {data.level}</p>
             <p className="mt-2 text-[13px] font-medium text-[#9aa3b2]">
-              Sisa {data.remainingTotal} ubin belum terpasangkan.
+              {data.remainingTotal} tiles left unmatched.
             </p>
             <button
               type="button"
               onClick={clearAnimalMatchingLevel}
               className="mt-6 w-full rounded-xl bg-[#f2ede1] py-3 text-[13px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
             >
-              Coba lagi
+              Try again
             </button>
           </div>
         </div>
@@ -155,15 +155,15 @@ export default function AnimalMatchingPlay() {
       {data.isCleared ? (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
           <div className="w-full max-w-[360px] rounded-2xl border border-[#26262b] bg-[#121214] p-6 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a29d93]">Level selesai</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a29d93]">Level complete</p>
             <p className="mt-2 text-3xl font-black uppercase leading-none text-[#f2ede1]">Level {data.level}</p>
-            <p className="mt-2 text-[13px] font-medium text-[#9aa3b2]">Semua hewan berhasil dipasangkan.</p>
+            <p className="mt-2 text-[13px] font-medium text-[#9aa3b2]">Every animal has been matched.</p>
             <button
               type="button"
               onClick={submitAnimalMatchingNextLevel}
               className="mt-6 w-full rounded-xl bg-[#f2ede1] py-3 text-[13px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
             >
-              Level berikutnya
+              Next level
             </button>
           </div>
         </div>

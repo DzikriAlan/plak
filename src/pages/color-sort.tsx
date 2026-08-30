@@ -7,7 +7,7 @@ const ColorSort: NextPage = () => {
     <>
       <Head>
         <title>Color Sort 3D</title>
-        <meta name="description" content="Game color sort 3D dengan level tanpa batas" />
+        <meta name="description" content="A 3D color sort puzzle with endless levels" />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"

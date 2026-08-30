@@ -75,7 +75,7 @@ export default function UnoHand({
           onClick={onLoadUnoDraw}
           className="rounded-xl bg-[#f2ede1] py-2 text-[10px] font-semibold uppercase tracking-wide text-[#0a0a0b] transition-opacity active:opacity-80 disabled:opacity-30"
         >
-          Ambil kartu
+          Draw card
         </button>
         <button
           type="button"
@@ -83,7 +83,7 @@ export default function UnoHand({
           onClick={onLoadUnoPass}
           className="rounded-xl border border-[#3a3a42] py-2 text-[10px] font-semibold uppercase tracking-wide text-[#f2ede1] transition-colors hover:border-[#f2ede1] disabled:opacity-30"
         >
-          Lewat
+          Pass
         </button>
         <button
           type="button"

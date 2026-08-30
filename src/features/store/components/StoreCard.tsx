@@ -38,7 +38,7 @@ export default function StoreCard({ game }: Props) {
         <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-4 sm:px-5 sm:pb-5">
           <span className={modePill}>{game.modeLabel}</span>
           <span className="rounded-md border border-[#3a3a42] px-3 py-[6px] text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a29d93]">
-            Segera
+            Soon
           </span>
         </div>
       </article>
@@ -52,7 +52,7 @@ export default function StoreCard({ game }: Props) {
         <span className={modePill}>{game.modeLabel}</span>
         <Link
           href={game.path}
-          aria-label={`Main ${game.name}`}
+          aria-label={`Play ${game.name}`}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#f2ede1] text-[#f2ede1] transition-colors group-hover:bg-[#f2ede1] group-hover:text-[#0a0a0b]"
         >
           <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">

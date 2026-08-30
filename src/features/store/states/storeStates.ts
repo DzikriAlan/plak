@@ -19,7 +19,7 @@ export const useStoreStates = create<StoreStore>((set, get) => {
       }
       counter.set(game.category, { id: game.category, label: game.categoryLabel, total: 1 })
     })
-    return [{ id: 'all', label: 'Semua', total: STORE_GAMES.length }, ...Array.from(counter.values())]
+    return [{ id: 'all', label: 'All', total: STORE_GAMES.length }, ...Array.from(counter.values())]
   }
 
   const getCatalog = (activeCategory: string): DataStoreCatalog => ({

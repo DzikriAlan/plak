@@ -1,6 +1,6 @@
 'use client'
 
-import CaturPiece from './CaturPiece'
+import ChessPiece from './ChessPiece'
 
 interface Props {
   label: string
@@ -9,7 +9,7 @@ interface Props {
   advantage: number
 }
 
-export default function CaturCaptured({ label, pieces, color, advantage }: Props) {
+export default function ChessCaptured({ label, pieces, color, advantage }: Props) {
   const getSortedPieces = () => {
     const rank: Record<string, number> = { q: 0, r: 1, b: 2, n: 3, p: 4 }
     return [...pieces].sort((left, right) => (rank[left] ?? 9) - (rank[right] ?? 9))
@@ -23,7 +23,7 @@ export default function CaturCaptured({ label, pieces, color, advantage }: Props
       <span className="flex min-w-0 flex-1 flex-wrap items-center gap-[1px]">
         {sorted.map((piece, index) => (
           <span key={`${piece}-${index}`} className="block h-4 w-4 shrink-0">
-            <CaturPiece type={piece} color={color} />
+            <ChessPiece type={piece} color={color} />
           </span>
         ))}
       </span>

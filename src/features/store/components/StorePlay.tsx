@@ -35,8 +35,8 @@ export default function StorePlay() {
       isLoading: storeCatalog.status === 'loading',
       isError: storeCatalog.status === 'error',
       isEmpty: storeCatalog.status === 'success' && !games.length,
-      emptyTitle: 'Game tidak ketemu',
-      emptySubtitle: 'Belum ada game di kategori ini. Pilih kategori Semua.',
+      emptyTitle: 'No games found',
+      emptySubtitle: 'No games in this category yet. Pick All instead.',
       emptyImage: '',
       pagination: { ...filters.pagination, perPage: games.length, totalItem: games.length },
       categories: catalog?.categories ?? [],
@@ -99,7 +99,7 @@ export default function StorePlay() {
               onClick={clearStoreFilter}
               className="mt-3 rounded-full border border-[#f2ede1] px-4 py-2 text-[12px] font-medium text-[#f2ede1] transition-colors hover:bg-[#f2ede1] hover:text-[#0a0a0b]"
             >
-              Lihat semua game
+              Show all games
             </button>
           </div>
         ) : (
@@ -123,7 +123,7 @@ export default function StorePlay() {
               <button
                 type="button"
                 onClick={loadStoreRailNext}
-                aria-label={data.isRailEnd ? 'Kembali ke awal daftar' : 'Geser daftar game'}
+                aria-label={data.isRailEnd ? 'Back to the start' : 'Scroll the game list'}
                 className="absolute -right-7 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#3a3a42] bg-[#0a0a0b] text-[#f2ede1] transition-colors hover:border-[#f2ede1] lg:flex"
               >
                 <svg

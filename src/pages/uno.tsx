@@ -7,7 +7,7 @@ const Uno: NextPage = () => {
     <>
       <Head>
         <title>UNO</title>
-        <meta name="description" content="Game UNO klasik dengan tampilan neo brutalism" />
+        <meta name="description" content="Classic UNO with a neo brutalism look" />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"

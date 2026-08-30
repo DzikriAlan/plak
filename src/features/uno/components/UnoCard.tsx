@@ -96,7 +96,7 @@ export default function UnoCard({
   return (
     <button
       type="button"
-      aria-label={`Mainkan kartu ${card.color ?? 'wild'} ${card.value}`}
+      aria-label={`Play card ${card.color ?? 'wild'} ${card.value}`}
       onClick={() => onSubmitUnoCard(card.id)}
       className="shrink-0 transition-transform hover:-translate-y-3 active:-translate-y-1"
     >

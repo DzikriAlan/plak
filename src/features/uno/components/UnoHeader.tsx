@@ -23,7 +23,7 @@ export default function UnoHeader({
     <header className="grid shrink-0 grid-cols-[auto_1fr_auto_auto] gap-px border-b border-[#26262b] bg-[#26262b]">
       <Link
         href="/"
-        aria-label="Kembali ke Plak Game Store"
+        aria-label="Back to Plak Game Store"
         className="flex items-center justify-center gap-1 bg-[#121214] px-2 py-3 transition-colors active:bg-[#1b1b1f] sm:gap-1.5 sm:px-4"
       >
         <span className="text-[10px] font-black leading-none text-[#a29d93]">&#9664;</span>
@@ -35,7 +35,7 @@ export default function UnoHeader({
       <button
         type="button"
         onClick={onLoadUnoRoomCode}
-        aria-label="Salin kode ruangan"
+        aria-label="Copy room code"
         className="flex min-w-0 flex-col items-start justify-center gap-1 bg-[#121214] px-2 py-3 text-left transition-colors active:bg-[#1b1b1f] sm:px-3"
       >
         <span className="text-[8px] font-semibold uppercase tracking-[0.2em] text-[#a29d93]">Room code</span>

@@ -1,20 +1,20 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import type { CaturCell, CaturPromotion } from '../types/caturTypes'
-import CaturPiece from './CaturPiece'
+import type { ChessCell, ChessPromotion } from '../types/chessTypes'
+import ChessPiece from './ChessPiece'
 
 interface Props {
-  board: CaturCell[]
-  lastMove: CaturPromotion | null
+  board: ChessCell[]
+  lastMove: ChessPromotion | null
   isLocked: boolean
-  onSubmitCaturSquare: (square: string) => void
+  onSubmitChessSquare: (square: string) => void
 }
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1']
 
-export default function CaturBoard({ board, lastMove, isLocked, onSubmitCaturSquare }: Props) {
+export default function ChessBoard({ board, lastMove, isLocked, onSubmitChessSquare }: Props) {
   const gridRef = useRef<HTMLDivElement | null>(null)
   const playedRef = useRef('')
   const label = 'flex items-center justify-center text-[9px] font-bold text-[#eeeed2]/85 sm:text-[11px]'
@@ -45,7 +45,7 @@ export default function CaturBoard({ board, lastMove, isLocked, onSubmitCaturSqu
     })
   }, [lastMove])
 
-  const getSquareTone = (cell: CaturCell) => {
+  const getSquareTone = (cell: ChessCell) => {
     if (cell.isCheck) return 'bg-[#d0453a]'
     if (cell.isSelected) return 'bg-[#b9ca43]'
     if (cell.isLastMove) return cell.isDark ? 'bg-[#a4ad4b]' : 'bg-[#cdd26a]'
@@ -83,8 +83,8 @@ export default function CaturBoard({ board, lastMove, isLocked, onSubmitCaturSqu
               type="button"
               disabled={isLocked}
               data-square={cell.square}
-              aria-label={`Kotak ${cell.square}`}
-              onClick={() => onSubmitCaturSquare(cell.square)}
+              aria-label={`Square ${cell.square}`}
+              onClick={() => onSubmitChessSquare(cell.square)}
               className={`relative flex items-center justify-center ${getSquareTone(cell)}`}
             >
               {cell.isTarget && !cell.isCapture ? (
@@ -95,7 +95,7 @@ export default function CaturBoard({ board, lastMove, isLocked, onSubmitCaturSqu
               ) : null}
               {cell.piece ? (
                 <span data-piece className="relative block h-[88%] w-[88%] will-change-transform">
-                  <CaturPiece type={cell.piece.type} color={cell.piece.color} />
+                  <ChessPiece type={cell.piece.type} color={cell.piece.color} />
                 </span>
               ) : null}
             </button>

@@ -32,7 +32,7 @@ export default function ColorSortControls({
   const buttons = [
     { key: 'undo', label: 'UNDO', tone: 'bg-[#c2372c]', booster: undoBooster, onPress: onEditColorSortUndo },
     { key: 'shuffle', label: 'SHUFFLE', tone: 'bg-[#6d4bc4]', booster: shuffleBooster, onPress: onEditColorSortShuffle },
-    { key: 'add', label: 'TAMBAH BOTOL', tone: 'bg-[#3b6fd4]', booster: addBottleBooster, onPress: onEditColorSortAddBottle },
+    { key: 'add', label: 'ADD BOTTLE', tone: 'bg-[#3b6fd4]', booster: addBottleBooster, onPress: onEditColorSortAddBottle },
   ]
 
   const getButtonIcon = (key: string) => {
@@ -84,7 +84,7 @@ export default function ColorSortControls({
 
       <button
         type="button"
-        aria-label="Jeda permainan"
+        aria-label="Pause game"
         onClick={onLoadColorSortPause}
         className="flex w-[52px] shrink-0 items-center justify-center gap-1 rounded-xl border border-[#26262b] bg-[#121214] transition-colors hover:border-[#43434d]"
       >

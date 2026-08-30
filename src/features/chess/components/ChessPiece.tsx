@@ -10,7 +10,7 @@ const WHITE_LINE = '#2b2a26'
 const BLACK_FILL = '#1b1a17'
 const BLACK_LINE = '#f1f1e4'
 
-export default function CaturPiece({ type, color }: Props) {
+export default function ChessPiece({ type, color }: Props) {
   const isWhite = color === 'w'
   const fill = isWhite ? WHITE_FILL : BLACK_FILL
   const line = isWhite ? WHITE_LINE : BLACK_LINE

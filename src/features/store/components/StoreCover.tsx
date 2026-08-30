@@ -114,7 +114,7 @@ export default function StoreCover({ gameId, tone, accent }: Props) {
     )
   }
 
-  if (gameId === 'catur') {
+  if (gameId === 'chess') {
     const squares = [0, 1, 2, 3, 4, 5].flatMap((column) =>
       [0, 1, 2].map((row) => ({ column, row, isDark: (column + row) % 2 === 1 })),
     )
@@ -149,7 +149,7 @@ export default function StoreCover({ gameId, tone, accent }: Props) {
 
   return (
     <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: tone }}>
-      <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0a0a0b]">Segera</span>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0a0a0b]">Soon</span>
     </div>
   )
 }

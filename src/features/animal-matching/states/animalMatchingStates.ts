@@ -42,8 +42,8 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
 
   const getLayout = () => {
     // Papan tetap 8x12 seperti contoh; level mengatur seberapa padat terisi.
-    const colTotal = 10
-    const rowTotal = 14
+    const colTotal = 8
+    const rowTotal = 12
     const cellTotal = colTotal * rowTotal
     // Papan selalu penuh dengan seluruh ragam hewan; tiap level = susunan acak baru.
     const pairTotal = cellTotal / 2
@@ -214,8 +214,8 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
   return {
     animalMatchingGame: {
       status: 'loading',
-      statusTitle: 'Menyiapkan papan',
-      statusSubtitle: 'Mohon tunggu sebentar.',
+      statusTitle: 'Preparing board',
+      statusSubtitle: 'Please wait a moment.',
       data: null,
     },
 
