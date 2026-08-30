@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import type { ColorSortBottle, ColorSortPour } from '../types/colorSortTypes'
 
@@ -55,6 +55,7 @@ export default function ColorSortBoard({
   onEditColorSortPourDone,
 }: Props) {
   const mountRef = useRef<HTMLDivElement | null>(null)
+  const [gridPerRow, setGridPerRow] = useState(0)
   const loopRef = useRef<{ start: () => void; stop: () => void } | null>(null)
   const frameRef = useRef<{
     bottles: ColorSortBottle[]
@@ -74,6 +75,37 @@ export default function ColorSortBoard({
     isActive,
   })
 
+  const getBestPerRow = (aspect: number) => {
+    const normalTotal = bottles.filter((bottle) => !bottle.isGiant).length
+    const hasGiant = bottles.length !== normalTotal
+    if (normalTotal <= 2) return Math.max(1, normalTotal)
+
+    const spacingX = BOTTLE_HALF_WIDTH * 2 + 0.36
+    const normalHeight = INNER_BOTTOM + 4 * SEGMENT_HEIGHT + NECK_SPACE
+    const rowGap = 0.9
+    const getFillRatio = (perRow: number) => {
+      const rowTotal = Math.ceil(normalTotal / perRow)
+      const boardWidth = (perRow + (hasGiant ? 1 : 0) + 1) * spacingX + 0.5
+      const boardHeight = rowTotal * normalHeight + (rowTotal - 1) * rowGap + 0.6
+      const safeAspect = Math.max(aspect, 0.05)
+      const halfHeight = Math.max(boardHeight / 2, boardWidth / 2 / safeAspect)
+      const visibleArea = halfHeight * 2 * (halfHeight * 2 * safeAspect)
+      return (boardWidth * boardHeight) / visibleArea
+    }
+
+    let bestPerRow = normalTotal
+    let bestRatio = 0
+
+    for (let perRow = 2; perRow <= Math.min(normalTotal, 7); perRow += 1) {
+      const ratio = getFillRatio(perRow)
+      if (ratio > bestRatio) {
+        bestRatio = ratio
+        bestPerRow = perRow
+      }
+    }
+    return bestPerRow
+  }
+
   useEffect(() => {
     frameRef.current.bottles = bottles
     frameRef.current.selectedBottle = selectedBottle
@@ -91,6 +123,13 @@ export default function ColorSortBoard({
   useEffect(() => {
     const mount = mountRef.current
     if (!mount) return
+    setGridPerRow(getBestPerRow(mount.clientWidth / Math.max(mount.clientHeight, 1)))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bottles.length])
+
+  useEffect(() => {
+    const mount = mountRef.current
+    if (!mount || !gridPerRow) return
 
     const getBottleHeight = (capacity: number) => INNER_BOTTOM + capacity * SEGMENT_HEIGHT + NECK_SPACE
 
@@ -165,7 +204,7 @@ export default function ColorSortBoard({
       const giant = items.find((item) => item.isGiant) ?? null
       const normals = items.filter((item) => !item.isGiant)
       const total = normals.length
-      const perRow = total <= 6 ? total : Math.ceil(total / Math.ceil(total / 6))
+      const perRow = Math.max(1, Math.min(gridPerRow, total))
       const rowTotal = Math.max(1, Math.ceil(total / perRow))
       const spacingX = BOTTLE_HALF_WIDTH * 2 + 0.36
       const rowGap = 0.9
@@ -210,7 +249,7 @@ export default function ColorSortBoard({
         positions.set(item.id, new THREE.Vector3(column * spacingX, rowBottoms[row], 0))
       })
 
-      const giantHeight = boardHeight
+      const giantHeight = giant ? Math.max(boardHeight, getBottleHeight(giant.capacity)) : 0
       if (giant) positions.set(giant.id, new THREE.Vector3(0, rowBottoms[rowTotal - 1], 0))
 
       const rowSpans = rowBottoms.map((bottom, row) => {
@@ -226,7 +265,7 @@ export default function ColorSortBoard({
         rowTotal,
         spacingX,
         rowSpans,
-        boardHeight,
+        boardHeight: Math.max(boardHeight, giantHeight),
         boardWidth: (widestRow + 1) * spacingX,
         giantId: giant?.id ?? null,
         giantHeight,
@@ -445,8 +484,8 @@ export default function ColorSortBoard({
       if (!width || !height) return
       renderer.setSize(width, height)
 
-      const boardWidth = layout.boardWidth + 0.9
-      const boardHeight = layout.boardHeight + 0.9
+      const boardWidth = layout.boardWidth + 0.5
+      const boardHeight = layout.boardHeight + 0.6
       const aspect = width / height
       const halfHeight = Math.max(boardHeight / 2, boardWidth / 2 / aspect)
       const halfWidth = halfHeight * aspect
@@ -457,8 +496,14 @@ export default function ColorSortBoard({
       camera.updateProjectionMatrix()
     }
 
+    const updateGridShape = () => {
+      updateViewportSize()
+      const nextPerRow = getBestPerRow(mount.clientWidth / Math.max(mount.clientHeight, 1))
+      if (nextPerRow !== gridPerRow) setGridPerRow(nextPerRow)
+    }
+
     updateViewportSize()
-    const resizeObserver = new ResizeObserver(updateViewportSize)
+    const resizeObserver = new ResizeObserver(updateGridShape)
     resizeObserver.observe(mount)
 
     const raycaster = new THREE.Raycaster()
@@ -798,7 +843,7 @@ export default function ColorSortBoard({
       if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bottles.length, bottles.map((bottle) => `${bottle.capacity}${bottle.isGiant ? 'g' : ''}`).join(',')])
+  }, [gridPerRow, bottles.length, bottles.map((bottle) => `${bottle.capacity}${bottle.isGiant ? 'g' : ''}`).join(',')])
 
   return <div ref={mountRef} className="h-full w-full touch-none" />
 }
