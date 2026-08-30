@@ -6,17 +6,18 @@ export type ColorSortSegment = {
 export type ColorSortBottle = {
   id: number
   capacity: number
+  isGiant: boolean
   segments: ColorSortSegment[]
 }
 
 export interface DataColorSortLevel {
   level: number
   capacity: number
-  tallCapacity: number
+  giantCapacity: number
   colorTotal: number
   bottleTotal: number
   hiddenTotal: number
-  tallTotal: number
+  giantTotal: number
   bottles: ColorSortBottle[]
 }
 

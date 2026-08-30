@@ -162,36 +162,75 @@ export default function ColorSortBoard({
     }
 
     const getLayout = (items: ColorSortBottle[]) => {
-      const total = items.length
+      const giant = items.find((item) => item.isGiant) ?? null
+      const normals = items.filter((item) => !item.isGiant)
+      const total = normals.length
       const perRow = total <= 6 ? total : Math.ceil(total / Math.ceil(total / 6))
-      const rowTotal = Math.ceil(total / perRow)
+      const rowTotal = Math.max(1, Math.ceil(total / perRow))
       const spacingX = BOTTLE_HALF_WIDTH * 2 + 0.36
       const rowGap = 0.9
+      const normalHeight = getBottleHeight(4)
 
       const rowHeights: number[] = []
       for (let row = 0; row < rowTotal; row += 1) {
-        const rowItems = items.slice(row * perRow, row * perRow + perRow)
-        rowHeights.push(Math.max(...rowItems.map((item) => getBottleHeight(item.capacity))))
+        const rowItems = normals.slice(row * perRow, row * perRow + perRow)
+        rowHeights.push(Math.max(normalHeight, ...rowItems.map((item) => getBottleHeight(item.capacity))))
       }
       const boardHeight = rowHeights.reduce((sum, height) => sum + height, 0) + rowGap * (rowTotal - 1)
 
-      const positions: THREE.Vector3[] = []
-      let cursorTop = boardHeight / 2
       const rowBottoms: number[] = []
+      let cursorTop = boardHeight / 2
       for (let row = 0; row < rowTotal; row += 1) {
         rowBottoms.push(cursorTop - rowHeights[row])
         cursorTop -= rowHeights[row] + rowGap
       }
 
-      items.forEach((item, index) => {
+      const getRowColumns = (itemsInRow: number) => {
+        if (!giant) {
+          return Array.from({ length: itemsInRow }, (_, column) => column - (itemsInRow - 1) / 2)
+        }
+        const slotTotal = itemsInRow % 2 === 0 ? itemsInRow + 1 : itemsInRow + 2
+        const centerSlot = (slotTotal - 1) / 2
+        const columns: number[] = []
+        for (let slot = 0; slot < slotTotal && columns.length < itemsInRow; slot += 1) {
+          if (slot === centerSlot) continue
+          columns.push(slot - centerSlot)
+        }
+        return columns
+      }
+
+      const positions = new Map<number, THREE.Vector3>()
+      let widestRow = 0
+      normals.forEach((item, index) => {
         const row = Math.floor(index / perRow)
         const itemsInRow = Math.min(perRow, total - row * perRow)
-        const column = index - row * perRow
-        const x = (column - (itemsInRow - 1) / 2) * spacingX
-        positions.push(new THREE.Vector3(x, rowBottoms[row], 0))
+        const columns = getRowColumns(itemsInRow)
+        const column = columns[index - row * perRow]
+        widestRow = Math.max(widestRow, Math.abs(column) * 2 + 1)
+        positions.set(item.id, new THREE.Vector3(column * spacingX, rowBottoms[row], 0))
       })
 
-      return { positions, perRow, rowTotal, spacingX, rowBottoms, boardHeight }
+      const giantHeight = boardHeight
+      if (giant) positions.set(giant.id, new THREE.Vector3(0, rowBottoms[rowTotal - 1], 0))
+
+      const rowSpans = rowBottoms.map((bottom, row) => {
+        const itemsInRow = Math.min(perRow, total - row * perRow)
+        const columns = getRowColumns(itemsInRow)
+        const outer = columns.length ? Math.max(...columns.map((column) => Math.abs(column))) : 0
+        return { bottom, outer, itemsInRow }
+      })
+
+      return {
+        positions,
+        perRow,
+        rowTotal,
+        spacingX,
+        rowSpans,
+        boardHeight,
+        boardWidth: (widestRow + 1) * spacingX,
+        giantId: giant?.id ?? null,
+        giantHeight,
+      }
     }
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -232,10 +271,11 @@ export default function ColorSortBoard({
       return mesh
     }
 
-    bottles.forEach((bottle, index) => {
-      const height = getBottleHeight(bottle.capacity)
+    bottles.forEach((bottle) => {
+      const height = bottle.isGiant ? layout.giantHeight : getBottleHeight(bottle.capacity)
+      const base = layout.positions.get(bottle.id) ?? new THREE.Vector3()
       const group = new THREE.Group()
-      group.position.copy(layout.positions[index])
+      group.position.copy(base)
       root.add(group)
 
       const outline = getShapeMesh(0, STROKE, 0, height)
@@ -334,28 +374,35 @@ export default function ColorSortBoard({
       bottleHeights.set(bottle.id, height)
       liquidMeshes.set(bottle.id, liquids)
       hiddenMeshes.set(bottle.id, hidden)
-      basePositions.set(bottle.id, layout.positions[index].clone())
+      basePositions.set(bottle.id, base.clone())
     })
 
-    for (let row = 0; row < layout.rowTotal; row += 1) {
-      const itemsInRow = Math.min(layout.perRow, bottles.length - row * layout.perRow)
-      const rowY = layout.rowBottoms[row]
-      const shelfWidth = itemsInRow * layout.spacingX + 0.5
+    layout.rowSpans.forEach((span) => {
+      const getShelfMesh = (width: number, offsetX: number) => {
+        const slabGeometry = new THREE.PlaneGeometry(width, 0.22)
+        const slabMaterial = new THREE.MeshBasicMaterial({ color: SHELF })
+        const slab = new THREE.Mesh(slabGeometry, slabMaterial)
+        slab.position.set(offsetX, span.bottom - 0.11, -0.05)
+        disposables.push(slabGeometry, slabMaterial)
+        root.add(slab)
 
-      const slabGeometry = new THREE.PlaneGeometry(shelfWidth, 0.22)
-      const slabMaterial = new THREE.MeshBasicMaterial({ color: SHELF })
-      const slab = new THREE.Mesh(slabGeometry, slabMaterial)
-      slab.position.set(0, rowY - 0.11, -0.05)
-      disposables.push(slabGeometry, slabMaterial)
-      root.add(slab)
+        const edgeGeometry = new THREE.PlaneGeometry(width, 0.03)
+        const edgeMaterial = new THREE.MeshBasicMaterial({ color: SHELF_EDGE })
+        const edge = new THREE.Mesh(edgeGeometry, edgeMaterial)
+        edge.position.set(offsetX, span.bottom, -0.04)
+        disposables.push(edgeGeometry, edgeMaterial)
+        root.add(edge)
+      }
 
-      const edgeGeometry = new THREE.PlaneGeometry(shelfWidth, 0.03)
-      const edgeMaterial = new THREE.MeshBasicMaterial({ color: SHELF_EDGE })
-      const edge = new THREE.Mesh(edgeGeometry, edgeMaterial)
-      edge.position.set(0, rowY, -0.04)
-      disposables.push(edgeGeometry, edgeMaterial)
-      root.add(edge)
-    }
+      if (layout.giantId === null) {
+        getShelfMesh(span.itemsInRow * layout.spacingX + 0.5, 0)
+        return
+      }
+      const sideWidth = span.outer * layout.spacingX + BOTTLE_HALF_WIDTH * 2 + 0.2
+      const sideCenter = (span.outer + 1) * layout.spacingX * 0.5 + 0.1
+      getShelfMesh(sideWidth, -sideCenter)
+      getShelfMesh(sideWidth, sideCenter)
+    })
 
     const STREAM_STEPS = 20
     const streamTotal = Math.max(1, Math.floor(bottles.length / 2))
@@ -398,7 +445,7 @@ export default function ColorSortBoard({
       if (!width || !height) return
       renderer.setSize(width, height)
 
-      const boardWidth = layout.perRow * layout.spacingX + 0.9
+      const boardWidth = layout.boardWidth + 0.9
       const boardHeight = layout.boardHeight + 0.9
       const aspect = width / height
       const halfHeight = Math.max(boardHeight / 2, boardWidth / 2 / aspect)
@@ -429,8 +476,9 @@ export default function ColorSortBoard({
 
     renderer.domElement.addEventListener('pointerdown', updatePointerPick)
 
-    const boardMinX = Math.min(...layout.positions.map((position) => position.x)) - BOTTLE_HALF_WIDTH
-    const boardMaxX = Math.max(...layout.positions.map((position) => position.x)) + BOTTLE_HALF_WIDTH
+    const layoutXValues = Array.from(layout.positions.values()).map((position) => position.x)
+    const boardMinX = Math.min(...layoutXValues) - BOTTLE_HALF_WIDTH
+    const boardMaxX = Math.max(...layoutXValues) + BOTTLE_HALF_WIDTH
     const pourSides = new Map<number, boolean>()
     const innerWidth = (BOTTLE_HALF_WIDTH - OUTLINE - 0.055) * 2
 
@@ -750,7 +798,7 @@ export default function ColorSortBoard({
       if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bottles.length, bottles.map((bottle) => bottle.capacity).join(',')])
+  }, [bottles.length, bottles.map((bottle) => `${bottle.capacity}${bottle.isGiant ? 'g' : ''}`).join(',')])
 
   return <div ref={mountRef} className="h-full w-full touch-none" />
 }

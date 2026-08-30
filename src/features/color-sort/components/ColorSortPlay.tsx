@@ -85,7 +85,7 @@ export default function ColorSortPlay() {
       isSoundOn: filters.isSoundOn,
       isPageActive: filters.isPageActive,
       sealedTotal: getSealedTotal(),
-      tallTotal: level?.tallTotal ?? 0,
+      giantTotal: level?.giantTotal ?? 0,
       pourKey: activePours.length ? Math.max(...activePours.map((pour) => pour.id)) : 0,
       isCleared: isLevelCleared,
       clearedReward: 25 + (level?.level ?? 1) * 2,
