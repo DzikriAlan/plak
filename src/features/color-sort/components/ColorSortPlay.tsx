@@ -178,16 +178,7 @@ export default function ColorSortPlay() {
         isCleared={data.isCleared}
       />
 
-      <aside className="absolute left-6 top-1/2 hidden h-[600px] w-[300px] -translate-y-1/2 lg:block xl:left-10">
-        <div className="flex h-full w-full items-center justify-center border-[3px] border-[#f2e9d8]/40 bg-[#0b0b0d]/80 text-center text-xs font-black uppercase tracking-[0.2em] text-[#f2e9d8]/50 shadow-[6px_6px_0_rgba(242,233,216,0.15)]">
-          AD SLOT
-          <br />
-          300x600
-        </div>
-      </aside>
-
       <main className="relative z-10 flex h-[100dvh] w-full max-w-[480px] flex-col overflow-hidden">
-
         <ColorSortHeader
           level={data.levelNumber}
           coin={data.coin}
@@ -326,14 +317,6 @@ export default function ColorSortPlay() {
           </div>
         ) : null}
       </main>
-
-      <aside className="absolute right-6 top-1/2 hidden h-[600px] w-[300px] -translate-y-1/2 lg:block xl:right-10">
-        <div className="flex h-full w-full items-center justify-center border-[3px] border-[#f2e9d8]/40 bg-[#0b0b0d]/80 text-center text-xs font-black uppercase tracking-[0.2em] text-[#f2e9d8]/50 shadow-[6px_6px_0_rgba(242,233,216,0.15)]">
-          AD SLOT
-          <br />
-          300x600
-        </div>
-      </aside>
     </div>
   )
 }
