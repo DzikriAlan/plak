@@ -8,13 +8,9 @@ interface Props {
   onSubmitCaturSquare: (square: string) => void
 }
 
-const PIECE_GLYPH: Record<string, string> = {
-  k: '♚',
-  q: '♛',
-  r: '♜',
-  b: '♝',
-  n: '♞',
-  p: '♟',
+const PIECE_GLYPH: Record<string, Record<string, string>> = {
+  w: { k: '♔', q: '♕', r: '♖', b: '♗', n: '♘', p: '♙' },
+  b: { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' },
 }
 const LIGHT_SQUARE = '#e8d39a'
 const DARK_SQUARE = '#b77a49'
@@ -34,8 +30,8 @@ export default function CaturBoard({ board, isLocked, onSubmitCaturSquare }: Pro
   }
   const getPieceTone = (color: string) =>
     color === 'w'
-      ? 'text-[#f8f4ee] [text-shadow:0_1px_0_#7f6142,0_2px_3px_rgba(0,0,0,0.6),0_0_1px_rgba(0,0,0,0.8)]'
-      : 'text-[#1c120e] [text-shadow:0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.7)]'
+      ? 'text-[#f5f3ee] [text-shadow:0_1px_0_#8a6a45,0_2px_2px_rgba(0,0,0,0.55),0_0_2px_rgba(0,0,0,0.35)]'
+      : 'text-[#15110f] [text-shadow:0_1px_0_rgba(255,255,255,0.12),0_1px_2px_rgba(0,0,0,0.7)]'
 
   return (
     <div className="w-full max-w-[560px] rounded-[18px] bg-[#815d38] p-[8px] shadow-[0_0_0_2px_rgba(54,36,22,0.8),0_18px_30px_rgba(0,0,0,0.5)] sm:p-[10px]">
@@ -67,10 +63,10 @@ export default function CaturBoard({ board, isLocked, onSubmitCaturSquare }: Pro
             ) : null}
             {cell.piece ? (
               <span
-                style={{ fontSize: 'clamp(2.2rem, 4.9vw, 4.8rem)' }}
-                className={`relative select-none translate-y-[-1px] leading-none ${getPieceTone(cell.piece.color)}`}
+                style={{ fontSize: 'clamp(2.1rem, 4.6vw, 4.5rem)' }}
+                className={`relative select-none leading-none ${getPieceTone(cell.piece.color)}`}
               >
-                {PIECE_GLYPH[cell.piece.type]}
+                {PIECE_GLYPH[cell.piece.color][cell.piece.type]}
               </span>
             ) : null}
           </button>
