@@ -101,6 +101,7 @@ export default function ColorSortPlay() {
       pourKey: activePours.length ? Math.max(...activePours.map((pour) => pour.id)) : 0,
       isCleared: isLevelCleared,
       clearedReward: 25 + (level?.level ?? 1) * 2,
+      praiseMessage: ((level?.level ?? 1) - 1) % 3 === 0 ? 'WIH AYU JAGO BANGET' : '',
     }
   }, [colorSortLevel, colorSortProgress, activePours, isLevelCleared, moveHistory, filters])
   const editColorSortBottle = (bottleId: number) => {
@@ -248,6 +249,11 @@ export default function ColorSortPlay() {
               <p className="mt-2 inline-block border-[3px] border-black bg-[#ffd23f] px-2 text-[10px] font-black uppercase tracking-[0.1em] text-black">
                 {data.moveTotal} moves · +{data.clearedReward} koin
               </p>
+              {data.praiseMessage ? (
+                <p className="mx-auto mt-3 -rotate-1 border-[3px] border-black bg-[#ff5a1f] px-3 py-1 text-sm font-black uppercase tracking-[0.08em] text-[#f2e9d8] shadow-[4px_4px_0_#000]">
+                  {data.praiseMessage}
+                </p>
+              ) : null}
               <button
                 type="button"
                 onClick={submitColorSortNextLevel}
