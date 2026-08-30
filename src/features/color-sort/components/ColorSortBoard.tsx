@@ -45,6 +45,7 @@ const SEGMENT_HEIGHT = 0.445
 const INNER_BOTTOM = 0.16
 const NECK_SPACE = 0.56
 const POUR_DURATION = 900
+const POUR_HEADROOM = 1.15
 
 export default function ColorSortBoard({
   isActive,
@@ -86,7 +87,7 @@ export default function ColorSortBoard({
     const getFillRatio = (perRow: number) => {
       const rowTotal = Math.ceil(normalTotal / perRow)
       const boardWidth = (perRow + (hasGiant ? 1 : 0) + 1) * spacingX + 0.5
-      const boardHeight = rowTotal * normalHeight + (rowTotal - 1) * rowGap + 0.6
+      const boardHeight = rowTotal * normalHeight + (rowTotal - 1) * rowGap + 0.6 + POUR_HEADROOM
       const safeAspect = Math.max(aspect, 0.05)
       const halfHeight = Math.max(boardHeight / 2, boardWidth / 2 / safeAspect)
       const visibleArea = halfHeight * 2 * (halfHeight * 2 * safeAspect)
@@ -499,7 +500,7 @@ export default function ColorSortBoard({
       renderer.setSize(width, height)
 
       const boardWidth = layout.boardWidth + 0.5
-      const boardHeight = layout.boardHeight + 0.6
+      const boardHeight = layout.boardHeight + 0.6 + POUR_HEADROOM
       const aspect = width / height
       const halfHeight = Math.max(boardHeight / 2, boardWidth / 2 / aspect)
       const halfWidth = halfHeight * aspect
@@ -507,6 +508,7 @@ export default function ColorSortBoard({
       camera.right = halfWidth
       camera.top = halfHeight
       camera.bottom = -halfHeight
+      camera.position.y = Math.min(POUR_HEADROOM / 2, halfHeight - layout.boardHeight / 2 - 0.3)
       camera.updateProjectionMatrix()
     }
 
@@ -614,12 +616,13 @@ export default function ColorSortBoard({
         const yValues = corners.map((corner) => corner.y)
         const margin = 0.25
         const overhang = layout.spacingX * 0.55
-        const limitLeft = Math.max(camera.left + margin, boardMinX - overhang)
-        const limitRight = Math.min(camera.right - margin, boardMaxX + overhang)
+        const limitLeft = Math.max(camera.position.x + camera.left + margin, boardMinX - overhang)
+        const limitRight = Math.min(camera.position.x + camera.right - margin, boardMaxX + overhang)
+        const limitTop = camera.position.y + camera.top - margin
         const spill =
           Math.max(0, limitLeft - Math.min(...xValues)) +
           Math.max(0, Math.max(...xValues) - limitRight) +
-          Math.max(0, Math.max(...yValues) - (camera.top - margin))
+          Math.max(0, Math.max(...yValues) - limitTop)
         return { tiltFull, lipFull, position, spill }
       }
 
