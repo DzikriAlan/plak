@@ -101,7 +101,7 @@ export default function ColorSortPlay() {
       pourKey: activePours.length ? Math.max(...activePours.map((pour) => pour.id)) : 0,
       isCleared: isLevelCleared,
       clearedReward: 25 + (level?.level ?? 1) * 2,
-      praiseMessage: ((level?.level ?? 1) - 1) % 3 === 0 ? 'WIH AYU JAGO BANGET' : '',
+      praiseMessage: ((level?.level ?? 1) - 1) % 3 === 0 ? 'MANTAP, AYU JAGO' : '',
     }
   }, [colorSortLevel, colorSortProgress, activePours, isLevelCleared, moveHistory, filters])
   const editColorSortBottle = (bottleId: number) => {
