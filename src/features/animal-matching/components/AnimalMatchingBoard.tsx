@@ -1,6 +1,7 @@
 'use client'
 
 import type { AnimalMatchingTile } from '../types/animalMatchingTypes'
+import AnimalMatchingIcon from './AnimalMatchingIcon'
 
 interface Props {
   tiles: AnimalMatchingTile[]
@@ -12,16 +13,15 @@ interface Props {
 export default function AnimalMatchingBoard({ tiles, rowTotal, colTotal, onSubmitAnimalMatchingTile }: Props) {
   const getTileTone = (tile: AnimalMatchingTile) => {
     if (tile.isEmpty) return 'border-transparent bg-transparent'
-    if (tile.isSelected) return 'border-[#f0b429] bg-[#f6efdd] ring-2 ring-[#f0b429]'
-    if (tile.isHinted) return 'border-[#7c3aed] bg-[#f6efdd] ring-2 ring-[#7c3aed]'
-    return 'border-[#cdbf9f] bg-[#f6efdd]'
+    if (tile.isSelected) return 'border-[#141416] bg-[#f0b429] shadow-[2px_2px_0_#141416]'
+    if (tile.isHinted) return 'border-[#141416] bg-[#a78bfa] shadow-[2px_2px_0_#141416]'
+    return 'border-[#141416] bg-[#f6efdd] shadow-[2px_2px_0_#141416]'
   }
 
   return (
     <div
       className="grid w-full gap-[3px] sm:gap-1.5"
       style={{
-        containerType: 'inline-size',
         gridTemplateColumns: `repeat(${colTotal}, minmax(0, 1fr))`,
         aspectRatio: `${colTotal} / ${rowTotal}`,
         maxWidth: `calc((100dvh - 15rem) * ${colTotal} / ${rowTotal})`,
@@ -34,13 +34,11 @@ export default function AnimalMatchingBoard({ tiles, rowTotal, colTotal, onSubmi
           disabled={tile.isEmpty}
           aria-label={tile.isEmpty ? 'Kotak kosong' : `Hewan ${tile.icon}`}
           onClick={() => onSubmitAnimalMatchingTile(tile.id)}
-          // Ukuran ikon mengikuti lebar ubin (satu ubin = 100/kolom cqw).
-          style={{ fontSize: `calc(${100 / colTotal}cqw * 0.56)` }}
-          className={`flex aspect-square items-center justify-center rounded-md border text-[min(5.2vw,3.4dvh)] leading-none transition-transform active:scale-95 ${getTileTone(
+          className={`flex aspect-square items-center justify-center rounded-[4px] border-2 p-[8%] transition-transform active:scale-95 ${getTileTone(
             tile,
           )}`}
         >
-          {tile.icon}
+          {tile.isEmpty ? null : <AnimalMatchingIcon name={tile.icon} />}
         </button>
       ))}
     </div>

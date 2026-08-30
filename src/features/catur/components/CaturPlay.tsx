@@ -5,6 +5,7 @@ import type { CaturCell } from '../types/caturTypes'
 import { useCaturStates } from '../states/caturStates'
 import CaturHeader from './CaturHeader'
 import CaturBoard from './CaturBoard'
+import CaturCaptured from './CaturCaptured'
 
 const LEVELS = [
   { id: 0, label: 'Santai', skill: 2, depth: 4, movetime: 200 },
@@ -60,7 +61,9 @@ export default function CaturPlay() {
       statusLabel: getStatusLabel(board),
       moveTotal: game?.moveTotal ?? 0,
       advantage,
-      advantageLabel: advantage > 0 ? `+${advantage}` : `${advantage}`,
+      lastMove: game?.lastMove ?? null,
+      capturedByPlayer: game?.capturedByPlayer ?? [],
+      capturedByEngine: game?.capturedByEngine ?? [],
       isLocked:
         !game ||
         !filters.isEngineReady ||
@@ -150,31 +153,46 @@ export default function CaturPlay() {
           onEditCaturLevel={editCaturLevel}
         />
 
+        <CaturCaptured
+          label="Lawan"
+          pieces={data.capturedByEngine}
+          color="w"
+          advantage={data.advantage < 0 ? -data.advantage : 0}
+        />
+
         <main className="flex min-h-0 flex-1 items-center justify-center">
           {data.isLoading ? (
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#a29d93]">Menyiapkan papan…</p>
           ) : (
-            <CaturBoard board={data.data} isLocked={data.isLocked} onSubmitCaturSquare={submitCaturSquare} />
+            <CaturBoard
+              board={data.data}
+              lastMove={data.lastMove}
+              isLocked={data.isLocked}
+              onSubmitCaturSquare={submitCaturSquare}
+            />
           )}
         </main>
 
+        <CaturCaptured
+          label="Anda"
+          pieces={data.capturedByPlayer}
+          color="b"
+          advantage={data.advantage > 0 ? data.advantage : 0}
+        />
+
         <footer className="flex shrink-0 items-center gap-2">
-          <div className="flex flex-1 items-center justify-between rounded-xl border border-[#26262b] bg-[#121214] px-3 py-2">
-            <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#a29d93]">Selisih materi</span>
-            <span className="text-sm font-black text-[#f2ede1]">{data.advantageLabel}</span>
-          </div>
           <button
             type="button"
             disabled={data.isUndoDisabled}
             onClick={loadCaturUndo}
-            className="rounded-xl border border-[#3a3a42] px-4 py-2 text-[12px] font-medium text-[#f2ede1] transition-colors hover:border-[#f2ede1] disabled:opacity-30"
+            className="flex-1 rounded-xl border border-[#3a3a42] py-2 text-[12px] font-medium text-[#f2ede1] transition-colors hover:border-[#f2ede1] disabled:opacity-30"
           >
             Undo
           </button>
           <button
             type="button"
             onClick={clearCaturGame}
-            className="rounded-xl bg-[#f2ede1] px-4 py-2 text-[12px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
+            className="flex-1 rounded-xl bg-[#f2ede1] py-2 text-[12px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
           >
             Ulang
           </button>

@@ -1,10 +1,12 @@
 'use client'
 
-import type { CaturCell } from '../types/caturTypes'
+import { useEffect, useRef } from 'react'
+import type { CaturCell, CaturPromotion } from '../types/caturTypes'
 import CaturPiece from './CaturPiece'
 
 interface Props {
   board: CaturCell[]
+  lastMove: CaturPromotion | null
   isLocked: boolean
   onSubmitCaturSquare: (square: string) => void
 }
@@ -12,8 +14,36 @@ interface Props {
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1']
 
-export default function CaturBoard({ board, isLocked, onSubmitCaturSquare }: Props) {
+export default function CaturBoard({ board, lastMove, isLocked, onSubmitCaturSquare }: Props) {
+  const gridRef = useRef<HTMLDivElement | null>(null)
+  const playedRef = useRef('')
   const label = 'flex items-center justify-center text-[9px] font-bold text-[#eeeed2]/85 sm:text-[11px]'
+
+  // Geser bidak dari petak asal ke petak tujuan (teknik FLIP) agar tidak terasa meloncat.
+  useEffect(() => {
+    const grid = gridRef.current
+    if (!grid || !lastMove) return
+    const key = `${lastMove.from}${lastMove.to}`
+    if (playedRef.current === key) return
+    playedRef.current = key
+
+    const getOffset = (from: string, to: string) => {
+      const cell = grid.clientWidth / 8
+      const fileGap = FILES.indexOf(from[0]) - FILES.indexOf(to[0])
+      const rankGap = Number(to[1]) - Number(from[1])
+      return { x: fileGap * cell, y: rankGap * cell }
+    }
+
+    const piece = grid.querySelector<HTMLElement>(`[data-square="${lastMove.to}"] [data-piece]`)
+    if (!piece) return
+    const offset = getOffset(lastMove.from, lastMove.to)
+    piece.style.transition = 'none'
+    piece.style.transform = `translate(${offset.x}px, ${offset.y}px)`
+    requestAnimationFrame(() => {
+      piece.style.transition = 'transform 180ms cubic-bezier(0.22, 0.61, 0.36, 1)'
+      piece.style.transform = 'translate(0px, 0px)'
+    })
+  }, [lastMove])
 
   const getSquareTone = (cell: CaturCell) => {
     if (cell.isCheck) return 'bg-[#d0453a]'
@@ -43,12 +73,16 @@ export default function CaturBoard({ board, isLocked, onSubmitCaturSquare }: Pro
           ))}
         </div>
 
-        <div className="grid aspect-square w-full grid-cols-8 grid-rows-[repeat(8,minmax(0,1fr))] overflow-hidden rounded-lg">
+        <div
+          ref={gridRef}
+          className="grid aspect-square w-full grid-cols-8 grid-rows-[repeat(8,minmax(0,1fr))] overflow-hidden rounded-lg"
+        >
           {board.map((cell) => (
             <button
               key={cell.square}
               type="button"
               disabled={isLocked}
+              data-square={cell.square}
               aria-label={`Kotak ${cell.square}`}
               onClick={() => onSubmitCaturSquare(cell.square)}
               className={`relative flex items-center justify-center ${getSquareTone(cell)}`}
@@ -60,7 +94,7 @@ export default function CaturBoard({ board, isLocked, onSubmitCaturSquare }: Pro
                 <span className="pointer-events-none absolute inset-[6%] rounded-full border-[5px] border-[#3b3b32]/30" />
               ) : null}
               {cell.piece ? (
-                <span className="relative block h-[88%] w-[88%]">
+                <span data-piece className="relative block h-[88%] w-[88%] will-change-transform">
                   <CaturPiece type={cell.piece.type} color={cell.piece.color} />
                 </span>
               ) : null}

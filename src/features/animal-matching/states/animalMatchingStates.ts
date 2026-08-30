@@ -17,9 +17,8 @@ interface AnimalMatchingStore {
 }
 
 const ANIMALS = [
-  '🐤', '🦁', '🐵', '🦒', '🐬', '🐟', '🐗', '🐮',
-  '🐻', '🐭', '🐷', '🐯', '🦊', '🐰', '🐑', '🐘',
-  '🦏', '🦔', '🐴', '🦜', '🐨', '🐼', '🦉', '🐧',
+  'beruang', 'rubah', 'kucing', 'sapi', 'babi', 'katak', 'ayam', 'kelinci',
+  'panda', 'singa', 'monyet', 'gajah', 'ikan', 'domba', 'harimau', 'pinguin',
 ]
 const EMPTY = ''
 
@@ -41,19 +40,19 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
     return copy
   }
 
-  const getLayout = (levelNumber: number) => {
+  const getLayout = () => {
     // Papan tetap 8x12 seperti contoh; level mengatur seberapa padat terisi.
     const colTotal = 8
     const rowTotal = 12
     const cellTotal = colTotal * rowTotal
-    const fillRatio = Math.min(1, 0.5 + (levelNumber - 1) * 0.06)
-    const pairTotal = Math.floor((cellTotal * fillRatio) / 2)
-    const iconTotal = Math.min(ANIMALS.length, pairTotal)
+    // Papan selalu penuh dengan seluruh ragam hewan; tiap level = susunan acak baru.
+    const pairTotal = cellTotal / 2
+    const iconTotal = ANIMALS.length
     return { colTotal, rowTotal, pairTotal, iconTotal }
   }
 
-  const getFilledGrid = (levelNumber: number) => {
-    const layout = getLayout(levelNumber)
+  const getFilledGrid = () => {
+    const layout = getLayout()
     const cellTotal = layout.rowTotal * layout.colTotal
     const pairTotal = layout.pairTotal
     const icons: string[] = []
@@ -199,7 +198,7 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
     })
 
   const updateNewLevel = (levelNumber: number) => {
-    const filled = getFilledGrid(levelNumber)
+    const filled = getFilledGrid()
     grid = filled.grid
     level = levelNumber
     selected = null
