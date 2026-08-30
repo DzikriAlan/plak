@@ -46,7 +46,7 @@ export default function ColorSortHeader({
         <div className="relative shrink-0">
           <Link
             href="/"
-            aria-label="Back to Plak Game Store"
+            aria-label="Back to Waitplay Game Store"
             className="block rounded-xl border border-[#26262b] bg-[#121214] px-3 py-2 transition-colors hover:border-[#43434d]"
           >
             <p className="flex items-center gap-1 text-[20px] font-black uppercase leading-[0.85] tracking-tighter text-[#f2ede1] [font-family:'Arial_Black','Archivo_Black',system-ui]">

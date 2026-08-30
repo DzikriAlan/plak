@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 
+import GameSoundToggle from '@/shared/components/reusable/GameSoundToggle'
 import AnimalMatchingGauge from './AnimalMatchingGauge'
 
 interface Props {
@@ -9,15 +10,24 @@ interface Props {
   remainingTotal: number
   secondsLeft: number
   timeLimit: number
+  isSoundOn: boolean
+  onEditAnimalMatchingSound: () => void
 }
 
-export default function AnimalMatchingHeader({ level, remainingTotal, secondsLeft, timeLimit }: Props) {
+export default function AnimalMatchingHeader({
+  level,
+  remainingTotal,
+  secondsLeft,
+  timeLimit,
+  isSoundOn,
+  onEditAnimalMatchingSound,
+}: Props) {
   return (
     <header className="shrink-0 space-y-3">
       <div className="flex items-stretch gap-2">
         <Link
           href="/"
-          aria-label="Back to Plak Game Store"
+          aria-label="Back to Waitplay Game Store"
           className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#26262b] bg-[#121214] px-3 transition-colors hover:border-[#43434d]"
         >
           <span className="text-[10px] leading-none text-[#a29d93]">&#9664;</span>
@@ -35,6 +45,12 @@ export default function AnimalMatchingHeader({ level, remainingTotal, secondsLef
           <span className="text-[8px] font-semibold uppercase tracking-[0.14em] text-[#a29d93]">Left</span>
           <span className="text-lg font-black leading-none text-[#f2ede1]">{remainingTotal}</span>
         </div>
+
+        <GameSoundToggle
+          isSoundOn={isSoundOn}
+          className="w-[38px] shrink-0"
+          onEditGameSound={onEditAnimalMatchingSound}
+        />
       </div>
     </header>
   )

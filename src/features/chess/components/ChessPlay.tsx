@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useChessStates } from '../states/chessStates'
+import GameAudio, { type GameAudioCue } from '@/shared/components/reusable/GameAudio'
 import ChessHeader from './ChessHeader'
 import ChessBoard from './ChessBoard'
 import ChessCaptured from './ChessCaptured'
@@ -28,6 +29,8 @@ export default function ChessPlay() {
     isEngineReady: false,
     isThinking: false,
     isSettingsOpen: false,
+    isSoundOn: true,
+    cue: null as GameAudioCue | null,
     pagination: { currentPage: 1, perPage: 64, totalItem: 64, totalPage: 1 },
   })
   const data = useMemo(() => {
@@ -55,6 +58,8 @@ export default function ChessPlay() {
       isEngineReady: filters.isEngineReady,
       isThinking: filters.isThinking,
       isSettingsOpen: filters.isSettingsOpen,
+      isSoundOn: filters.isSoundOn,
+      cue: filters.cue,
       advantage,
       lastMove: game?.lastMove ?? null,
       capturedByPlayer: game?.capturedByPlayer ?? [],
@@ -92,6 +97,9 @@ export default function ChessPlay() {
   const editChessLevel = (levelId: number) => {
     setFilters((prev) => ({ ...prev, activeLevel: levelId }))
   }
+  const editChessSound = () => {
+    setFilters((prev) => ({ ...prev, isSoundOn: !prev.isSoundOn }))
+  }
   const loadChessSettings = () => {
     setFilters((prev) => ({ ...prev, isSettingsOpen: true }))
   }
@@ -109,6 +117,21 @@ export default function ChessPlay() {
   useEffect(() => {
     setChessInit()
   }, [setChessInit])
+  useEffect(() => {
+    const game = chessGame.data
+    if (!game) return
+    const getCue = (kind: GameAudioCue['kind']): GameAudioCue => ({ id: Date.now(), kind })
+    if (game.isFinished) {
+      const kind = game.resultTitle.includes('You win') ? 'win' : 'lose'
+      setFilters((prev) => (prev.cue?.kind === kind ? prev : { ...prev, cue: getCue(kind) }))
+      return
+    }
+    const capturedTotal = game.capturedByPlayer.length + game.capturedByEngine.length
+    setFilters((prev) => {
+      if (!game.moveTotal || prev.cue?.id === game.moveTotal) return prev
+      return { ...prev, cue: { id: game.moveTotal + capturedTotal * 1000, kind: capturedTotal ? 'capture' : 'move' } }
+    })
+  }, [chessGame])
   useEffect(() => {
     const worker = new Worker('/engine/stockfish-18-lite-single.js')
     worker.onmessage = (event) => {
@@ -153,6 +176,17 @@ export default function ChessPlay() {
           onLoadChessSettings={loadChessSettings}
         />
 
+        <GameAudio
+          isActive
+          isMusicOn={data.isSoundOn}
+          isSoundOn={data.isSoundOn}
+          bassScale={[98, 98, 130.81, 110]}
+          leadScale={[329.63, 392, 493.88, 440, 392, 329.63, 293.66, 392]}
+          stepDuration={0.42}
+          musicLevel={0.08}
+          cue={data.cue}
+        />
+
         <ChessCaptured
           label="Opponent"
           pieces={data.capturedByEngine}
@@ -187,6 +221,8 @@ export default function ChessPlay() {
           levels={data.levels}
           activeLevel={data.activeLevel}
           isUndoDisabled={data.isUndoDisabled}
+          isSoundOn={data.isSoundOn}
+          onEditChessSound={editChessSound}
           onEditChessLevel={editChessLevel}
           onLoadChessUndo={loadChessUndo}
           onClearChessGame={clearChessGame}

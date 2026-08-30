@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { UnoColor } from '../types/unoTypes'
 import { useUnoStates } from '../states/unoStates'
+import GameAudio, { type GameAudioCue } from '@/shared/components/reusable/GameAudio'
 import UnoHeader from './UnoHeader'
 import UnoBoard from './UnoBoard'
 import UnoHand from './UnoHand'
@@ -29,6 +30,8 @@ export default function UnoPlay() {
   } = useUnoStates()
   const [filters, setFilters] = useState({
     isCopied: false,
+    isSoundOn: true,
+    cue: null as GameAudioCue | null,
   })
   const data = useMemo(() => {
     const game = unoGame.data
@@ -72,6 +75,8 @@ export default function UnoPlay() {
       winnerName: game && game.winnerId !== null ? (players[game.winnerId]?.name ?? '') : '',
       isWinner: game?.winnerId === 0,
       isCopied: filters.isCopied,
+      isSoundOn: filters.isSoundOn,
+      cue: filters.cue,
     }
   }, [unoGame, filters])
   const submitUnoCard = (cardId: string) => {
@@ -104,6 +109,9 @@ export default function UnoPlay() {
       window.setTimeout(() => setFilters((prev) => ({ ...prev, isCopied: false })), 1500)
     })
   }
+  const editUnoSound = () => {
+    setFilters((prev) => ({ ...prev, isSoundOn: !prev.isSoundOn }))
+  }
   const clearUnoGame = () => {
     setUnoRestart()
   }
@@ -111,6 +119,21 @@ export default function UnoPlay() {
   useEffect(() => {
     setUnoInit()
   }, [setUnoInit])
+  useEffect(() => {
+    const game = unoGame.data
+    if (!game) return
+    const getCue = (kind: GameAudioCue['kind']): GameAudioCue => ({ id: Date.now(), kind })
+    if (game.winnerId !== null) {
+      const kind = game.winnerId === 0 ? 'win' : 'lose'
+      setFilters((prev) => (prev.cue?.kind === kind ? prev : { ...prev, cue: getCue(kind) }))
+      return
+    }
+    setFilters((prev) => {
+      const id = game.discardPile.length
+      if (!id || prev.cue?.id === id) return prev
+      return { ...prev, cue: { id, kind: 'move' } }
+    })
+  }, [unoGame])
   useEffect(() => {
     const game = unoGame.data
     if (!game || game.winnerId !== null || game.currentPlayer === 0) return
@@ -121,13 +144,25 @@ export default function UnoPlay() {
   return (
     <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-2 sm:p-4">
       <div className="flex h-full w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-[#26262b] bg-[#0f0f11]">
+        <GameAudio
+          isActive
+          isMusicOn={data.isSoundOn}
+          isSoundOn={data.isSoundOn}
+          bassScale={[123.47, 123.47, 164.81, 146.83]}
+          leadScale={[493.88, 587.33, 739.99, 659.25, 587.33, 493.88, 440, 587.33]}
+          stepDuration={0.3}
+          cue={data.cue}
+        />
+
         <UnoHeader
           roomCode={data.roomCode}
           turnName={data.turnName}
           drawTotal={data.drawTotal}
           discardTotal={data.discardTotal}
           isCopied={data.isCopied}
+          isSoundOn={data.isSoundOn}
           onLoadUnoRoomCode={loadUnoRoomCode}
+          onEditUnoSound={editUnoSound}
         />
 
         {data.isLoading ? (

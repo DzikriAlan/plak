@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useAnimalMatchingStates } from '../states/animalMatchingStates'
+import GameAudio, { type GameAudioCue } from '@/shared/components/reusable/GameAudio'
 import AnimalMatchingHeader from './AnimalMatchingHeader'
 import AnimalMatchingBoard from './AnimalMatchingBoard'
 
@@ -18,6 +19,8 @@ export default function AnimalMatchingPlay() {
   const [filters, setFilters] = useState({
     activeLevel: 0,
     secondsLeft: 0,
+    isSoundOn: true,
+    cue: null as GameAudioCue | null,
     pagination: { currentPage: 1, perPage: 0, totalItem: 0, totalPage: 1 },
   })
   const data = useMemo(() => {
@@ -41,6 +44,8 @@ export default function AnimalMatchingPlay() {
       secondsLeft: filters.secondsLeft,
       path: game?.path ?? [],
       rowCount: game?.rowTotal ?? 0,
+      isSoundOn: filters.isSoundOn,
+      cue: filters.cue,
       isCleared: !!game?.isCleared,
       isTimeUp: !!game && !game.isCleared && filters.activeLevel === game.level && filters.secondsLeft <= 0,
     }
@@ -57,6 +62,9 @@ export default function AnimalMatchingPlay() {
   }
   const editAnimalMatchingShuffle = () => {
     setAnimalMatchingShuffle()
+  }
+  const editAnimalMatchingSound = () => {
+    setFilters((prev) => ({ ...prev, isSoundOn: !prev.isSoundOn }))
   }
   const clearAnimalMatchingLevel = () => {
     setFilters((prev) => ({ ...prev, activeLevel: 0, secondsLeft: 0 }))
@@ -77,6 +85,20 @@ export default function AnimalMatchingPlay() {
     )
   }, [animalMatchingGame])
   useEffect(() => {
+    const game = animalMatchingGame.data
+    if (!game) return
+    const getCue = (kind: GameAudioCue['kind']): GameAudioCue => ({ id: Date.now(), kind })
+    if (game.isCleared) {
+      setFilters((prev) => (prev.cue?.kind === 'win' ? prev : { ...prev, cue: getCue('win') }))
+      return
+    }
+    if (game.path.length) setFilters((prev) => ({ ...prev, cue: getCue('match') }))
+  }, [animalMatchingGame])
+  useEffect(() => {
+    if (!data.isTimeUp) return
+    setFilters((prev) => (prev.cue?.kind === 'lose' ? prev : { ...prev, cue: { id: Date.now(), kind: 'lose' } }))
+  }, [data.isTimeUp])
+  useEffect(() => {
     if (data.isCleared || data.isTimeUp || !data.secondsLeft) return
     const timer = window.setInterval(() => {
       setFilters((prev) => ({ ...prev, secondsLeft: Math.max(0, prev.secondsLeft - 1) }))
@@ -92,6 +114,18 @@ export default function AnimalMatchingPlay() {
           remainingTotal={data.remainingTotal}
           secondsLeft={data.secondsLeft}
           timeLimit={data.timeLimit}
+          isSoundOn={data.isSoundOn}
+          onEditAnimalMatchingSound={editAnimalMatchingSound}
+        />
+
+        <GameAudio
+          isActive
+          isMusicOn={data.isSoundOn}
+          isSoundOn={data.isSoundOn}
+          bassScale={[110, 110, 146.83, 130.81]}
+          leadScale={[440, 523.25, 659.25, 587.33, 523.25, 440, 392, 523.25]}
+          stepDuration={0.34}
+          cue={data.cue}
         />
 
         <main className="flex min-h-0 flex-1 items-center justify-center">

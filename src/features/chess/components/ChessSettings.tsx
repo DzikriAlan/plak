@@ -9,6 +9,8 @@ interface Props {
   levels: Level[]
   activeLevel: number
   isUndoDisabled: boolean
+  isSoundOn: boolean
+  onEditChessSound: () => void
   onEditChessLevel: (levelId: number) => void
   onLoadChessUndo: () => void
   onClearChessGame: () => void
@@ -19,6 +21,8 @@ export default function ChessSettings({
   levels,
   activeLevel,
   isUndoDisabled,
+  isSoundOn,
+  onEditChessSound,
   onEditChessLevel,
   onLoadChessUndo,
   onClearChessGame,
@@ -47,6 +51,20 @@ export default function ChessSettings({
             </button>
           ))}
         </div>
+
+        <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a29d93]">Audio</p>
+        <button
+          type="button"
+          aria-pressed={isSoundOn}
+          onClick={onEditChessSound}
+          className={`mt-2 w-full rounded-xl border py-2.5 text-[13px] font-medium transition-colors ${
+            isSoundOn
+              ? 'border-[#f2ede1] bg-[#f2ede1] text-[#0a0a0b]'
+              : 'border-[#3a3a42] text-[#f2ede1] hover:border-[#f2ede1]'
+          }`}
+        >
+          Sound: {isSoundOn ? 'On' : 'Off'}
+        </button>
 
         <div className="mt-5 grid grid-cols-2 gap-2">
           <button
