@@ -65,14 +65,13 @@ export default function AnimalMatchingBoard({
             points={trail.map((point) => `${point.x},${point.y}`).join(' ')}
             fill="none"
             stroke="#f0b429"
-            strokeWidth="1.4"
             strokeLinecap="round"
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
-            style={{ strokeWidth: 4 }}
+            style={{ strokeWidth: 2 }}
           />
           {trail.map((point, index) => (
-            <circle key={index} cx={point.x} cy={point.y} r="1.4" fill="#f0b429" />
+            <circle key={index} cx={point.x} cy={point.y} r="0.7" fill="#f0b429" />
           ))}
         </svg>
       ) : null}

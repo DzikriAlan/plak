@@ -1,5 +1,7 @@
 'use client'
 
+import AnimalMatchingIcon from '@/features/animal-matching/components/AnimalMatchingIcon'
+
 interface Props {
   gameId: string
   tone: string
@@ -96,21 +98,24 @@ export default function StoreCover({ gameId, tone, accent }: Props) {
   }
 
   if (gameId === 'animal-matching') {
-    const animals = ['\u{1F42E}', '\u{1F42F}', '\u{1F438}', '\u{1F435}', '\u{1F430}', '\u{1F98A}']
+    const animals = ['sapi', 'harimau', 'katak', 'monyet', 'kelinci', 'rubah']
     return (
-      <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={frame} aria-hidden="true">
-        <rect width="320" height="200" fill={tone} />
-        <circle cx="286" cy="26" r="40" fill={accent} />
-        {animals.map((animal, index) => (
-          <g key={animal} transform={`translate(${52 + (index % 3) * 78} ${64 + Math.floor(index / 3) * 74})`}>
-            <rect x="-30" y="-30" width="60" height="60" rx="10" fill={PAPER} stroke={INK} strokeWidth="3" />
-            <text x="0" y="12" textAnchor="middle" fontSize="34">
-              {animal}
-            </text>
-          </g>
-        ))}
-        {grain}
-      </svg>
+      <div className="relative h-full w-full" style={{ backgroundColor: tone }}>
+        <span
+          className="absolute -right-6 -top-6 block h-24 w-24 rounded-full"
+          style={{ backgroundColor: accent }}
+        />
+        <div className="relative grid h-full w-full grid-cols-3 grid-rows-2 gap-2 p-4 sm:gap-3 sm:p-5">
+          {animals.map((animal) => (
+            <span
+              key={animal}
+              className="flex items-center justify-center rounded-[5px] border-2 border-[#141416] bg-[#f6efdd] p-[6%] shadow-[2px_2px_0_#141416]"
+            >
+              <AnimalMatchingIcon name={animal} />
+            </span>
+          ))}
+        </div>
+      </div>
     )
   }
 
