@@ -43,6 +43,12 @@ export default function ColorSortPlay() {
       return 1
     }
 
+    const boosterPrice = 100
+    const getBoosterState = (count: number, isUsable: boolean) => ({
+      count,
+      cost: count > 0 ? 0 : boosterPrice,
+      isDisabled: !isUsable || (count <= 0 && (colorSortProgress.data?.coin ?? 0) < boosterPrice),
+    })
     const getSealedTotal = () => {
       const bottles = level?.bottles ?? []
       return bottles.filter(
@@ -78,6 +84,12 @@ export default function ColorSortPlay() {
       bestMove: progress?.bestMoves?.[String(level?.level ?? 1)] ?? 0,
       star: getStarTotal(moveTotal, colorTotal),
       isBoosterDisabled: !!activePours.length || isLevelCleared,
+      undoBooster: getBoosterState(
+        progress?.undoLeft ?? 0,
+        !activePours.length && !isLevelCleared && !!moveTotal,
+      ),
+      shuffleBooster: getBoosterState(progress?.shuffleLeft ?? 0, !activePours.length && !isLevelCleared),
+      addBottleBooster: getBoosterState(progress?.addBottleLeft ?? 0, !activePours.length && !isLevelCleared),
       isHintVisible: !moveTotal && !activePours.length && !isLevelCleared,
       isShopOpen: filters.isShopOpen,
       isPauseOpen: filters.isPauseOpen,
@@ -98,10 +110,10 @@ export default function ColorSortPlay() {
     setColorSortPourDone(pourId)
   }
   const loadColorSortShop = () => {
-    setFilters((prev) => ({ ...prev, isShopOpen: !prev.isShopOpen }))
+    setFilters((prev) => ({ ...prev, isShopOpen: !prev.isShopOpen, isPauseOpen: false }))
   }
   const loadColorSortPause = () => {
-    setFilters((prev) => ({ ...prev, isPauseOpen: !prev.isPauseOpen }))
+    setFilters((prev) => ({ ...prev, isPauseOpen: !prev.isPauseOpen, isShopOpen: false }))
   }
   const editColorSortMusic = () => {
     setFilters((prev) => ({ ...prev, isMusicOn: !prev.isMusicOn }))
@@ -180,9 +192,8 @@ export default function ColorSortPlay() {
           level={data.levelNumber}
           coin={data.coin}
           star={data.star}
-          undoLeft={data.undoLeft}
-          addBottleLeft={data.addBottleLeft}
-          isDisabled={data.isBoosterDisabled}
+          undoBooster={data.undoBooster}
+          addBottleBooster={data.addBottleBooster}
           onLoadColorSortShop={loadColorSortShop}
           onEditColorSortUndo={setColorSortUndo}
           onEditColorSortAddBottle={setColorSortAddBottle}
@@ -214,10 +225,9 @@ export default function ColorSortPlay() {
         <ColorSortControls
           moveTotal={data.moveTotal}
           bestMove={data.bestMove}
-          undoLeft={data.undoLeft}
-          shuffleLeft={data.shuffleLeft}
-          addBottleLeft={data.addBottleLeft}
-          isDisabled={data.isBoosterDisabled}
+          undoBooster={data.undoBooster}
+          shuffleBooster={data.shuffleBooster}
+          addBottleBooster={data.addBottleBooster}
           onEditColorSortUndo={setColorSortUndo}
           onEditColorSortShuffle={setColorSortShuffle}
           onEditColorSortAddBottle={setColorSortAddBottle}

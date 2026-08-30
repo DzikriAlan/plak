@@ -1,12 +1,17 @@
 'use client'
 
+interface Booster {
+  count: number
+  cost: number
+  isDisabled: boolean
+}
+
 interface Props {
   moveTotal: number
   bestMove: number
-  undoLeft: number
-  shuffleLeft: number
-  addBottleLeft: number
-  isDisabled: boolean
+  undoBooster: Booster
+  shuffleBooster: Booster
+  addBottleBooster: Booster
   onEditColorSortUndo: () => void
   onEditColorSortShuffle: () => void
   onEditColorSortAddBottle: () => void
@@ -16,19 +21,18 @@ interface Props {
 export default function ColorSortControls({
   moveTotal,
   bestMove,
-  undoLeft,
-  shuffleLeft,
-  addBottleLeft,
-  isDisabled,
+  undoBooster,
+  shuffleBooster,
+  addBottleBooster,
   onEditColorSortUndo,
   onEditColorSortShuffle,
   onEditColorSortAddBottle,
   onLoadColorSortPause,
 }: Props) {
   const buttons = [
-    { key: 'undo', label: 'UNDO', tone: 'bg-[#e63946]', count: undoLeft, onPress: onEditColorSortUndo },
-    { key: 'shuffle', label: 'SHUFFLE', tone: 'bg-[#8b5cf6]', count: shuffleLeft, onPress: onEditColorSortShuffle },
-    { key: 'add', label: 'TAMBAH BOTOL', tone: 'bg-[#3a86ff]', count: addBottleLeft, onPress: onEditColorSortAddBottle },
+    { key: 'undo', label: 'UNDO', tone: 'bg-[#e63946]', booster: undoBooster, onPress: onEditColorSortUndo },
+    { key: 'shuffle', label: 'SHUFFLE', tone: 'bg-[#8b5cf6]', booster: shuffleBooster, onPress: onEditColorSortShuffle },
+    { key: 'add', label: 'TAMBAH BOTOL', tone: 'bg-[#3a86ff]', booster: addBottleBooster, onPress: onEditColorSortAddBottle },
   ]
 
   const getButtonIcon = (key: string) => {
@@ -40,6 +44,12 @@ export default function ColorSortControls({
         <path d="M18 4v6M21 7h-6" strokeLinecap="square" />
       </svg>
     )
+  }
+
+  const getBadge = (count: number, cost: number) => {
+    const base = 'absolute -right-2 -top-2 flex h-5 items-center justify-center border-[3px] border-black text-[9px] font-black'
+    if (count > 0) return <span className={`${base} w-5 bg-[#f2e9d8] text-black`}>{count}</span>
+    return <span className={`${base} bg-[#ffd23f] px-1 text-black`}>★{cost}</span>
   }
 
   return (
@@ -57,23 +67,23 @@ export default function ColorSortControls({
           <button
             key={button.key}
             type="button"
-            disabled={isDisabled}
+            aria-label={button.label}
+            disabled={button.booster.isDisabled}
             onClick={button.onPress}
-            className={`relative flex flex-col items-center justify-center border-[3px] border-black py-2 text-[#f2e9d8] shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-40 ${button.tone}`}
+            className={`relative flex flex-col items-center justify-center border-[3px] border-black py-2 text-[#f2e9d8] shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-40 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[4px_4px_0_#000] ${button.tone}`}
           >
             {getButtonIcon(button.key)}
             <span className="mt-1 px-1 text-center text-[9px] font-black uppercase leading-[1.05] tracking-[0.08em]">
               {button.label}
             </span>
-            <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center border-[3px] border-black bg-[#f2e9d8] text-[9px] font-black text-black">
-              {button.count}
-            </span>
+            {getBadge(button.booster.count, button.booster.cost)}
           </button>
         ))}
       </div>
 
       <button
         type="button"
+        aria-label="Jeda permainan"
         onClick={onLoadColorSortPause}
         className="flex w-[52px] shrink-0 items-center justify-center gap-1 border-[3px] border-black bg-[#f2e9d8] shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
       >

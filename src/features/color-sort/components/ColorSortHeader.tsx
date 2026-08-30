@@ -1,12 +1,17 @@
 'use client'
 
+interface Booster {
+  count: number
+  cost: number
+  isDisabled: boolean
+}
+
 interface Props {
   level: number
   coin: number
   star: number
-  undoLeft: number
-  addBottleLeft: number
-  isDisabled: boolean
+  undoBooster: Booster
+  addBottleBooster: Booster
   onLoadColorSortShop: () => void
   onEditColorSortUndo: () => void
   onEditColorSortAddBottle: () => void
@@ -16,14 +21,22 @@ export default function ColorSortHeader({
   level,
   coin,
   star,
-  undoLeft,
-  addBottleLeft,
-  isDisabled,
+  undoBooster,
+  addBottleBooster,
   onLoadColorSortShop,
   onEditColorSortUndo,
   onEditColorSortAddBottle,
 }: Props) {
   const stars = [1, 2, 3]
+  const badgeClass =
+    'absolute -right-2 -top-2 flex h-5 items-center justify-center border-[3px] border-black text-[9px] font-black'
+
+  const getBadge = (booster: Booster) => {
+    if (booster.count > 0) {
+      return <span className={`${badgeClass} w-5 bg-[#e63946] text-white`}>{booster.count}</span>
+    }
+    return <span className={`${badgeClass} gap-[2px] bg-[#ffd23f] px-1 text-black`}>★{booster.cost}</span>
+  }
 
   return (
     <header className="relative z-20 space-y-2 px-3 pt-3">
@@ -64,6 +77,7 @@ export default function ColorSortHeader({
             <span className="flex-1 text-center text-base font-black leading-none text-black">{coin}</span>
             <button
               type="button"
+              aria-label="Buka paket hadiah"
               onClick={onLoadColorSortShop}
               className="flex h-6 w-6 items-center justify-center border-[3px] border-black bg-[#ff5a1f] text-sm font-black leading-none text-black active:translate-x-[1px] active:translate-y-[1px]"
             >
@@ -74,22 +88,22 @@ export default function ColorSortHeader({
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              disabled={isDisabled}
+              aria-label="Undo langkah terakhir"
+              disabled={undoBooster.isDisabled}
               onClick={onEditColorSortUndo}
-              className="relative flex h-[46px] flex-col items-center justify-center border-[3px] border-black bg-[#f2e9d8] text-black shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-40"
+              className="relative flex h-[46px] flex-col items-center justify-center border-[3px] border-black bg-[#f2e9d8] text-black shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-40 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[4px_4px_0_#000]"
             >
               <span className="text-base font-black leading-none">↺</span>
               <span className="text-[8px] font-black tracking-[0.1em]">UNDO</span>
-              <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center border-[3px] border-black bg-[#e63946] text-[9px] font-black text-white">
-                {undoLeft}
-              </span>
+              {getBadge(undoBooster)}
             </button>
 
             <button
               type="button"
-              disabled={isDisabled}
+              aria-label="Tambah botol kosong"
+              disabled={addBottleBooster.isDisabled}
               onClick={onEditColorSortAddBottle}
-              className="relative flex h-[46px] flex-col items-center justify-center border-[3px] border-black bg-[#f2e9d8] text-black shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-40"
+              className="relative flex h-[46px] flex-col items-center justify-center border-[3px] border-black bg-[#f2e9d8] text-black shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-40 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[4px_4px_0_#000]"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4">
                 <path d="M10 3h4v3l2 3v10H8V9l2-3V3z" />
@@ -100,9 +114,7 @@ export default function ColorSortHeader({
                 <br />
                 BOTOL
               </span>
-              <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center border-[3px] border-black bg-[#e63946] text-[9px] font-black text-white">
-                {addBottleLeft}
-              </span>
+              {getBadge(addBottleBooster)}
             </button>
           </div>
         </div>
