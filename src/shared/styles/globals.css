@@ -63,7 +63,12 @@
   * {
     @apply border-border;
   }
+  html {
+    /* Scrollbar, tombol clear input, dan area overscroll ikut gelap. */
+    color-scheme: dark;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-color: #0a0a0b;
   }
 }
