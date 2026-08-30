@@ -3,8 +3,20 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 
-export default function ColorSortStars() {
+interface Props {
+  isActive: boolean
+}
+
+export default function ColorSortStars({ isActive }: Props) {
   const mountRef = useRef<HTMLDivElement | null>(null)
+  const loopRef = useRef<{ start: () => void; stop: () => void } | null>(null)
+  const activeRef = useRef(isActive)
+
+  useEffect(() => {
+    activeRef.current = isActive
+    if (isActive) loopRef.current?.start()
+    else loopRef.current?.stop()
+  }, [isActive])
 
   useEffect(() => {
     const mount = mountRef.current
@@ -123,9 +135,22 @@ export default function ColorSortStars() {
 
       renderer.render(scene, camera)
     }
-    updateFrame()
+    const postLoopStart = () => {
+      if (animationId) return
+      clock.getDelta()
+      updateFrame()
+    }
+    const postLoopStop = () => {
+      if (!animationId) return
+      cancelAnimationFrame(animationId)
+      animationId = 0
+    }
+
+    loopRef.current = { start: postLoopStart, stop: postLoopStop }
+    if (activeRef.current) postLoopStart()
 
     return () => {
+      loopRef.current = null
       cancelAnimationFrame(animationId)
       resizeObserver.disconnect()
       disposables.forEach((item) => item.dispose())

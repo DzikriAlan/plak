@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import type { ColorSortBottle, ColorSortPour } from '../types/colorSortTypes'
 
 interface Props {
+  isActive: boolean
   bottles: ColorSortBottle[]
   selectedBottle: number | null
   activePours: ColorSortPour[]
@@ -46,6 +47,7 @@ const NECK_SPACE = 0.56
 const POUR_DURATION = 900
 
 export default function ColorSortBoard({
+  isActive,
   bottles,
   selectedBottle,
   activePours,
@@ -53,6 +55,7 @@ export default function ColorSortBoard({
   onEditColorSortPourDone,
 }: Props) {
   const mountRef = useRef<HTMLDivElement | null>(null)
+  const loopRef = useRef<{ start: () => void; stop: () => void } | null>(null)
   const frameRef = useRef<{
     bottles: ColorSortBottle[]
     selectedBottle: number | null
@@ -60,6 +63,7 @@ export default function ColorSortBoard({
     onEditColorSortBottle: (bottleId: number) => void
     onEditColorSortPourDone: (pourId: number) => void
     resolvedPours: Set<number>
+    isActive: boolean
   }>({
     bottles,
     selectedBottle,
@@ -67,6 +71,7 @@ export default function ColorSortBoard({
     onEditColorSortBottle,
     onEditColorSortPourDone,
     resolvedPours: new Set(),
+    isActive,
   })
 
   useEffect(() => {
@@ -75,7 +80,13 @@ export default function ColorSortBoard({
     frameRef.current.activePours = activePours
     frameRef.current.onEditColorSortBottle = onEditColorSortBottle
     frameRef.current.onEditColorSortPourDone = onEditColorSortPourDone
-  }, [bottles, selectedBottle, activePours, onEditColorSortBottle, onEditColorSortPourDone])
+    frameRef.current.isActive = isActive
+  }, [bottles, selectedBottle, activePours, onEditColorSortBottle, onEditColorSortPourDone, isActive])
+
+  useEffect(() => {
+    if (isActive) loopRef.current?.start()
+    else loopRef.current?.stop()
+  }, [isActive])
 
   useEffect(() => {
     const mount = mountRef.current
@@ -715,9 +726,22 @@ export default function ColorSortBoard({
 
       renderer.render(scene, camera)
     }
-    updateFrame()
+    const postLoopStart = () => {
+      if (animationId) return
+      clock.getDelta()
+      updateFrame()
+    }
+    const postLoopStop = () => {
+      if (!animationId) return
+      cancelAnimationFrame(animationId)
+      animationId = 0
+    }
+
+    loopRef.current = { start: postLoopStart, stop: postLoopStop }
+    if (frameRef.current.isActive) postLoopStart()
 
     return () => {
+      loopRef.current = null
       cancelAnimationFrame(animationId)
       resizeObserver.disconnect()
       renderer.domElement.removeEventListener('pointerdown', updatePointerPick)

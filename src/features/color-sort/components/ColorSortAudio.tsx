@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 interface Props {
+  isActive: boolean
   isMusicOn: boolean
   isSoundOn: boolean
   pourKey: number
@@ -10,7 +11,7 @@ interface Props {
   isCleared: boolean
 }
 
-export default function ColorSortAudio({ isMusicOn, isSoundOn, pourKey, sealedTotal, isCleared }: Props) {
+export default function ColorSortAudio({ isActive, isMusicOn, isSoundOn, pourKey, sealedTotal, isCleared }: Props) {
   const audioRef = useRef<{
     context: AudioContext
     musicGain: GainNode
@@ -124,7 +125,7 @@ export default function ColorSortAudio({ isMusicOn, isSoundOn, pourKey, sealedTo
     }
 
     window.clearInterval(setup.schedulerId)
-    if (!isMusicOn) {
+    if (!isMusicOn || !isActive) {
       setup.musicGain.gain.linearRampToValueAtTime(0, setup.context.currentTime + 0.3)
       return
     }
@@ -136,12 +137,12 @@ export default function ColorSortAudio({ isMusicOn, isSoundOn, pourKey, sealedTo
     return () => {
       window.clearInterval(setup.schedulerId)
     }
-  }, [isMusicOn, isAudioReady])
+  }, [isMusicOn, isActive, isAudioReady])
 
   useEffect(() => {
     const setup = audioRef.current
     const track = trackRef.current
-    if (!setup || !isSoundOn) {
+    if (!setup || !isSoundOn || !isActive) {
       track.pourKey = pourKey
       track.sealedTotal = sealedTotal
       track.isCleared = isCleared
@@ -234,7 +235,19 @@ export default function ColorSortAudio({ isMusicOn, isSoundOn, pourKey, sealedTo
     track.pourKey = pourKey
     track.sealedTotal = sealedTotal
     track.isCleared = isCleared
-  }, [pourKey, sealedTotal, isCleared, isSoundOn, isAudioReady])
+  }, [pourKey, sealedTotal, isCleared, isSoundOn, isActive, isAudioReady])
+
+  useEffect(() => {
+    const setup = audioRef.current
+    if (!setup) return
+    if (!isActive) {
+      window.clearInterval(setup.schedulerId)
+      setup.nextNoteTime = 0
+      if (setup.context.state === 'running') setup.context.suspend()
+      return
+    }
+    if (setup.context.state === 'suspended') setup.context.resume()
+  }, [isActive, isAudioReady])
 
   return null
 }

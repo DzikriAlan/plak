@@ -33,6 +33,7 @@ export default function ColorSortPlay() {
     isPauseOpen: false,
     isMusicOn: true,
     isSoundOn: true,
+    isPageActive: true,
   })
   const data = useMemo(() => {
     const getStarTotal = (moveTotal: number, colorTotal: number) => {
@@ -82,6 +83,7 @@ export default function ColorSortPlay() {
       isPauseOpen: filters.isPauseOpen,
       isMusicOn: filters.isMusicOn,
       isSoundOn: filters.isSoundOn,
+      isPageActive: filters.isPageActive,
       sealedTotal: getSealedTotal(),
       tallTotal: level?.tallTotal ?? 0,
       pourKey: activePours.length ? Math.max(...activePours.map((pour) => pour.id)) : 0,
@@ -107,6 +109,9 @@ export default function ColorSortPlay() {
   const editColorSortSound = () => {
     setFilters((prev) => ({ ...prev, isSoundOn: !prev.isSoundOn }))
   }
+  const editColorSortPageActive = (isPageActive: boolean) => {
+    setFilters((prev) => ({ ...prev, isPageActive, isPauseOpen: isPageActive ? prev.isPauseOpen : true }))
+  }
   const submitColorSortReward = () => {
     setColorSortProgress({
       coin: data.coin + 500,
@@ -127,11 +132,33 @@ export default function ColorSortPlay() {
   useEffect(() => {
     setColorSortInit()
   }, [setColorSortInit])
+  useEffect(() => {
+    const loadColorSortVisibility = () => {
+      editColorSortPageActive(document.visibilityState === 'visible')
+    }
+    const clearColorSortPage = () => {
+      editColorSortPageActive(false)
+    }
+
+    document.addEventListener('visibilitychange', loadColorSortVisibility)
+    window.addEventListener('pagehide', clearColorSortPage)
+    window.addEventListener('blur', clearColorSortPage)
+    window.addEventListener('focus', loadColorSortVisibility)
+
+    return () => {
+      document.removeEventListener('visibilitychange', loadColorSortVisibility)
+      window.removeEventListener('pagehide', clearColorSortPage)
+      window.removeEventListener('blur', clearColorSortPage)
+      window.removeEventListener('focus', loadColorSortVisibility)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="relative flex min-h-screen w-full justify-center bg-black">
-      <ColorSortStars />
+      <ColorSortStars isActive={data.isPageActive} />
       <ColorSortAudio
+        isActive={data.isPageActive}
         isMusicOn={data.isMusicOn}
         isSoundOn={data.isSoundOn}
         pourKey={data.pourKey}
@@ -168,6 +195,7 @@ export default function ColorSortPlay() {
             </div>
           ) : (
             <ColorSortBoard
+              isActive={data.isPageActive}
               bottles={data.data}
               selectedBottle={selectedBottle}
               activePours={activePours}
