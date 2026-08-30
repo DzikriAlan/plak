@@ -19,6 +19,7 @@ export interface DataAnimalMatchingGame {
   colTotal: number
   level: number
   remainingTotal: number
+  timeLimit: number
   selectedId: number | null
   path: AnimalMatchingPoint[]
   isCleared: boolean

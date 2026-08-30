@@ -42,8 +42,8 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
 
   const getLayout = () => {
     // Papan tetap 8x12 seperti contoh; level mengatur seberapa padat terisi.
-    const colTotal = 8
-    const rowTotal = 12
+    const colTotal = 10
+    const rowTotal = 14
     const cellTotal = colTotal * rowTotal
     // Papan selalu penuh dengan seluruh ragam hewan; tiap level = susunan acak baru.
     const pairTotal = cellTotal / 2
@@ -178,6 +178,8 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
     return tiles
   }
 
+  const getTimeLimit = (levelNumber: number) => Math.max(90, 240 - (levelNumber - 1) * 10)
+
   const getData = (): DataAnimalMatchingGame => {
     const remainingTotal = getFilledPoints().length
     return {
@@ -186,6 +188,7 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
       colTotal: grid[0]?.length ?? 0,
       level,
       remainingTotal,
+      timeLimit: getTimeLimit(level),
       selectedId: selected ? selected.row * (grid[0]?.length ?? 0) + selected.col : null,
       path,
       isCleared: remainingTotal === 0,

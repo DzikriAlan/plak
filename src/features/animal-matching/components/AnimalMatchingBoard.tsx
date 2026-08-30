@@ -1,16 +1,43 @@
 'use client'
 
-import type { AnimalMatchingTile } from '../types/animalMatchingTypes'
+import { useEffect, useState } from 'react'
+import type { AnimalMatchingPoint, AnimalMatchingTile } from '../types/animalMatchingTypes'
 import AnimalMatchingIcon from './AnimalMatchingIcon'
 
 interface Props {
   tiles: AnimalMatchingTile[]
   rowTotal: number
   colTotal: number
+  path: AnimalMatchingPoint[]
   onSubmitAnimalMatchingTile: (tileId: number) => void
 }
 
-export default function AnimalMatchingBoard({ tiles, rowTotal, colTotal, onSubmitAnimalMatchingTile }: Props) {
+export default function AnimalMatchingBoard({
+  tiles,
+  rowTotal,
+  colTotal,
+  path,
+  onSubmitAnimalMatchingTile,
+}: Props) {
+  const [filters, setFilters] = useState({ trail: [] as AnimalMatchingPoint[] })
+
+  // Jejak jalur ditahan sebentar setelah pasangan terhapus, lalu hilang sendiri.
+  useEffect(() => {
+    if (!path.length) return
+    setFilters({ trail: path })
+    const timer = window.setTimeout(() => setFilters({ trail: [] }), 420)
+    return () => window.clearTimeout(timer)
+  }, [path])
+
+  const getTrailPoints = () => {
+    const getCenter = (point: AnimalMatchingPoint) => ({
+      x: ((point.col + 0.5) / colTotal) * 100,
+      y: ((point.row + 0.5) / rowTotal) * 100,
+    })
+    return filters.trail.map(getCenter)
+  }
+
+  const trail = getTrailPoints()
   const getTileTone = (tile: AnimalMatchingTile) => {
     if (tile.isEmpty) return 'border-transparent bg-transparent'
     if (tile.isSelected) return 'border-[#141416] bg-[#f0b429] shadow-[2px_2px_0_#141416]'
@@ -20,13 +47,36 @@ export default function AnimalMatchingBoard({ tiles, rowTotal, colTotal, onSubmi
 
   return (
     <div
-      className="grid w-full gap-[3px] sm:gap-1.5"
+      className="relative grid w-full gap-[3px] sm:gap-1.5"
       style={{
         gridTemplateColumns: `repeat(${colTotal}, minmax(0, 1fr))`,
         aspectRatio: `${colTotal} / ${rowTotal}`,
         maxWidth: `calc((100dvh - 15rem) * ${colTotal} / ${rowTotal})`,
       }}
     >
+      {trail.length > 1 ? (
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible"
+          aria-hidden="true"
+        >
+          <polyline
+            points={trail.map((point) => `${point.x},${point.y}`).join(' ')}
+            fill="none"
+            stroke="#f0b429"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+            style={{ strokeWidth: 4 }}
+          />
+          {trail.map((point, index) => (
+            <circle key={index} cx={point.x} cy={point.y} r="1.4" fill="#f0b429" />
+          ))}
+        </svg>
+      ) : null}
+
       {tiles.map((tile) => (
         <button
           key={tile.id}

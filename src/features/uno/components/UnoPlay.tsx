@@ -120,7 +120,7 @@ export default function UnoPlay() {
 
   return (
     <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-2 sm:p-4">
-      <div className="flex h-full w-full max-w-[520px] flex-col overflow-hidden rounded-2xl border border-[#26262b] bg-[#0f0f11]">
+      <div className="flex h-full w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-[#26262b] bg-[#0f0f11]">
         <UnoHeader
           roomCode={data.roomCode}
           turnName={data.turnName}

@@ -2,13 +2,16 @@
 
 import Link from 'next/link'
 
+import AnimalMatchingGauge from './AnimalMatchingGauge'
+
 interface Props {
   level: number
   remainingTotal: number
-  progress: number
+  secondsLeft: number
+  timeLimit: number
 }
 
-export default function AnimalMatchingHeader({ level, remainingTotal, progress }: Props) {
+export default function AnimalMatchingHeader({ level, remainingTotal, secondsLeft, timeLimit }: Props) {
   return (
     <header className="shrink-0 space-y-3">
       <div className="flex items-stretch gap-2">
@@ -21,11 +24,11 @@ export default function AnimalMatchingHeader({ level, remainingTotal, progress }
           <span className="text-base font-black uppercase leading-none tracking-tighter text-[#f2ede1]">Hewan</span>
         </Link>
 
-        <div className="flex min-w-0 flex-1 flex-col justify-center rounded-xl border border-[#26262b] bg-[#121214] px-3 py-2">
-          <span className="text-[8px] font-semibold uppercase tracking-[0.2em] text-[#a29d93]">Level {level}</span>
-          <span className="mt-1 h-[6px] w-full overflow-hidden rounded-full bg-[#26262b]">
-            <span className="block h-full rounded-full bg-[#f0b429] transition-[width]" style={{ width: `${progress}%` }} />
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl border border-[#26262b] bg-[#121214] px-3 py-1">
+          <span className="shrink-0 text-[8px] font-semibold uppercase tracking-[0.2em] text-[#a29d93]">
+            Level {level}
           </span>
+          <AnimalMatchingGauge secondsLeft={secondsLeft} timeLimit={timeLimit} />
         </div>
 
         <div className="flex shrink-0 flex-col items-center justify-center rounded-xl border border-[#26262b] bg-[#121214] px-3 py-2">

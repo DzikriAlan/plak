@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import type { AnimalMatchingTile } from '../types/animalMatchingTypes'
 import { useAnimalMatchingStates } from '../states/animalMatchingStates'
 import AnimalMatchingHeader from './AnimalMatchingHeader'
 import AnimalMatchingBoard from './AnimalMatchingBoard'
@@ -17,17 +16,11 @@ export default function AnimalMatchingPlay() {
     setAnimalMatchingRestart,
   } = useAnimalMatchingStates()
   const [filters, setFilters] = useState({
-    startLevel: 0,
-    startTotal: 0,
+    activeLevel: 0,
+    secondsLeft: 0,
     pagination: { currentPage: 1, perPage: 0, totalItem: 0, totalPage: 1 },
   })
   const data = useMemo(() => {
-    const getProgress = (tiles: AnimalMatchingTile[], startTotal: number) => {
-      if (!startTotal) return 0
-      const remaining = tiles.filter((tile) => !tile.isEmpty).length
-      return Math.round(((startTotal - remaining) / startTotal) * 100)
-    }
-
     const game = animalMatchingGame.data
     const tiles = game?.tiles ?? []
 
@@ -44,14 +37,19 @@ export default function AnimalMatchingPlay() {
       colTotal: game?.colTotal ?? 0,
       level: game?.level ?? 1,
       remainingTotal: game?.remainingTotal ?? 0,
-      progress: getProgress(tiles, filters.startTotal),
+      timeLimit: game?.timeLimit ?? 0,
+      secondsLeft: filters.secondsLeft,
+      path: game?.path ?? [],
+      rowCount: game?.rowTotal ?? 0,
       isCleared: !!game?.isCleared,
+      isTimeUp: !!game && !game.isCleared && filters.activeLevel === game.level && filters.secondsLeft <= 0,
     }
   }, [animalMatchingGame, filters])
   const submitAnimalMatchingTile = (tileId: number) => {
     setAnimalMatchingSelect(tileId)
   }
   const submitAnimalMatchingNextLevel = () => {
+    setFilters((prev) => ({ ...prev, activeLevel: 0, secondsLeft: 0 }))
     setAnimalMatchingNextLevel()
   }
   const loadAnimalMatchingHint = () => {
@@ -61,6 +59,7 @@ export default function AnimalMatchingPlay() {
     setAnimalMatchingShuffle()
   }
   const clearAnimalMatchingLevel = () => {
+    setFilters((prev) => ({ ...prev, activeLevel: 0, secondsLeft: 0 }))
     setAnimalMatchingRestart()
   }
 
@@ -69,17 +68,31 @@ export default function AnimalMatchingPlay() {
   }, [setAnimalMatchingInit])
   useEffect(() => {
     const game = animalMatchingGame.data
-    if (!game || !game.remainingTotal) return
-    // Papan membesar tiap beberapa level, jadi patokan progres direset per level.
+    if (!game) return
+    // Waktu direset tiap level berganti maupun saat level diulang.
     setFilters((prev) =>
-      prev.startLevel === game.level ? prev : { ...prev, startLevel: game.level, startTotal: game.remainingTotal },
+      prev.activeLevel === game.level && prev.secondsLeft > 0
+        ? prev
+        : { ...prev, activeLevel: game.level, secondsLeft: game.timeLimit },
     )
   }, [animalMatchingGame])
+  useEffect(() => {
+    if (data.isCleared || data.isTimeUp || !data.secondsLeft) return
+    const timer = window.setInterval(() => {
+      setFilters((prev) => ({ ...prev, secondsLeft: Math.max(0, prev.secondsLeft - 1) }))
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [data.isCleared, data.isTimeUp, data.secondsLeft])
 
   return (
     <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-3 sm:p-5">
-      <div className="flex h-full w-full max-w-[520px] flex-col gap-3">
-        <AnimalMatchingHeader level={data.level} remainingTotal={data.remainingTotal} progress={data.progress} />
+      <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
+        <AnimalMatchingHeader
+          level={data.level}
+          remainingTotal={data.remainingTotal}
+          secondsLeft={data.secondsLeft}
+          timeLimit={data.timeLimit}
+        />
 
         <main className="flex min-h-0 flex-1 items-center justify-center">
           {data.isLoading ? (
@@ -89,6 +102,7 @@ export default function AnimalMatchingPlay() {
               tiles={data.data}
               rowTotal={data.rowTotal}
               colTotal={data.colTotal}
+              path={data.path}
               onSubmitAnimalMatchingTile={submitAnimalMatchingTile}
             />
           )}
@@ -118,6 +132,25 @@ export default function AnimalMatchingPlay() {
           </button>
         </footer>
       </div>
+
+      {data.isTimeUp ? (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
+          <div className="w-full max-w-[360px] rounded-2xl border border-[#26262b] bg-[#121214] p-6 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a29d93]">Waktu habis</p>
+            <p className="mt-2 text-3xl font-black uppercase leading-none text-[#f2ede1]">Level {data.level}</p>
+            <p className="mt-2 text-[13px] font-medium text-[#9aa3b2]">
+              Sisa {data.remainingTotal} ubin belum terpasangkan.
+            </p>
+            <button
+              type="button"
+              onClick={clearAnimalMatchingLevel}
+              className="mt-6 w-full rounded-xl bg-[#f2ede1] py-3 text-[13px] font-semibold text-[#0a0a0b] transition-opacity active:opacity-80"
+            >
+              Coba lagi
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {data.isCleared ? (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
