@@ -30,7 +30,7 @@ interface ColorSortStore {
 }
 
 const CAPACITY = 4
-const TALL_CAPACITY = 6
+const TALL_CAPACITY = 8
 const MAX_COLOR = 12
 const BOOSTER_PRICE = 100
 const STORAGE_KEY = 'color-sort-progress'
@@ -44,15 +44,14 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     const colorTotal = Math.min(MAX_COLOR, 3 + Math.floor((level - 1) / 2))
     const emptyTotal = level >= 60 ? 1 : 2
     const hiddenBottleTotal = level < 25 ? 0 : Math.min(colorTotal, 1 + Math.floor((level - 25) / 5))
-    const tallTotal = level < 8 ? 0 : Math.min(colorTotal, 1 + Math.floor((level - 8) / 6))
+    const tallTotal = level >= 8 ? 1 : 0
     return { colorTotal, emptyTotal, hiddenBottleTotal, tallTotal }
   }
 
   const getSolvedBoard = (colorTotal: number, emptyTotal: number, tallTotal: number) => {
     const board: Array<{ capacity: number; units: number[] }> = []
     for (let color = 0; color < colorTotal; color += 1) {
-      const capacity = color < tallTotal ? TALL_CAPACITY : CAPACITY
-      board.push({ capacity, units: new Array(capacity).fill(color) })
+      board.push({ capacity: CAPACITY, units: new Array(CAPACITY).fill(color) })
     }
     for (let empty = 0; empty < emptyTotal; empty += 1) {
       const capacity = empty === 0 && tallTotal ? TALL_CAPACITY : CAPACITY
