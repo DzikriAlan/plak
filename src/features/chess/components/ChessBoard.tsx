@@ -12,12 +12,10 @@ interface Props {
 }
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1']
 
 export default function ChessBoard({ board, lastMove, isLocked, onSubmitChessSquare }: Props) {
   const gridRef = useRef<HTMLDivElement | null>(null)
   const playedRef = useRef('')
-  const label = 'flex items-center justify-center text-[9px] font-bold text-[#eeeed2]/85 sm:text-[11px]'
 
   // Geser bidak dari petak asal ke petak tujuan (teknik FLIP) agar tidak terasa meloncat.
   useEffect(() => {
@@ -47,78 +45,40 @@ export default function ChessBoard({ board, lastMove, isLocked, onSubmitChessSqu
 
   const getSquareTone = (cell: ChessCell) => {
     if (cell.isCheck) return 'bg-[#d0453a]'
-    if (cell.isSelected) return 'bg-[#b9ca43]'
-    if (cell.isLastMove) return cell.isDark ? 'bg-[#a4ad4b]' : 'bg-[#cdd26a]'
-    return cell.isDark ? 'bg-[#769656]' : 'bg-[#eeeed2]'
+    if (cell.isSelected) return 'bg-[#c7b15d]'
+    if (cell.isLastMove) return cell.isDark ? 'bg-[#b48b51]' : 'bg-[#d1bf8a]'
+    return cell.isDark ? 'bg-[#b77a49]' : 'bg-[#ead7a7]'
   }
 
   return (
-    <div className="w-full max-w-[min(100%,calc(100dvh-22rem))] rounded-2xl bg-[#8ca66a] p-1.5 sm:p-2.5">
-      <div className="grid grid-cols-[1.1rem_1fr_1.1rem] grid-rows-[1.1rem_auto_1.1rem] sm:grid-cols-[1.4rem_1fr_1.4rem] sm:grid-rows-[1.4rem_auto_1.4rem]">
-        <span />
-        <div className="grid grid-cols-8">
-          {FILES.map((file) => (
-            <span key={`top-${file}`} className={label}>
-              {file}
-            </span>
-          ))}
-        </div>
-        <span />
-
-        <div className="grid grid-rows-8">
-          {RANKS.map((rank) => (
-            <span key={`left-${rank}`} className={label}>
-              {rank}
-            </span>
-          ))}
-        </div>
-
-        <div
-          ref={gridRef}
-          className="grid aspect-square w-full grid-cols-8 grid-rows-[repeat(8,minmax(0,1fr))] overflow-hidden rounded-lg"
-        >
-          {board.map((cell) => (
-            <button
-              key={cell.square}
-              type="button"
-              disabled={isLocked}
-              data-square={cell.square}
-              aria-label={`Square ${cell.square}`}
-              onClick={() => onSubmitChessSquare(cell.square)}
-              className={`relative flex items-center justify-center ${getSquareTone(cell)}`}
-            >
-              {cell.isTarget && !cell.isCapture ? (
-                <span className="pointer-events-none absolute aspect-square h-[28%] rounded-full bg-[#3b3b32]/30" />
-              ) : null}
-              {cell.isTarget && cell.isCapture ? (
-                <span className="pointer-events-none absolute inset-[6%] rounded-full border-[5px] border-[#3b3b32]/30" />
-              ) : null}
-              {cell.piece ? (
-                <span data-piece className="relative block h-[88%] w-[88%] will-change-transform">
-                  <ChessPiece type={cell.piece.type} color={cell.piece.color} />
-                </span>
-              ) : null}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-rows-8">
-          {RANKS.map((rank) => (
-            <span key={`right-${rank}`} className={label}>
-              {rank}
-            </span>
-          ))}
-        </div>
-
-        <span />
-        <div className="grid grid-cols-8">
-          {FILES.map((file) => (
-            <span key={`bottom-${file}`} className={label}>
-              {file}
-            </span>
-          ))}
-        </div>
-        <span />
+    <div className="w-full max-w-[620px] rounded-[22px] bg-[#8a5f3d] p-[10px] shadow-[0_0_0_3px_rgba(62,41,23,0.9),0_18px_28px_rgba(0,0,0,0.45)] sm:p-[12px]">
+      <div
+        ref={gridRef}
+        className="grid aspect-square w-full grid-cols-8 overflow-hidden rounded-[12px] ring-1 ring-[#5a3a26]"
+      >
+        {board.map((cell) => (
+          <button
+            key={cell.square}
+            type="button"
+            disabled={isLocked}
+            data-square={cell.square}
+            aria-label={`Square ${cell.square}`}
+            onClick={() => onSubmitChessSquare(cell.square)}
+            className={`relative flex items-center justify-center ${getSquareTone(cell)}`}
+          >
+            {cell.isTarget && !cell.isCapture ? (
+              <span className="pointer-events-none absolute aspect-square h-[26%] rounded-full bg-[#3d2d22]/35" />
+            ) : null}
+            {cell.isTarget && cell.isCapture ? (
+              <span className="pointer-events-none absolute inset-[8%] rounded-full border-[4px] border-[#3d2d22]/35" />
+            ) : null}
+            {cell.piece ? (
+              <span data-piece className="relative block h-[76%] w-[76%] will-change-transform">
+                <ChessPiece type={cell.piece.type} color={cell.piece.color} />
+              </span>
+            ) : null}
+          </button>
+        ))}
       </div>
     </div>
   )

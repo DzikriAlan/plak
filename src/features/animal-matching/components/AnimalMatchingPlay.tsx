@@ -85,7 +85,7 @@ export default function AnimalMatchingPlay() {
   }, [data.isCleared, data.isTimeUp, data.secondsLeft])
 
   return (
-    <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-3 sm:p-5">
+    <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-2 sm:p-4">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
         <AnimalMatchingHeader
           level={data.level}

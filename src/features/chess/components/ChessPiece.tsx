@@ -5,10 +5,10 @@ interface Props {
   color: string
 }
 
-const WHITE_FILL = '#f7f1e2'
-const WHITE_LINE = '#2b2a26'
-const BLACK_FILL = '#1b1a17'
-const BLACK_LINE = '#f1f1e4'
+const WHITE_FILL = '#f5f1ea'
+const WHITE_LINE = '#211d1b'
+const BLACK_FILL = '#121110'
+const BLACK_LINE = '#f5f2e8'
 
 export default function ChessPiece({ type, color }: Props) {
   const isWhite = color === 'w'
@@ -87,10 +87,10 @@ export default function ChessPiece({ type, color }: Props) {
   return (
     <svg
       viewBox="0 0 45 45"
-      className="pointer-events-none h-full w-full drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]"
+      className="pointer-events-none h-full w-full drop-shadow-[0_2px_2px_rgba(0,0,0,0.32)]"
       aria-hidden="true"
     >
-      <g fill={fill} stroke={line} strokeWidth="1.1" strokeLinejoin="round" strokeLinecap="round">
+      <g fill={fill} stroke={line} strokeWidth="1.15" strokeLinejoin="round" strokeLinecap="round">
         {getBody()}
       </g>
     </svg>

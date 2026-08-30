@@ -47,11 +47,11 @@ export default function AnimalMatchingBoard({
 
   return (
     <div
-      className="relative grid w-full gap-[2px] sm:gap-[3px]"
+      className="relative grid w-full gap-[2px]"
       style={{
         gridTemplateColumns: `repeat(${colTotal}, minmax(0, 1fr))`,
         aspectRatio: `${colTotal} / ${rowTotal}`,
-        maxWidth: `calc((100dvh - 15rem) * ${colTotal} / ${rowTotal})`,
+        maxWidth: `calc((100dvh - 13rem) * ${colTotal} / ${rowTotal})`,
       }}
     >
       {trail.length > 1 ? (

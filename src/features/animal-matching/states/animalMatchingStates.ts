@@ -42,11 +42,11 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
 
   const getLayout = () => {
     // Papan tetap 8x12 seperti contoh; level mengatur seberapa padat terisi.
-    const colTotal = 9
-    const rowTotal = 13
+    const colTotal = 10
+    const rowTotal = 14
     const cellTotal = colTotal * rowTotal
-    // Sel ganjil -> satu sel dibiarkan kosong agar semua ubin tetap berpasangan.
-    const pairTotal = Math.floor(cellTotal / 2)
+    // 140 sel genap, jadi seluruh papan terisi tanpa sel kosong.
+    const pairTotal = cellTotal / 2
     const iconTotal = ANIMALS.length
     return { colTotal, rowTotal, pairTotal, iconTotal }
   }
@@ -178,7 +178,7 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
     return tiles
   }
 
-  const getTimeLimit = (levelNumber: number) => Math.max(90, 240 - (levelNumber - 1) * 10)
+  const getTimeLimit = (levelNumber: number) => Math.max(120, 300 - (levelNumber - 1) * 10)
 
   const getData = (): DataAnimalMatchingGame => {
     const remainingTotal = getFilledPoints().length
