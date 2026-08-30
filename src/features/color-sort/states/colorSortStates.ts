@@ -48,7 +48,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     const colorTotal = Math.min(MAX_COLOR, 3 + Math.floor((level - 1) / 2))
     const emptyTotal = level >= 60 ? 1 : 2
     const hiddenBottleTotal = level < 25 ? 0 : Math.min(colorTotal, 1 + Math.floor((level - 25) / 5))
-    const giantTotal = level >= 8 ? 1 : 0
+    const giantTotal = level >= 30 ? 1 : 0
     const normalTotal = colorTotal + emptyTotal - giantTotal
     const perRow = normalTotal <= MAX_PER_ROW ? normalTotal : Math.ceil(normalTotal / Math.ceil(normalTotal / MAX_PER_ROW))
     const rowTotal = Math.ceil(normalTotal / perRow)
