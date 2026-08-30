@@ -176,4 +176,4 @@ MIT License - see [LICENSE](./LICENSE) file for details.
 ---
 
 Developed by Dzikri Alan's Team
-# plak
+# Waitplay
