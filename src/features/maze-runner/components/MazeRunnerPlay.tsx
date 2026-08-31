@@ -17,6 +17,10 @@ const KEY_DIRECTIONS: Record<string, MazeRunnerDirection> = {
   d: 'right',
   s: 'down',
   a: 'left',
+  k: 'up',
+  l: 'right',
+  j: 'down',
+  h: 'left',
 }
 
 export default function MazeRunnerPlay() {
@@ -116,7 +120,9 @@ export default function MazeRunnerPlay() {
     )
   }, [mazeRunnerGame])
   useEffect(() => {
-    const getPressedDirection = (event: KeyboardEvent) => KEY_DIRECTIONS[event.key] ?? null
+    // Tombol huruf disamakan ke huruf kecil supaya caps lock atau shift tetap terbaca.
+    const getPressedDirection = (event: KeyboardEvent) =>
+      KEY_DIRECTIONS[event.key.length === 1 ? event.key.toLowerCase() : event.key] ?? null
     const editPressedKey = (event: KeyboardEvent) => {
       const direction = getPressedDirection(event)
       if (!direction) return
