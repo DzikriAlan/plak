@@ -57,4 +57,18 @@ export const STORE_GAMES: StoreGame[] = [
     modeLabel: 'Solo',
     isAvailable: true,
   },
+  {
+    id: 'maze-runner',
+    name: 'Labirin Kumbang',
+    tagline: 'Antar kumbang ke gua!',
+    description: 'Susuri labirin dan bawa kumbang sampai ke gua sebelum waktu habis. Level makin luas.',
+    category: 'puzzle',
+    categoryLabel: 'Puzzle',
+    path: '/maze-runner',
+    tone: '#e0452a',
+    accent: '#f6c945',
+    mode: 'solo',
+    modeLabel: 'Solo',
+    isAvailable: true,
+  },
 ]

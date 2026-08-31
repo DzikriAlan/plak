@@ -152,6 +152,42 @@ export default function StoreCover({ gameId, tone, accent }: Props) {
     )
   }
 
+  if (gameId === 'maze-runner') {
+    const walls = [
+      'M40 40h96v28h-56v34h84',
+      'M40 96h44v40H40',
+      'M164 40v40h64V56h56',
+      'M108 130h68v30h-96',
+      'M204 96h76v34h-40v30',
+      'M116 160v-30',
+    ]
+    return (
+      <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={frame} aria-hidden="true">
+        <rect width="320" height="200" fill="#f7f0dd" />
+        <rect x="0" y="0" width="72" height="200" fill={tone} />
+        <g stroke={INK} strokeWidth="7" strokeLinecap="round" fill="none">
+          {walls.map((wall) => (
+            <path key={wall} d={wall} />
+          ))}
+        </g>
+        <g transform="translate(28 80)">
+          <ellipse cx="0" cy="6" rx="18" ry="19" fill="#e0452a" />
+          <circle cx="0" cy="-16" r="9" fill="#1b1b1f" />
+          <path d="M0-10v32" stroke="#1b1b1f" strokeWidth="4" strokeLinecap="round" />
+          <circle cx="-8" cy="0" r="4" fill="#a82f1c" />
+          <circle cx="8" cy="0" r="4" fill="#a82f1c" />
+          <circle cx="-7" cy="14" r="3.4" fill="#a82f1c" />
+          <circle cx="7" cy="14" r="3.4" fill="#a82f1c" />
+        </g>
+        <g transform="translate(252 128)">
+          <path d="M-34 44C-34 12-19-2 0-2s34 14 34 46Z" fill="#4a4a55" />
+          <path d="M-16 44c0-16 7-26 16-26s16 10 16 26Z" fill="#08080a" />
+        </g>
+        {grain}
+      </svg>
+    )
+  }
+
   return (
     <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: tone }}>
       <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0a0a0b]">Soon</span>
