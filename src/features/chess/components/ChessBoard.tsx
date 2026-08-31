@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import type { ChessCell, ChessPromotion } from '../types/chessTypes'
 import ChessPiece from './ChessPiece'
 
@@ -8,41 +8,53 @@ interface Props {
   board: ChessCell[]
   lastMove: ChessPromotion | null
   isLocked: boolean
+  isCompact: boolean
   onSubmitChessSquare: (square: string) => void
 }
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1']
 
-export default function ChessBoard({ board, lastMove, isLocked, onSubmitChessSquare }: Props) {
+export default function ChessBoard({ board, lastMove, isLocked, isCompact, onSubmitChessSquare }: Props) {
   const gridRef = useRef<HTMLDivElement | null>(null)
   const playedRef = useRef('')
+  const boardSize = isCompact ? 'max-w-[min(100%,calc(100dvh-30rem))]' : 'max-w-[min(100%,calc(100dvh-22rem))]'
   const label = 'flex items-center justify-center text-[9px] font-bold text-[#eeeed2]/85 sm:text-[11px]'
 
   // Geser bidak dari petak asal ke petak tujuan (teknik FLIP) agar tidak terasa meloncat.
-  useEffect(() => {
+  // Pakai layout effect supaya posisi awal terpasang sebelum browser melukis, baik untuk
+  // langkah pemain maupun langkah lawan yang datang dari pesan worker engine.
+  useLayoutEffect(() => {
     const grid = gridRef.current
     if (!grid || !lastMove) return
     const key = `${lastMove.from}${lastMove.to}`
     if (playedRef.current === key) return
     playedRef.current = key
 
-    const getOffset = (from: string, to: string) => {
-      const cell = grid.clientWidth / 8
-      const fileGap = FILES.indexOf(from[0]) - FILES.indexOf(to[0])
-      const rankGap = Number(to[1]) - Number(from[1])
-      return { x: fileGap * cell, y: rankGap * cell }
-    }
-
     const piece = grid.querySelector<HTMLElement>(`[data-square="${lastMove.to}"] [data-piece]`)
-    if (!piece) return
-    const offset = getOffset(lastMove.from, lastMove.to)
+    const square = piece?.parentElement
+    if (!piece || !square) return
+
+    const cell = grid.clientWidth / 8
+    const fileGap = FILES.indexOf(lastMove.from[0]) - FILES.indexOf(lastMove.to[0])
+    const rankGap = Number(lastMove.to[1]) - Number(lastMove.from[1])
+
+    square.style.zIndex = '20'
     piece.style.transition = 'none'
-    piece.style.transform = `translate(${offset.x}px, ${offset.y}px)`
-    requestAnimationFrame(() => {
-      piece.style.transition = 'transform 180ms cubic-bezier(0.22, 0.61, 0.36, 1)'
-      piece.style.transform = 'translate(0px, 0px)'
-    })
+    piece.style.transform = `translate(${fileGap * cell}px, ${rankGap * cell}px)`
+    void piece.offsetWidth // paksa reflow agar posisi asal ikut terpakai
+    piece.style.transition = 'transform 180ms cubic-bezier(0.22, 0.61, 0.36, 1)'
+    piece.style.transform = 'translate(0px, 0px)'
+
+    const clearLift = () => {
+      square.style.zIndex = ''
+    }
+    piece.addEventListener('transitionend', clearLift, { once: true })
+
+    return () => {
+      piece.removeEventListener('transitionend', clearLift)
+      clearLift()
+    }
   }, [lastMove])
 
   const getSquareTone = (cell: ChessCell) => {
@@ -53,7 +65,7 @@ export default function ChessBoard({ board, lastMove, isLocked, onSubmitChessSqu
   }
 
   return (
-    <div className="w-full max-w-[min(100%,calc(100dvh-22rem))] rounded-2xl bg-[#8ca66a] p-1.5 sm:p-2.5">
+    <div className={`w-full ${boardSize} rounded-2xl bg-[#8ca66a] p-1.5 sm:p-2.5`}>
       <div className="grid grid-cols-[1.1rem_1fr_1.1rem] grid-rows-[1.1rem_auto_1.1rem] sm:grid-cols-[1.4rem_1fr_1.4rem] sm:grid-rows-[1.4rem_auto_1.4rem]">
         <span />
         <div className="grid grid-cols-8">

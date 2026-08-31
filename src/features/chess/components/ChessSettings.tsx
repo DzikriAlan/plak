@@ -5,12 +5,21 @@ interface Level {
   label: string
 }
 
+interface Mode {
+  id: string
+  label: string
+  hint: string
+}
+
 interface Props {
+  modes: Mode[]
+  activeMode: string
   levels: Level[]
   activeLevel: number
   isUndoDisabled: boolean
   isSoundOn: boolean
   onEditChessSound: () => void
+  onEditChessMode: (modeId: string) => void
   onEditChessLevel: (levelId: number) => void
   onLoadChessUndo: () => void
   onClearChessGame: () => void
@@ -18,11 +27,14 @@ interface Props {
 }
 
 export default function ChessSettings({
+  modes,
+  activeMode,
   levels,
   activeLevel,
   isUndoDisabled,
   isSoundOn,
   onEditChessSound,
+  onEditChessMode,
   onEditChessLevel,
   onLoadChessUndo,
   onClearChessGame,
@@ -30,8 +42,30 @@ export default function ChessSettings({
 }: Props) {
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/80 px-6 backdrop-blur-sm">
-      <div className="w-full max-w-[360px] rounded-2xl border border-[#26262b] bg-[#121214] p-6">
+      <div className="max-h-full w-full max-w-[360px] overflow-y-auto rounded-2xl border border-[#26262b] bg-[#121214] p-6">
         <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a29d93]">Settings</p>
+
+        <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a29d93]">Mode</p>
+        <div className="mt-2 grid gap-2">
+          {modes.map((mode) => (
+            <button
+              key={mode.id}
+              type="button"
+              aria-pressed={mode.id === activeMode}
+              onClick={() => onEditChessMode(mode.id)}
+              className={`rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                mode.id === activeMode
+                  ? 'border-[#f2ede1] bg-[#f2ede1] text-[#0a0a0b]'
+                  : 'border-[#3a3a42] text-[#f2ede1] hover:border-[#f2ede1]'
+              }`}
+            >
+              <span className="block text-[13px] font-medium leading-none">{mode.label}</span>
+              <span className={`mt-1 block text-[10px] leading-snug ${mode.id === activeMode ? 'text-[#0a0a0b]/70' : 'text-[#a29d93]'}`}>
+                {mode.hint}
+              </span>
+            </button>
+          ))}
+        </div>
 
         <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a29d93]">Difficulty</p>
         <div className="mt-2 grid gap-2">

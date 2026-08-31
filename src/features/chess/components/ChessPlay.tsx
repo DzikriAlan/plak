@@ -6,12 +6,21 @@ import GameAudio, { type GameAudioCue } from '@/shared/components/reusable/GameA
 import ChessHeader from './ChessHeader'
 import ChessBoard from './ChessBoard'
 import ChessCaptured from './ChessCaptured'
+import ChessInsight from './ChessInsight'
 import ChessSettings from './ChessSettings'
 
 const LEVELS = [
   { id: 0, label: 'Casual', skill: 2, depth: 4, movetime: 200 },
   { id: 1, label: 'Serious', skill: 12, depth: 10, movetime: 500 },
   { id: 2, label: 'World Class', skill: 20, depth: 20, movetime: 1200 },
+]
+const MODES = [
+  { id: 'solo', label: 'You vs Computer', hint: 'You play White, the engine answers as Black.' },
+  {
+    id: 'auto',
+    label: 'Computer v Computer',
+    hint: 'You open with the first move, then the engine plays both sides while every move is explained.',
+  },
 ]
 const PROMOTION_CHOICES = [
   { piece: 'q', label: 'Queen', glyph: '♛' },
@@ -21,11 +30,22 @@ const PROMOTION_CHOICES = [
 ]
 
 export default function ChessPlay() {
-  const { chessGame, setChessInit, setChessSelect, setChessMove, setChessPromotion, setChessUndo, setChessRestart } =
-    useChessStates()
+  const {
+    chessGame,
+    setChessInit,
+    setChessSelect,
+    setChessMove,
+    setChessPromotion,
+    setChessAnalysis,
+    setChessUndo,
+    setChessRestart,
+  } = useChessStates()
   const engineRef = useRef<Worker | null>(null)
+  const searchRef = useRef({ fen: '', info: '' })
   const [filters, setFilters] = useState({
     activeLevel: 2,
+    activeMode: 'solo',
+    isHistoryOpen: false,
     isEngineReady: false,
     isThinking: false,
     isSettingsOpen: false,
@@ -42,6 +62,9 @@ export default function ChessPlay() {
     const game = chessGame.data
     const board = game?.board ?? []
     const advantage = getScore(game?.capturedByPlayer ?? [], game?.capturedByEngine ?? [])
+    const insights = game?.insights ?? []
+    const isAutoMode = filters.activeMode === 'auto'
+    const isEngineDriven = isAutoMode && !!game?.moveTotal
 
     return {
       data: board,
@@ -53,7 +76,13 @@ export default function ChessPlay() {
       emptyImage: '',
       pagination: filters.pagination,
       levels: LEVELS.map((level) => ({ id: level.id, label: level.label })),
+      modes: MODES,
       activeLevel: filters.activeLevel,
+      activeMode: filters.activeMode,
+      isEngineDriven,
+      insights: [...insights].reverse(),
+      insight: insights[insights.length - 1] ?? null,
+      isHistoryOpen: filters.isHistoryOpen,
       moveTotal: game?.moveTotal ?? 0,
       isEngineReady: filters.isEngineReady,
       isThinking: filters.isThinking,
@@ -70,6 +99,7 @@ export default function ChessPlay() {
         game.isFinished ||
         game.turn !== 'w' ||
         filters.isThinking ||
+        isEngineDriven ||
         !!game.pendingPromotion,
       isUndoDisabled: !game || filters.isThinking || game.moveTotal < 2,
       isPromotionOpen: !!game?.pendingPromotion,
@@ -97,6 +127,15 @@ export default function ChessPlay() {
   const editChessLevel = (levelId: number) => {
     setFilters((prev) => ({ ...prev, activeLevel: levelId }))
   }
+  const editChessMode = (modeId: string) => {
+    setFilters((prev) => ({ ...prev, activeMode: modeId }))
+  }
+  const loadChessHistory = () => {
+    setFilters((prev) => ({ ...prev, isHistoryOpen: true }))
+  }
+  const clearChessHistory = () => {
+    setFilters((prev) => ({ ...prev, isHistoryOpen: false }))
+  }
   const editChessSound = () => {
     setFilters((prev) => ({ ...prev, isSoundOn: !prev.isSoundOn }))
   }
@@ -110,7 +149,7 @@ export default function ChessPlay() {
     setChessUndo()
   }
   const clearChessGame = () => {
-    setFilters((prev) => ({ ...prev, isSettingsOpen: false }))
+    setFilters((prev) => ({ ...prev, isSettingsOpen: false, isHistoryOpen: false }))
     setChessRestart()
   }
 
@@ -133,14 +172,40 @@ export default function ChessPlay() {
     })
   }, [chessGame])
   useEffect(() => {
+    // Baris `info` terakhir memuat skor dan principal variation yang dipakai sebagai bahan analisis.
+    const getAnalysis = (line: string) => {
+      const tokens = line.split(' ')
+      const scoreIndex = tokens.indexOf('score')
+      const pvIndex = tokens.indexOf('pv')
+      if (scoreIndex < 0 || pvIndex < 0) return null
+
+      const kind = tokens[scoreIndex + 1]
+      const value = Number(tokens[scoreIndex + 2])
+      if (Number.isNaN(value)) return null
+
+      return {
+        fen: searchRef.current.fen,
+        depth: Number(tokens[tokens.indexOf('depth') + 1]) || 0,
+        scoreCp: kind === 'cp' ? value : null,
+        scoreMate: kind === 'mate' ? value : null,
+        pv: tokens.slice(pvIndex + 1),
+      }
+    }
+
     const worker = new Worker('/engine/stockfish-18-lite-single.js')
     worker.onmessage = (event) => {
       const line = typeof event.data === 'string' ? event.data : ''
       if (line.startsWith('uciok')) worker.postMessage('isready')
       if (line.startsWith('readyok')) setFilters((prev) => ({ ...prev, isEngineReady: true }))
+      if (line.startsWith('info') && line.includes(' pv ') && !line.includes('bound')) {
+        searchRef.current.info = line
+      }
       if (line.startsWith('bestmove')) {
         const move = line.split(' ')[1]
+        const analysis = searchRef.current.info ? getAnalysis(searchRef.current.info) : null
+        searchRef.current.info = ''
         setFilters((prev) => ({ ...prev, isThinking: false }))
+        if (analysis) setChessAnalysis(analysis)
         if (move && move !== '(none)') {
           setChessMove(move.slice(0, 2), move.slice(2, 4), move.length > 4 ? move[4] : undefined)
         }
@@ -153,19 +218,24 @@ export default function ChessPlay() {
       worker.terminate()
       engineRef.current = null
     }
-  }, [setChessMove])
+  }, [setChessMove, setChessAnalysis])
   useEffect(() => {
     const game = chessGame.data
     const worker = engineRef.current
     if (!game || !worker || !filters.isEngineReady) return
-    if (game.isFinished || game.turn !== 'b' || filters.isThinking) return
+    if (game.isFinished || filters.isThinking || game.pendingPromotion) return
+
+    // Mode auto: langkah pertama tetap milik pemain, sisanya engine memainkan kedua warna.
+    const isEngineTurn = game.turn === 'b' || (filters.activeMode === 'auto' && game.moveTotal > 0)
+    if (!isEngineTurn) return
 
     const level = LEVELS[filters.activeLevel]
     setFilters((prev) => ({ ...prev, isThinking: true }))
+    searchRef.current.fen = game.fen
     worker.postMessage(`setoption name Skill Level value ${level.skill}`)
     worker.postMessage(`position fen ${game.fen}`)
     worker.postMessage(`go depth ${level.depth} movetime ${level.movetime}`)
-  }, [chessGame, filters.isEngineReady, filters.isThinking, filters.activeLevel])
+  }, [chessGame, filters.isEngineReady, filters.isThinking, filters.activeLevel, filters.activeMode])
 
   return (
     <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-3 sm:p-5">
@@ -202,10 +272,19 @@ export default function ChessPlay() {
               board={data.data}
               lastMove={data.lastMove}
               isLocked={data.isLocked}
+              isCompact={!!data.insight}
               onSubmitChessSquare={submitChessSquare}
             />
           )}
         </main>
+
+        <ChessInsight
+          insight={data.insight}
+          history={data.insights}
+          isHistoryOpen={data.isHistoryOpen}
+          onLoadChessHistory={loadChessHistory}
+          onClearChessHistory={clearChessHistory}
+        />
 
         <ChessCaptured
           label="You"
@@ -218,11 +297,14 @@ export default function ChessPlay() {
 
       {data.isSettingsOpen ? (
         <ChessSettings
+          modes={data.modes}
+          activeMode={data.activeMode}
           levels={data.levels}
           activeLevel={data.activeLevel}
           isUndoDisabled={data.isUndoDisabled}
           isSoundOn={data.isSoundOn}
           onEditChessSound={editChessSound}
+          onEditChessMode={editChessMode}
           onEditChessLevel={editChessLevel}
           onLoadChessUndo={loadChessUndo}
           onClearChessGame={clearChessGame}
