@@ -252,7 +252,8 @@ export default function ColorSortBoard({
         positions.set(item.id, new THREE.Vector3(column * spacingX, rowBottoms[row], 0))
       })
 
-      const giantHeight = giant ? Math.max(boardHeight, getBottleHeight(giant.capacity)) : 0
+      // Tinggi botol raksasa mengikuti kapasitasnya supaya isi penuh benar-benar mentok ke leher botol.
+      const giantHeight = giant ? getBottleHeight(giant.capacity) : 0
       if (giant) positions.set(giant.id, new THREE.Vector3(0, rowBottoms[rowTotal - 1], 0))
 
       const rowSpans = rowBottoms.map((bottom, row) => {

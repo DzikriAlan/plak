@@ -31,12 +31,19 @@ interface ColorSortStore {
 
 const CAPACITY = 4
 const MAX_COLOR = 9
-const MAX_PER_ROW = 6
-const BOTTLE_UNIT_HEIGHT = 0.445
-const BOTTLE_FIXED_HEIGHT = 0.72
-const ROW_GAP = 0.9
+const MAX_GIANT_POUR = 4
 const BOOSTER_PRICE = 100
 const STORAGE_KEY = 'color-sort-progress'
+
+type LevelConfig = {
+  colorTotal: number
+  emptyTotal: number
+  hiddenBottleTotal: number
+  giantTotal: number
+  giantCapacity: number
+  giantSeedTotal: number
+  giantSpareTotal: number
+}
 
 export const useColorSortStates = create<ColorSortStore>((set, get) => {
   let pourSequence = 0
@@ -48,28 +55,35 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     const colorTotal = Math.min(MAX_COLOR - giantTotal, 3 + Math.floor((level - 1) / 2))
     const emptyTotal = level >= 60 ? 1 : 2
     const hiddenBottleTotal = level < 25 ? 0 : Math.min(colorTotal, 1 + Math.floor((level - 25) / 5))
-    const normalTotal = colorTotal + emptyTotal
-    const perRow = normalTotal <= MAX_PER_ROW ? normalTotal : Math.ceil(normalTotal / Math.ceil(normalTotal / MAX_PER_ROW))
-    const rowTotal = Math.ceil(normalTotal / perRow)
-    const normalHeight = BOTTLE_FIXED_HEIGHT + CAPACITY * BOTTLE_UNIT_HEIGHT
-    const boardHeight = rowTotal * normalHeight + (rowTotal - 1) * ROW_GAP
-    const giantSlotTotal = Math.floor((boardHeight - BOTTLE_FIXED_HEIGHT) / BOTTLE_UNIT_HEIGHT)
-    const giantCapacity = Math.max(CAPACITY, Math.floor(giantSlotTotal / CAPACITY) * CAPACITY)
-    return { colorTotal, emptyTotal, hiddenBottleTotal, giantTotal, giantCapacity }
+    // Botol raksasa memuat beberapa tuangan penuh dengan satu warna saja.
+    const giantPourTotal = giantTotal ? Math.min(MAX_GIANT_POUR, 2 + Math.floor((level - 30) / 20)) : 0
+    const giantCapacity = giantPourTotal * CAPACITY
+    // Satu tuangan sudah terisi sejak awal, sisanya menunggu dikumpulkan pemain.
+    const giantSeedTotal = giantTotal ? CAPACITY : 0
+    const giantSpareTotal = giantTotal ? giantPourTotal - 1 : 0
+    return { colorTotal, emptyTotal, hiddenBottleTotal, giantTotal, giantCapacity, giantSeedTotal, giantSpareTotal }
   }
 
-  const getSolvedBoard = (colorTotal: number, emptyTotal: number, giantTotal: number, giantCapacity: number) => {
+  const getSolvedBoard = (config: LevelConfig) => {
     const board: Array<{ capacity: number; isGiant: boolean; units: number[] }> = []
-    for (let color = 0; color < colorTotal; color += 1) {
+    for (let color = 0; color < config.colorTotal; color += 1) {
       board.push({ capacity: CAPACITY, isGiant: false, units: new Array(CAPACITY).fill(color) })
     }
-    for (let empty = 0; empty < emptyTotal; empty += 1) {
+    // Sisa isi botol raksasa menunggu di botol biasa memakai warna khusus milik botol raksasa.
+    for (let spare = 0; spare < config.giantSpareTotal; spare += 1) {
+      board.push({ capacity: CAPACITY, isGiant: false, units: new Array(CAPACITY).fill(config.colorTotal) })
+    }
+    for (let empty = 0; empty < config.emptyTotal; empty += 1) {
       board.push({ capacity: CAPACITY, isGiant: false, units: [] })
     }
     const shuffled = board.sort(() => Math.random() - 0.5)
-    // Botol raksasa memakai warna khusus miliknya sendiri dan harus terisi penuh oleh warna itu.
-    if (giantTotal) {
-      shuffled.push({ capacity: giantCapacity, isGiant: true, units: new Array(giantCapacity).fill(colorTotal) })
+    // Botol raksasa hanya menampung warna khusus miliknya dan sudah berisi satu tuangan sejak awal.
+    if (config.giantTotal) {
+      shuffled.push({
+        capacity: config.giantCapacity,
+        isGiant: true,
+        units: new Array(config.giantSeedTotal).fill(config.colorTotal),
+      })
     }
     return shuffled
   }
@@ -96,14 +110,14 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
       return bottle.segments.every((segment) => segment.colorIndex === bottle.segments[0].colorIndex)
     })
 
-  const getScrambledBoard = (colorTotal: number, emptyTotal: number, giantTotal: number, giantCapacity: number) => {
-    const board = getSolvedBoard(colorTotal, emptyTotal, giantTotal, giantCapacity)
-    const totalStep = 90 + colorTotal * 30
+  const getScrambledBoard = (config: LevelConfig) => {
+    const board = getSolvedBoard(config)
+    const totalStep = 90 + config.colorTotal * 30
 
     for (let step = 0; step < totalStep; step += 1) {
       const sourceCandidates = board
         .map((item, index) => ({ item, index }))
-        .filter((entry) => entry.item.units.length)
+        .filter((entry) => !entry.item.isGiant && entry.item.units.length)
       if (!sourceCandidates.length) break
       const source = sourceCandidates[getRandomInt(sourceCandidates.length)]
       const run = getTopRun(source.item.units)
@@ -121,6 +135,8 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
         .map((item, index) => ({ item, index }))
         .filter((entry) => {
           if (entry.index === source.index) return false
+          // Botol raksasa tidak pernah ikut diacak agar isinya tetap satu warna.
+          if (entry.item.isGiant) return false
           if (entry.item.capacity - entry.item.units.length < amount) return false
           if (!entry.item.units.length) return true
           return entry.item.units[entry.item.units.length - 1] !== run.colorIndex
@@ -170,7 +186,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     const config = getLevelConfig(level)
     let bottles: ColorSortBottle[] = []
     for (let attempt = 0; attempt < 24; attempt += 1) {
-      const board = getScrambledBoard(config.colorTotal, config.emptyTotal, config.giantTotal, config.giantCapacity)
+      const board = getScrambledBoard(config)
       bottles = getHiddenBoard(board, config.hiddenBottleTotal)
       if (!getIsBoardSolved(bottles)) break
     }
@@ -326,8 +342,9 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
       const isTargetMatch =
         !target.segments.length || target.segments[target.segments.length - 1].colorIndex === run.colorIndex
       const isGiantPour = target.isGiant
+      // Botol raksasa hanya menerima satu tuangan penuh dengan warna yang sama seperti isinya.
       const isPourAllowed = isGiantPour
-        ? run.length >= CAPACITY && freeSpace >= CAPACITY
+        ? run.length >= CAPACITY && freeSpace >= CAPACITY && isTargetMatch
         : !!run.length && !!freeSpace && isTargetMatch
 
       if (!isPourAllowed) {
