@@ -205,12 +205,6 @@ export default function ColorSortPlay() {
               onEditColorSortPourDone={editColorSortPourDone}
             />
           )}
-
-          {data.isHintVisible ? (
-            <p className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-[#26262b] bg-[#121214]/90 px-4 py-1 text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a29d93] backdrop-blur-sm">
-              Tap a bottle to pour
-            </p>
-          ) : null}
         </section>
 
         <ColorSortControls

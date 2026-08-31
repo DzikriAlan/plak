@@ -252,8 +252,8 @@ export default function ColorSortBoard({
         positions.set(item.id, new THREE.Vector3(column * spacingX, rowBottoms[row], 0))
       })
 
-      // Tinggi botol raksasa mengikuti kapasitasnya supaya isi penuh benar-benar mentok ke leher botol.
-      const giantHeight = giant ? getBottleHeight(giant.capacity) : 0
+      // Botol raksasa selalu setinggi seluruh baris papan.
+      const giantHeight = giant ? Math.max(boardHeight, getBottleHeight(giant.capacity)) : 0
       if (giant) positions.set(giant.id, new THREE.Vector3(0, rowBottoms[rowTotal - 1], 0))
 
       const rowSpans = rowBottoms.map((bottom, row) => {
@@ -296,6 +296,7 @@ export default function ColorSortBoard({
     const bottleGroups = new Map<number, THREE.Group>()
     const bottleHeights = new Map<number, number>()
     const liquidMeshes = new Map<number, THREE.Mesh[]>()
+    const unitHeights = new Map<number, number>()
     const hiddenMeshes = new Map<number, THREE.Mesh[]>()
     const capGroups = new Map<number, THREE.Group>()
     const capProgress = new Map<number, number>()
@@ -452,6 +453,11 @@ export default function ColorSortBoard({
         hidden.push(mask)
       }
 
+      // Satu tuangan di botol raksasa dibuat lebih tinggi supaya isi penuh tetap mentok ke lehernya.
+      unitHeights.set(
+        bottle.id,
+        bottle.isGiant ? (height - INNER_BOTTOM - NECK_SPACE) / bottle.capacity : SEGMENT_HEIGHT,
+      )
       capGroups.set(bottle.id, capGroup)
       capProgress.set(bottle.id, 0)
       bottleGroups.set(bottle.id, group)
@@ -581,11 +587,12 @@ export default function ColorSortBoard({
         const isComplete =
           bottle.segments.length === bottle.capacity &&
           bottle.segments.every((segment) => segment.colorIndex === bottle.segments[0].colorIndex)
+        const unitHeight = unitHeights.get(bottle.id) ?? SEGMENT_HEIGHT
         fills.set(
           bottle.id,
           bottle.segments.map((segment) => ({
             colorIndex: segment.colorIndex,
-            height: SEGMENT_HEIGHT,
+            height: unitHeight,
             isHidden: segment.isHidden && !isComplete,
           })),
         )
@@ -600,16 +607,18 @@ export default function ColorSortBoard({
         const target = fills.get(pour.to)
         if (!source || !target) return
 
+        const sourceUnit = unitHeights.get(pour.from) ?? SEGMENT_HEIGHT
+        const targetUnit = unitHeights.get(pour.to) ?? SEGMENT_HEIGHT
         let remaining = moved
         for (let index = source.length - 1; index >= 0 && remaining > 0; index -= 1) {
           const take = Math.min(1, remaining)
-          source[index].height = SEGMENT_HEIGHT * (1 - take)
+          source[index].height = sourceUnit * (1 - take)
           remaining -= take
         }
         let added = moved
         while (added > 0) {
           const take = Math.min(1, added)
-          target.push({ colorIndex: pour.colorIndex, height: SEGMENT_HEIGHT * take, isHidden: false })
+          target.push({ colorIndex: pour.colorIndex, height: targetUnit * take, isHidden: false })
           added -= take
         }
       })

@@ -31,7 +31,7 @@ interface ColorSortStore {
 
 const CAPACITY = 4
 const MAX_COLOR = 9
-const MAX_GIANT_POUR = 4
+const MAX_GIANT_POUR = 5
 const BOOSTER_PRICE = 100
 const STORAGE_KEY = 'color-sort-progress'
 
@@ -56,7 +56,7 @@ export const useColorSortStates = create<ColorSortStore>((set, get) => {
     const emptyTotal = level >= 60 ? 1 : 2
     const hiddenBottleTotal = level < 25 ? 0 : Math.min(colorTotal, 1 + Math.floor((level - 25) / 5))
     // Botol raksasa memuat beberapa tuangan penuh dengan satu warna saja.
-    const giantPourTotal = giantTotal ? Math.min(MAX_GIANT_POUR, 2 + Math.floor((level - 30) / 20)) : 0
+    const giantPourTotal = giantTotal ? Math.min(MAX_GIANT_POUR, 3 + Math.floor((level - 30) / 25)) : 0
     const giantCapacity = giantPourTotal * CAPACITY
     // Satu tuangan sudah terisi sejak awal, sisanya menunggu dikumpulkan pemain.
     const giantSeedTotal = giantTotal ? CAPACITY : 0
