@@ -100,17 +100,17 @@ export default function MazeRunnerBoard({
   }
 
   // Usapan dua jari di trackpad terbaca sebagai wheel, jadi diakumulasi sampai cukup untuk satu petak.
-  // Nilai delta wheel berlawanan arah jari, karena itu tandanya dibalik supaya pemain ikut arah usapan.
+  // Arahnya sengaja berlawanan dengan usapan: scroll ke atas menjalankan pemain ke bawah.
   const editMazeRunnerWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     const wheel = wheelRef.current
     wheel.x += event.deltaX
     wheel.y += event.deltaY
     if (Math.abs(wheel.x) > Math.abs(wheel.y)) {
       if (Math.abs(wheel.x) < WHEEL_STEP) return
-      onEditMazeRunnerMove(wheel.x > 0 ? 'left' : 'right')
+      onEditMazeRunnerMove(wheel.x > 0 ? 'right' : 'left')
     } else {
       if (Math.abs(wheel.y) < WHEEL_STEP) return
-      onEditMazeRunnerMove(wheel.y > 0 ? 'up' : 'down')
+      onEditMazeRunnerMove(wheel.y > 0 ? 'down' : 'up')
     }
     wheelRef.current = { x: 0, y: 0 }
   }
