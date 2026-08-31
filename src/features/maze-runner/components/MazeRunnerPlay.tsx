@@ -162,7 +162,7 @@ export default function MazeRunnerPlay() {
   }, [data.isCleared, data.isTimeUp, data.secondsLeft])
 
   return (
-    <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-2 sm:p-4">
+    <div className="flex h-[100dvh] w-full touch-none items-stretch justify-center overflow-hidden overscroll-none bg-[#0a0a0b] p-2 sm:p-4">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
         <MazeRunnerHeader
           level={data.level}
