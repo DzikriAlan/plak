@@ -13,8 +13,6 @@ export default function StoreCard({ game }: Props) {
     'flex h-full w-full min-h-0 flex-col overflow-hidden rounded-2xl border border-[#26262b] bg-[#121214] transition-colors'
   const badge =
     'absolute left-3 top-3 rounded-md bg-[#0a0a0b]/85 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-[#f2ede1] backdrop-blur-sm'
-  const modePill =
-    'rounded-md border border-[#3a3a42] px-3 py-[6px] text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a29d93]'
 
   const body = (
     <>
@@ -35,8 +33,7 @@ export default function StoreCard({ game }: Props) {
     return (
       <article className={shell}>
         {body}
-        <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-4 sm:px-5 sm:pb-5">
-          <span className={modePill}>{game.modeLabel}</span>
+        <div className="flex shrink-0 items-center justify-end px-4 pb-4 sm:px-5 sm:pb-5">
           <span className="rounded-md border border-[#3a3a42] px-3 py-[6px] text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a29d93]">
             Soon
           </span>
@@ -48,8 +45,7 @@ export default function StoreCard({ game }: Props) {
   return (
     <article className={`${shell} group hover:border-[#43434d]`}>
       {body}
-      <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-4 sm:px-5 sm:pb-5">
-        <span className={modePill}>{game.modeLabel}</span>
+      <div className="flex shrink-0 items-center justify-end px-4 pb-4 sm:px-5 sm:pb-5">
         <Link
           href={game.path}
           aria-label={`Play ${game.name}`}
