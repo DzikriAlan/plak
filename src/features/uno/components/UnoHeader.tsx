@@ -25,11 +25,11 @@ export default function UnoHeader({
   onEditUnoSound,
 }: Props) {
   return (
-    <header className="grid shrink-0 grid-cols-[auto_1fr_auto_auto_auto] gap-px border-b border-[#26262b] bg-[#26262b]">
+    <header className="grid shrink-0 grid-cols-3 gap-px border-b border-[#26262b] bg-[#26262b] sm:grid-cols-[auto_1fr_auto_auto_auto]">
       <Link
         href="/"
         aria-label="Back to Waitplay Game Store"
-        className="flex items-center justify-center gap-1 bg-[#121214] px-2 py-3 transition-colors active:bg-[#1b1b1f] sm:gap-1.5 sm:px-4"
+        className="order-1 flex items-center justify-center gap-1 bg-[#121214] px-2 py-3 transition-colors active:bg-[#1b1b1f] sm:gap-1.5 sm:px-4"
       >
         <span className="text-[10px] font-black leading-none text-[#a29d93]">&#9664;</span>
         <span className="text-base font-black leading-none tracking-tighter text-[#f2ede1] sm:text-xl [font-family:'Arial_Black','Archivo_Black',system-ui]">
@@ -41,18 +41,18 @@ export default function UnoHeader({
         type="button"
         onClick={onLoadUnoRoomCode}
         aria-label="Copy room code"
-        className="flex min-w-0 flex-col items-start justify-center gap-1 bg-[#121214] px-2 py-3 text-left transition-colors active:bg-[#1b1b1f] sm:px-3"
+        className="order-2 flex min-w-0 flex-col items-start justify-center gap-1 bg-[#121214] px-2 py-3 text-left transition-colors active:bg-[#1b1b1f] sm:px-3"
       >
         <span className="text-[8px] font-semibold uppercase tracking-[0.2em] text-[#a29d93]">Room code</span>
         <span className="flex w-full items-center gap-2 text-sm font-black leading-none tracking-tight text-[#f2ede1] sm:text-base">
           <span className="truncate">{roomCode}</span>
-          <span className="hidden shrink-0 rounded border border-[#3a3a42] px-[5px] py-[1px] text-[8px] text-[#a29d93] min-[360px]:inline-block">
+          <span className="shrink-0 rounded border border-[#3a3a42] px-[5px] py-[1px] text-[8px] text-[#a29d93]">
             {isCopied ? 'OK' : 'COPY'}
           </span>
         </span>
       </button>
 
-      <div className="flex flex-col items-center justify-center gap-1 bg-[#121214] px-1.5 py-3 sm:px-3">
+      <div className="order-4 flex flex-col items-center justify-center gap-1 bg-[#121214] px-1.5 py-3 sm:order-3 sm:px-3">
         <span className="text-[8px] font-semibold uppercase tracking-normal text-[#a29d93] sm:tracking-[0.2em]">Turn</span>
         <span className="rounded bg-[#f0b429] px-[6px] py-[1px] text-[11px] font-semibold uppercase leading-tight text-[#0a0a0b]">
           {turnName}
@@ -61,11 +61,11 @@ export default function UnoHeader({
 
       <GameSoundToggle
         isSoundOn={isSoundOn}
-        className="w-[38px] rounded-none border-0 bg-[#121214]"
+        className="order-3 w-full rounded-none border-0 bg-[#121214] sm:order-4 sm:w-[38px]"
         onEditGameSound={onEditUnoSound}
       />
 
-      <div className="grid grid-cols-2 gap-px bg-[#26262b]">
+      <div className="order-5 col-span-2 grid grid-cols-2 gap-px bg-[#26262b] sm:col-span-1">
         <div className="flex flex-col items-center justify-center gap-1 bg-[#121214] px-1.5 py-3 sm:px-3">
           <span className="text-[8px] font-semibold uppercase tracking-normal text-[#a29d93] sm:tracking-[0.14em]">
             Draw
