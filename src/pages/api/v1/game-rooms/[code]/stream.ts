@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getGameRoomSeat, getGameRoomView } from '@/shared/lib/gameRoom'
 import type { GameRoomRow } from '@/shared/lib/gameRoomStore'
-import { getGameRoomRow } from '@/shared/lib/gameRoomStore'
+import { getGameRoomRow, updateGameRoomSeen } from '@/shared/lib/gameRoomStore'
 import { getGameRoomSubscription } from '@/shared/lib/gameRoomEvents'
 
 const PING_INTERVAL = 15000
@@ -34,6 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const postRoomState = async (known: GameRoomRow | null = null) => {
     if (isClosed) return
+    if (res.writableEnded || res.destroyed) return clearStream()
     try {
       const room = known ?? (await getGameRoomRow(code))
       if (!room) return
@@ -50,21 +51,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
+  await updateGameRoomSeen(code, token)
   await postRoomState()
   // Siaran dalam proses memberi kabar seketika, penarikan cadangan menjaga bila ada instans lain.
   const clearSubscription = getGameRoomSubscription(code, (row) => {
     void postRoomState(row)
   })
-  const safetyTimer = setInterval(() => void postRoomState(), SAFETY_INTERVAL)
+  // Denyut kehadiran menandai kursi masih dipakai supaya tidak diambil alih pemain lain.
+  const safetyTimer = setInterval(() => {
+    if (res.writableEnded || res.destroyed) return clearStream()
+    void updateGameRoomSeen(code, token).then(() => postRoomState())
+  }, SAFETY_INTERVAL)
   const pingTimer = setInterval(() => {
+    if (res.writableEnded || res.destroyed) return clearStream()
     if (!isClosed) res.write(': ping\n\n')
   }, PING_INTERVAL)
 
-  req.on('close', () => {
+  // Penutupan dipantau dari beberapa sisi karena satu peristiwa saja tidak selalu terpicu,
+  // dan tulisan yang gagal ikut menghentikan denyut supaya kursi tidak terlihat aktif selamanya.
+  const clearStream = () => {
+    if (isClosed) return
     isClosed = true
     clearSubscription()
     clearInterval(safetyTimer)
     clearInterval(pingTimer)
     res.end()
-  })
+  }
+
+  req.on('close', clearStream)
+  req.on('aborted', clearStream)
+  res.on('close', clearStream)
+  res.on('error', clearStream)
 }
