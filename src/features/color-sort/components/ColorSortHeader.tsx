@@ -43,26 +43,28 @@ export default function ColorSortHeader({
   return (
     <header className="relative z-20 space-y-2 px-3 pt-3">
       <div className="flex items-stretch gap-2">
-        <div className="relative shrink-0">
+        <div className="relative min-w-0 shrink">
           <Link
             href="/"
             aria-label="Back to Waitplay Game Store"
-            className="block rounded-xl border border-[#26262b] bg-[#121214] px-3 py-2 transition-colors hover:border-[#43434d]"
+            className="block rounded-xl border border-[#26262b] bg-[#121214] px-2 py-2 transition-colors hover:border-[#43434d] sm:px-3"
           >
-            <p className="flex items-center gap-1 text-[20px] font-black uppercase leading-[0.85] tracking-tighter text-[#f2ede1] [font-family:'Arial_Black','Archivo_Black',system-ui]">
+            <p className="flex items-center gap-1 text-[17px] font-black uppercase leading-[0.85] tracking-tighter text-[#f2ede1] [font-family:'Arial_Black','Archivo_Black',system-ui] sm:text-[20px]">
               <span className="text-[10px] leading-none">&#9664;</span>
               Color
             </p>
-            <p className="mt-[2px] text-[20px] font-black uppercase leading-[0.9] tracking-tighter text-[#e0452a] [font-family:'Arial_Black','Archivo_Black',system-ui]">
+            <p className="mt-[2px] text-[17px] font-black uppercase leading-[0.9] tracking-tighter text-[#e0452a] [font-family:'Arial_Black','Archivo_Black',system-ui] sm:text-[20px]">
               Sort
             </p>
           </Link>
           <div className="mt-2 rounded-xl border border-[#26262b] bg-[#121214] px-2 py-[3px] text-center">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#a29d93]">Sort the colors!</p>
+            <p className="truncate text-[9px] font-semibold uppercase tracking-[0.15em] text-[#a29d93]">
+              Sort the colors!
+            </p>
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-col items-center justify-center rounded-xl border border-[#26262b] bg-[#121214] px-3">
+        <div className="flex shrink-0 flex-col items-center justify-center rounded-xl border border-[#26262b] bg-[#121214] px-2 sm:px-3">
           <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#a29d93]">Level</p>
           <p className="text-[30px] font-black leading-[0.9] text-[#f2ede1] [font-family:'Arial_Black','Archivo_Black',system-ui]">
             {level}
@@ -76,7 +78,7 @@ export default function ColorSortHeader({
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col justify-between gap-2">
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-2">
           <div className="flex items-center gap-2 rounded-xl border border-[#26262b] bg-[#121214] px-2 py-1">
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#f0b429] text-[8px] text-[#0a0a0b]">
               ★
