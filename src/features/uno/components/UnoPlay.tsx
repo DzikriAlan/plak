@@ -157,8 +157,6 @@ export default function UnoPlay() {
         <UnoHeader
           roomCode={data.roomCode}
           turnName={data.turnName}
-          drawTotal={data.drawTotal}
-          discardTotal={data.discardTotal}
           isCopied={data.isCopied}
           isSoundOn={data.isSoundOn}
           onLoadUnoRoomCode={loadUnoRoomCode}
