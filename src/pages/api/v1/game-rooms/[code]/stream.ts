@@ -5,9 +5,9 @@ import { getGameRoomRow } from '@/shared/lib/gameRoomStore'
 import { getGameRoomSubscription } from '@/shared/lib/gameRoomEvents'
 
 const PING_INTERVAL = 15000
-// Siaran dalam proses sudah menutup kebutuhan utama, jadi pembacaan cadangan dibuat jarang
-// supaya basis data tidak ditembak terus-menerus oleh setiap koneksi aliran.
-const SAFETY_INTERVAL = 15000
+// Siaran dalam proses menutup kebutuhan utama; pembacaan cadangan tetap ada supaya perubahan dari
+// instans lain ikut terkirim tanpa membebani basis data secara berlebihan.
+const SAFETY_INTERVAL = 4000
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

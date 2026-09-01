@@ -22,12 +22,15 @@ const POLL_WAITING = 400
 const POLL_OWN_TURN = 1200
 const POLL_LOBBY = 700
 const POLL_FINISHED = 4000
-// Saat aliran tersambung, penarikan cukup jadi jaring pengaman yang jarang.
-const POLL_STREAMING = 8000
+// Aliran bisa saja tersambung tetapi tidak mengirim apa pun, misalnya ketika aplikasi berjalan di
+// banyak instans, jadi penarikan cadangan hanya dilonggarkan selama pesan aliran memang berdatangan.
+const POLL_STREAMING = 1500
+const STREAM_SILENCE = 2500
 
 export const useGameRoomsControllers = () => {
   const queryClient = useQueryClient()
   const streamRef = useRef<EventSource | null>(null)
+  const streamAtRef = useRef(0)
   const [isStreaming, setIsStreaming] = useState(false)
   const {
     gameRooms,
@@ -43,7 +46,8 @@ export const useGameRoomsControllers = () => {
   // Penarikan dipercepat saat menunggu lawan dan dilonggarkan saat giliran sendiri.
   const getPollInterval = () => {
     const room = gameRooms.data
-    if (isStreaming) return POLL_STREAMING
+    const isStreamAlive = isStreaming && Date.now() - streamAtRef.current < STREAM_SILENCE
+    if (isStreamAlive) return POLL_STREAMING
     if (!room) return POLL_LOBBY
     if (room.status === 'finished') return POLL_FINISHED
     if (room.status === 'lobby') return POLL_LOBBY
@@ -153,10 +157,14 @@ export const useGameRoomsControllers = () => {
     if (!stream) return
 
     streamRef.current = stream
-    stream.onopen = () => setIsStreaming(true)
+    stream.onopen = () => {
+      streamAtRef.current = Date.now()
+      setIsStreaming(true)
+    }
     stream.onmessage = (event) => {
       const data = getStreamedRoom(event)
       if (!data) return
+      streamAtRef.current = Date.now()
       setGameRooms({ status: 'success', data })
     }
     stream.onerror = () => setIsStreaming(false)
