@@ -66,5 +66,40 @@
     "contact": "Contact",
     "social": "Social Media",
     "copyright": "© 2025 Hacara. All rights reserved."
+  },
+  "waitplay": {
+    "app": {
+      "tagline": "Turn waiting into playing.\nOne quick round, better mood."
+    },
+    "locale": {
+      "label": "Language",
+      "switch": "Switch language"
+    },
+    "store": {
+      "games": "All Games",
+      "history": "Recently Played",
+      "play": "Play",
+      "soon": "Soon",
+      "scrollGames": "Scroll the game list",
+      "scrollGamesBack": "Back to the first page",
+      "scrollHistory": "Scroll the history",
+      "scrollHistoryBack": "Back to the first history",
+      "emptyTitle": "No Games Here",
+      "emptySubtitle": "This category is empty for now. Try All instead.",
+      "emptyAction": "Show All"
+    },
+    "unit": {
+      "minute": "min",
+      "player": "player",
+      "players": "players"
+    },
+    "games": {
+      "color-sort": "Sort the colors!",
+      "uno": "Empty your hand first!",
+      "chess": "Checkmate your rival",
+      "animal-matching": "Match the animals!",
+      "maze-runner": "Guide the beetle home",
+      "congklak": "Collect the most seeds"
+    }
   }
 }

@@ -19,7 +19,7 @@
     "description": "Hacara adalah platform digital yang mempertemukan pengguna dengan vendor acara terpercaya di seluruh Indonesia.",
     "stats": {
       "vendors": "10.000+ Vendor",
-      "events": "25.000+ Acara Sukses", 
+      "events": "25.000+ Acara Sukses",
       "experience": "5+ Tahun Pengalaman"
     }
   },
@@ -66,5 +66,40 @@
     "contact": "Kontak",
     "social": "Media Sosial",
     "copyright": "© 2025 Hacara. Semua hak cipta dilindungi."
+  },
+  "waitplay": {
+    "app": {
+      "tagline": "Nunggu jadi nggak garing.\nMain bentar, mood langsung naik."
+    },
+    "locale": {
+      "label": "Bahasa",
+      "switch": "Ganti bahasa"
+    },
+    "store": {
+      "games": "Daftar Permainan",
+      "history": "Baru Dimainin",
+      "play": "Gas Main",
+      "soon": "Segera",
+      "scrollGames": "Geser daftar permainan",
+      "scrollGamesBack": "Balik ke awal daftar",
+      "scrollHistory": "Geser riwayat",
+      "scrollHistoryBack": "Balik ke awal riwayat",
+      "emptyTitle": "Gamenya Belum Ada",
+      "emptySubtitle": "Kategori ini masih kosong. Cek 'All' dulu aja, ya.",
+      "emptyAction": "Lihat Semua"
+    },
+    "unit": {
+      "minute": "menit",
+      "player": "pemain",
+      "players": "pemain"
+    },
+    "games": {
+      "color-sort": "Rapiin semua warnanya",
+      "uno": "Habisin kartumu duluan",
+      "chess": "Skak mat lawanmu",
+      "animal-matching": "Samain hewannya, buruan",
+      "maze-runner": "Anterin kumbang ke gua",
+      "congklak": "Kumpulin biji terbanyak"
+    }
   }
 }
