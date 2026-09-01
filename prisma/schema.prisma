@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("SUPABASE_CONNECTION_STRING")
 }
 
 model Task {
@@ -51,4 +51,22 @@ model UnoRoom {
 
   @@index([status, updatedAt])
   @@map("uno_rooms")
+}
+
+model GameRoom {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  game      String
+  status    String   @default("lobby")
+  seatTotal Int      @default(2)
+  players   Json
+  turn      String   @default("p1")
+  state     Json
+  moveTotal Int      @default(0)
+  winner    String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([game, status, updatedAt])
+  @@map("game_rooms")
 }
