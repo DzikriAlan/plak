@@ -4,6 +4,7 @@ import type {
   PayloadPostGameRoomsJoin,
   PayloadPostGameRoomsMove,
   PayloadPostGameRoomsLeave,
+  PayloadPostGameRoomsSeats,
   PayloadPostGameRoomsStart,
 } from '../types/gameRoomsTypes'
 
@@ -67,6 +68,21 @@ export const postGameRoomsStart = async (payload: PayloadPostGameRoomsStart) => 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: payload.token }),
+    })
+    if (!res.ok) throw new Error(res.statusText)
+    return res.json()
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') return null
+    throw error
+  }
+}
+
+export const postGameRoomsSeats = async (payload: PayloadPostGameRoomsSeats) => {
+  try {
+    const res = await fetch(`${baseUrl}/api/v1/game-rooms/${payload.code}/seats`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: payload.token, seatTotal: payload.seatTotal }),
     })
     if (!res.ok) throw new Error(res.statusText)
     return res.json()

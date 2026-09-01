@@ -19,6 +19,12 @@ export interface PayloadPostGameRoomsStart {
   token: string
 }
 
+export interface PayloadPostGameRoomsSeats {
+  code: string
+  token: string
+  seatTotal: number
+}
+
 export interface PayloadPostGameRoomsLeave {
   code: string
   token: string
@@ -55,6 +61,7 @@ export interface DataGameRooms {
   seat: string
   turn: string
   seatTotal: number
+  seatOptions: number[]
   playerTotal: number
   playerNames: string[]
   board: number[]
@@ -71,6 +78,8 @@ export interface DataGameRooms {
   token: string
 }
 
+export type DataGameRoomsSeats = DataGameRooms
+
 export type DataGameRoomsLeave = DataGameRooms
 
 export type DataGameRoomsStart = DataGameRooms
@@ -84,6 +93,13 @@ export interface GameRooms {
   statusTitle: string
   statusSubtitle: string
   data: DataGameRooms | null
+}
+
+export interface GameRoomsSeats {
+  status: string
+  statusTitle: string
+  statusSubtitle: string
+  data: DataGameRoomsSeats | null
 }
 
 export interface GameRoomsLeave {

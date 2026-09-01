@@ -5,12 +5,14 @@ import type {
   GameRoomsJoin,
   GameRoomsMove,
   GameRoomsLeave,
+  GameRoomsSeats,
   GameRoomsStart,
   PayloadGetGameRooms,
   PayloadPostGameRooms,
   PayloadPostGameRoomsJoin,
   PayloadPostGameRoomsMove,
   PayloadPostGameRoomsLeave,
+  PayloadPostGameRoomsSeats,
   PayloadPostGameRoomsStart,
 } from '../types/gameRoomsTypes'
 
@@ -18,22 +20,26 @@ interface GameRoomsStore {
   payloadPostGameRooms: PayloadPostGameRooms
   payloadGetGameRooms: PayloadGetGameRooms
   payloadPostGameRoomsJoin: PayloadPostGameRoomsJoin
+  payloadPostGameRoomsSeats: PayloadPostGameRoomsSeats
   payloadPostGameRoomsLeave: PayloadPostGameRoomsLeave
   payloadPostGameRoomsStart: PayloadPostGameRoomsStart
   payloadPostGameRoomsMove: PayloadPostGameRoomsMove
   gameRooms: GameRooms
   gameRoomsJoin: GameRoomsJoin
+  gameRoomsSeats: GameRoomsSeats
   gameRoomsLeave: GameRoomsLeave
   gameRoomsStart: GameRoomsStart
   gameRoomsMove: GameRoomsMove
   setPostGameRooms: (payload: Partial<PayloadPostGameRooms>) => void
   setGetGameRooms: (payload: Partial<PayloadGetGameRooms>) => void
   setPostGameRoomsJoin: (payload: Partial<PayloadPostGameRoomsJoin>) => void
+  setPostGameRoomsSeats: (payload: Partial<PayloadPostGameRoomsSeats>) => void
   setPostGameRoomsLeave: (payload: Partial<PayloadPostGameRoomsLeave>) => void
   setPostGameRoomsStart: (payload: Partial<PayloadPostGameRoomsStart>) => void
   setPostGameRoomsMove: (payload: Partial<PayloadPostGameRoomsMove>) => void
   setGameRooms: (state: Partial<GameRooms>) => void
   setGameRoomsJoin: (state: Partial<GameRoomsJoin>) => void
+  setGameRoomsSeats: (state: Partial<GameRoomsSeats>) => void
   setGameRoomsLeave: (state: Partial<GameRoomsLeave>) => void
   setGameRoomsStart: (state: Partial<GameRoomsStart>) => void
   setGameRoomsMove: (state: Partial<GameRoomsMove>) => void
@@ -50,12 +56,14 @@ export const useGameRoomsStates = create<GameRoomsStore>((set) => ({
   payloadPostGameRooms: { game: '', name: '' },
   payloadGetGameRooms: { code: '', token: '' },
   payloadPostGameRoomsJoin: { code: '', token: '', name: '' },
+  payloadPostGameRoomsSeats: { code: '', token: '', seatTotal: 0 },
   payloadPostGameRoomsLeave: { code: '', token: '' },
   payloadPostGameRoomsStart: { code: '', token: '' },
   payloadPostGameRoomsMove: { code: '', token: '' },
 
   gameRooms: { ...emptyState },
   gameRoomsJoin: { ...emptyState },
+  gameRoomsSeats: { ...emptyState },
   gameRoomsLeave: { ...emptyState },
   gameRoomsStart: { ...emptyState },
   gameRoomsMove: { ...emptyState },
@@ -69,6 +77,9 @@ export const useGameRoomsStates = create<GameRoomsStore>((set) => ({
   setPostGameRoomsJoin: (payload) =>
     set((state) => ({ payloadPostGameRoomsJoin: { ...state.payloadPostGameRoomsJoin, ...payload } })),
 
+  setPostGameRoomsSeats: (payload) =>
+    set((state) => ({ payloadPostGameRoomsSeats: { ...state.payloadPostGameRoomsSeats, ...payload } })),
+
   setPostGameRoomsLeave: (payload) =>
     set((state) => ({ payloadPostGameRoomsLeave: { ...state.payloadPostGameRoomsLeave, ...payload } })),
 
@@ -81,6 +92,8 @@ export const useGameRoomsStates = create<GameRoomsStore>((set) => ({
   setGameRooms: (next) => set((state) => ({ gameRooms: { ...state.gameRooms, ...next } })),
 
   setGameRoomsJoin: (next) => set((state) => ({ gameRoomsJoin: { ...state.gameRoomsJoin, ...next } })),
+
+  setGameRoomsSeats: (next) => set((state) => ({ gameRoomsSeats: { ...state.gameRoomsSeats, ...next } })),
 
   setGameRoomsLeave: (next) => set((state) => ({ gameRoomsLeave: { ...state.gameRoomsLeave, ...next } })),
 

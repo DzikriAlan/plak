@@ -8,6 +8,7 @@ import {
   postGameRoomsJoin,
   postGameRoomsMove,
   postGameRoomsLeave,
+  postGameRoomsSeats,
   postGameRoomsStart,
 } from '../services/gameRoomsServices'
 import type {
@@ -15,6 +16,7 @@ import type {
   PayloadPostGameRoomsJoin,
   PayloadPostGameRoomsMove,
   PayloadPostGameRoomsLeave,
+  PayloadPostGameRoomsSeats,
   PayloadPostGameRoomsStart,
 } from '../types/gameRoomsTypes'
 
@@ -39,6 +41,7 @@ export const useGameRoomsControllers = () => {
     setGameRoomsJoin,
     setGameRoomsMove,
     setGameRoomsLeave,
+    setGameRoomsSeats,
     setGameRoomsStart,
     setGetGameRooms,
   } = useGameRoomsStates()
@@ -104,6 +107,21 @@ export const useGameRoomsControllers = () => {
     },
     onError: () => {
       setGameRoomsStart({ status: 'error' })
+    },
+  })
+
+  const storeGameRoomsSeats = useMutation({
+    mutationFn: (payload: PayloadPostGameRoomsSeats) => postGameRoomsSeats(payload),
+    onMutate: () => {
+      setGameRoomsSeats({ status: 'loading' })
+    },
+    onSuccess: (data) => {
+      setGameRoomsSeats({ status: data ? 'success' : 'empty', data: data ?? null })
+      setGameRooms({ status: 'success', data: data ?? null })
+      queryClient.invalidateQueries({ queryKey: ['gameRooms'] })
+    },
+    onError: () => {
+      setGameRoomsSeats({ status: 'error' })
     },
   })
 
@@ -192,5 +210,6 @@ export const useGameRoomsControllers = () => {
     storeGameRoomsStart,
     storeGameRoomsMove,
     storeGameRoomsLeave,
+    storeGameRoomsSeats,
   }
 }
