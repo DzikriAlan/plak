@@ -8,13 +8,18 @@ interface Props {
   board: ChessCell[]
   lastMove: ChessPromotion | null
   isLocked: boolean
+  isFlipped?: boolean
   onSubmitChessSquare: (square: string) => void
 }
 
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1']
+const WHITE_FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+const WHITE_RANKS = ['8', '7', '6', '5', '4', '3', '2', '1']
 
-export default function ChessBoard({ board, lastMove, isLocked, onSubmitChessSquare }: Props) {
+export default function ChessBoard({ board, lastMove, isLocked, isFlipped = false, onSubmitChessSquare }: Props) {
+  // Pemain hitam melihat papan terbalik supaya bidaknya tetap berada di sisi bawah.
+  const FILES = isFlipped ? [...WHITE_FILES].reverse() : WHITE_FILES
+  const RANKS = isFlipped ? [...WHITE_RANKS].reverse() : WHITE_RANKS
+  const cells = isFlipped ? [...board].reverse() : board
   const gridRef = useRef<HTMLDivElement | null>(null)
   const playedRef = useRef('')
   const boardSize = 'max-w-[min(100%,calc(100dvh-22rem))]'
@@ -35,8 +40,9 @@ export default function ChessBoard({ board, lastMove, isLocked, onSubmitChessSqu
     if (!piece || !square) return
 
     const cell = grid.clientWidth / 8
-    const fileGap = FILES.indexOf(lastMove.from[0]) - FILES.indexOf(lastMove.to[0])
-    const rankGap = Number(lastMove.to[1]) - Number(lastMove.from[1])
+    const direction = isFlipped ? -1 : 1
+    const fileGap = (WHITE_FILES.indexOf(lastMove.from[0]) - WHITE_FILES.indexOf(lastMove.to[0])) * direction
+    const rankGap = (Number(lastMove.to[1]) - Number(lastMove.from[1])) * direction
 
     square.style.zIndex = '20'
     piece.style.transition = 'none'
@@ -54,7 +60,7 @@ export default function ChessBoard({ board, lastMove, isLocked, onSubmitChessSqu
       piece.removeEventListener('transitionend', clearLift)
       clearLift()
     }
-  }, [lastMove])
+  }, [lastMove, isFlipped])
 
   const getSquareTone = (cell: ChessCell) => {
     if (cell.isCheck) return 'bg-[#d0453a]'
@@ -88,7 +94,7 @@ export default function ChessBoard({ board, lastMove, isLocked, onSubmitChessSqu
           ref={gridRef}
           className="grid aspect-square w-full grid-cols-8 grid-rows-[repeat(8,minmax(0,1fr))] overflow-hidden rounded-lg"
         >
-          {board.map((cell) => (
+          {cells.map((cell) => (
             <button
               key={cell.square}
               type="button"

@@ -3,10 +3,12 @@
 import Link from 'next/link'
 
 interface Props {
+  isInviteLoading?: boolean
+  onSubmitChessInvite?: () => void
   onLoadChessSettings: () => void
 }
 
-export default function ChessHeader({ onLoadChessSettings }: Props) {
+export default function ChessHeader({ isInviteLoading = false, onSubmitChessInvite, onLoadChessSettings }: Props) {
   return (
     <header className="flex shrink-0 items-center gap-2">
       <Link
@@ -18,7 +20,21 @@ export default function ChessHeader({ onLoadChessSettings }: Props) {
         <span className="text-base font-black uppercase leading-none tracking-tighter text-[#f2ede1]">Chess</span>
       </Link>
 
-      <div className="flex min-w-0 flex-1 items-center justify-center" />
+      <button
+        type="button"
+        disabled={isInviteLoading}
+        onClick={onSubmitChessInvite}
+        className="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-[#26262b] bg-[#121214] px-2 py-2 text-[#f2ede1] transition-colors hover:border-[#43434d] disabled:opacity-45"
+      >
+        <svg viewBox="0 0 24 24" className="h-[15px] w-[15px]" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <circle cx="9" cy="8.5" r="3.2" />
+          <path d="M3.5 19c0-3 2.5-4.8 5.5-4.8s5.5 1.8 5.5 4.8" strokeLinecap="round" />
+          <path d="M18 8v6M21 11h-6" strokeLinecap="round" />
+        </svg>
+        <span className="text-[9px] font-semibold uppercase tracking-[0.16em]">
+          {isInviteLoading ? 'Menyiapkan…' : 'Main berdua'}
+        </span>
+      </button>
 
       <button
         type="button"

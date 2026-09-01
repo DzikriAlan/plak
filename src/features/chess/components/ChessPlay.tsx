@@ -1,7 +1,10 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/router'
 import { useChessStates } from '../states/chessStates'
+import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates'
+import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import GameAudio, { type GameAudioCue } from '@/shared/components/reusable/GameAudio'
 import ChessHeader from './ChessHeader'
 import ChessBoard from './ChessBoard'
@@ -38,10 +41,14 @@ export default function ChessPlay() {
     setChessUndo,
     setChessRestart,
   } = useChessStates()
+  const { gameRooms } = useGameRoomsStates()
+  const { storeGameRooms } = useGameRoomsControllers()
+  const router = useRouter()
   const engineRef = useRef<Worker | null>(null)
   const [filters, setFilters] = useState({
     activeLevel: 2,
     activeMode: 'solo',
+    isInviting: false,
     isEngineReady: false,
     isThinking: false,
     isSettingsOpen: false,
@@ -79,6 +86,7 @@ export default function ChessPlay() {
       isEngineReady: filters.isEngineReady,
       isThinking: filters.isThinking,
       isSettingsOpen: filters.isSettingsOpen,
+      isInviting: filters.isInviting,
       isSoundOn: filters.isSoundOn,
       cue: filters.cue,
       advantage,
@@ -122,6 +130,10 @@ export default function ChessPlay() {
   const editChessMode = (modeId: string) => {
     setFilters((prev) => ({ ...prev, activeMode: modeId }))
   }
+  const submitChessInvite = () => {
+    setFilters((prev) => ({ ...prev, isInviting: true }))
+    storeGameRooms.mutate({ game: 'chess', name: 'Pemain 1' })
+  }
   const editChessSound = () => {
     setFilters((prev) => ({ ...prev, isSoundOn: !prev.isSoundOn }))
   }
@@ -142,6 +154,17 @@ export default function ChessPlay() {
   useEffect(() => {
     setChessInit()
   }, [setChessInit])
+  useEffect(() => {
+    // Ruangan baru langsung dibuka setelah server mengirim kode dan kursi tuan rumah.
+    const room = gameRooms.data
+    if (!filters.isInviting || !room?.code || !room.token) return
+    try {
+      window.localStorage.setItem(`game-room-${room.code}`, room.token)
+    } catch {
+      /* penyimpanan bisa ditolak peramban, kursi tetap dikirim lewat permintaan gabung. */
+    }
+    router.push(`/chess/${room.code}`)
+  }, [gameRooms.data, filters.isInviting, router])
   useEffect(() => {
     const game = chessGame.data
     if (!game) return
@@ -199,7 +222,11 @@ export default function ChessPlay() {
   return (
     <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-3 sm:p-5">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
-        <ChessHeader onLoadChessSettings={loadChessSettings} />
+        <ChessHeader
+          isInviteLoading={data.isInviting}
+          onSubmitChessInvite={submitChessInvite}
+          onLoadChessSettings={loadChessSettings}
+        />
 
         <GameAudio
           isActive
