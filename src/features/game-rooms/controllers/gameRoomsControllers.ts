@@ -199,6 +199,10 @@ export const useGameRoomsControllers = () => {
       setGameRooms({ status: 'error' })
       return
     }
+    // Selama aliran masih mengirim kabar, hasil penarikan diabaikan karena bisa saja sudah basi
+    // dan membuat tampilan seperti jumlah pemain berpindah-pindah sendiri.
+    if (Date.now() - streamAtRef.current < STREAM_SILENCE) return
+
     const data = fetchGameRooms.data ?? null
     setGameRooms({ status: data ? 'success' : 'empty', data })
   }, [fetchGameRooms.data, fetchGameRooms.isError, fetchGameRooms.isPending, setGameRooms])
