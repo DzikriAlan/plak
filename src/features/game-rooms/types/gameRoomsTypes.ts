@@ -63,6 +63,7 @@ export interface DataGameRooms {
   seatTotal: number
   seatOptions: number[]
   playerTotal: number
+  rivalOnlineTotal: number
   playerNames: string[]
   board: number[]
   lastHole: number

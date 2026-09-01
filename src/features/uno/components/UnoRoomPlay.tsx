@@ -76,7 +76,13 @@ export default function UnoRoomPlay({ code }: Props) {
       seatLabel: seat ? getSeatLabel(seat) : 'Penonton',
       turnLabel: isMyTurn ? 'Giliranmu' : 'Giliran lawan',
       // Penanda besar dipakai supaya pemain tahu kenapa kartu belum bisa dibuang.
-      statusLabel: isMyTurn ? 'Giliranmu, buang kartu' : 'Menunggu langkah lawan',
+      statusLabel: !seat
+        ? 'Ruangan penuh, kamu menonton'
+        : isMyTurn
+          ? 'Giliranmu, buang kartu'
+          : (room?.rivalOnlineTotal ?? 0) > 0
+            ? 'Menunggu langkah lawan'
+            : 'Menunggu lawan tersambung',
       isWaiting: isPlaying && !isMyTurn,
       opponents: getOpponents(),
       topCard: (uno?.topCard ?? null) as UnoCard | null,

@@ -96,9 +96,13 @@ export default function ChessRoomPlay({ code }: Props) {
       seatLabel: seatColor === 'w' ? 'Putih' : 'Hitam',
       turnLabel: isMyTurn ? 'Giliranmu' : 'Giliran lawan',
       // Penanda besar dipakai supaya pemain tahu kenapa papan belum bisa disentuh.
-      statusLabel: isMyTurn
-        ? 'Giliranmu, silakan jalan'
-        : `Menunggu langkah ${seatColor === 'w' ? 'Hitam' : 'Putih'}`,
+      statusLabel: !seat
+        ? 'Ruangan penuh, kamu menonton'
+        : isMyTurn
+          ? 'Giliranmu, silakan jalan'
+          : (room?.rivalOnlineTotal ?? 0) > 0
+            ? `Menunggu langkah ${seatColor === 'w' ? 'Hitam' : 'Putih'}`
+            : 'Menunggu lawan tersambung',
       isWaiting: isPlaying && !isMyTurn,
       lastMove: room?.lastMove ?? null,
       isFlipped: seatColor === 'b',

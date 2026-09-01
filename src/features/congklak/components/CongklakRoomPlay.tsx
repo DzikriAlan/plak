@@ -87,7 +87,13 @@ export default function CongklakRoomPlay({ code }: Props) {
       botStore: getHole(rivalStoreIndex, false, false),
       turn: isMyTurn ? 'player' : 'bot',
       // Penanda besar dipakai supaya pemain tahu kenapa lubang belum bisa disentuh.
-      statusLabel: isMyTurn ? 'Giliranmu, pilih lubang' : 'Menunggu langkah lawan',
+      statusLabel: !seat
+        ? 'Ruangan penuh, kamu menonton'
+        : isMyTurn
+          ? 'Giliranmu, pilih lubang'
+          : (room?.rivalOnlineTotal ?? 0) > 0
+            ? 'Menunggu langkah lawan'
+            : 'Menunggu lawan tersambung',
       isWaiting: isPlaying && !isMyTurn,
       seat,
       code,
