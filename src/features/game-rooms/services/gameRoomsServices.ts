@@ -9,6 +9,13 @@ import type {
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
 
+// Aliran dipakai untuk menerima perubahan ruangan tanpa menunggu penarikan berikutnya.
+export const getGameRoomsStream = (payload: PayloadGetGameRooms) => {
+  if (typeof window === 'undefined' || typeof window.EventSource === 'undefined') return null
+  const queryString = '?' + new URLSearchParams({ token: payload.token }).toString()
+  return new EventSource(`${baseUrl}/api/v1/game-rooms/${payload.code}/stream${queryString}`)
+}
+
 export const postGameRooms = async (payload: PayloadPostGameRooms) => {
   try {
     const res = await fetch(`${baseUrl}/api/v1/game-rooms`, {

@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useGameRoomsStates } from '../states/gameRoomsStates'
 import {
   getGameRooms,
+  getGameRoomsStream,
   postGameRooms,
   postGameRoomsJoin,
   postGameRoomsMove,
@@ -21,9 +22,13 @@ const POLL_WAITING = 400
 const POLL_OWN_TURN = 1200
 const POLL_LOBBY = 700
 const POLL_FINISHED = 4000
+// Saat aliran tersambung, penarikan cukup jadi jaring pengaman yang jarang.
+const POLL_STREAMING = 8000
 
 export const useGameRoomsControllers = () => {
   const queryClient = useQueryClient()
+  const streamRef = useRef<EventSource | null>(null)
+  const [isStreaming, setIsStreaming] = useState(false)
   const {
     gameRooms,
     payloadGetGameRooms,
@@ -38,6 +43,7 @@ export const useGameRoomsControllers = () => {
   // Penarikan dipercepat saat menunggu lawan dan dilonggarkan saat giliran sendiri.
   const getPollInterval = () => {
     const room = gameRooms.data
+    if (isStreaming) return POLL_STREAMING
     if (!room) return POLL_LOBBY
     if (room.status === 'finished') return POLL_FINISHED
     if (room.status === 'lobby') return POLL_LOBBY
@@ -127,6 +133,40 @@ export const useGameRoomsControllers = () => {
     },
   })
 
+  // Langganan hanya dibuat ulang saat kode atau kursinya benar-benar berubah, bukan tiap render.
+  const streamCode = payloadGetGameRooms.code
+  const streamToken = payloadGetGameRooms.token
+
+  useEffect(() => {
+    // Aliran baru dibuka setelah kursi diketahui supaya tampilan tidak tertimpa data penonton.
+    if (!streamCode || !streamToken) return
+
+    const getStreamedRoom = (event: MessageEvent<string>) => {
+      try {
+        return JSON.parse(event.data)
+      } catch {
+        return null
+      }
+    }
+
+    const stream = getGameRoomsStream({ code: streamCode, token: streamToken })
+    if (!stream) return
+
+    streamRef.current = stream
+    stream.onopen = () => setIsStreaming(true)
+    stream.onmessage = (event) => {
+      const data = getStreamedRoom(event)
+      if (!data) return
+      setGameRooms({ status: 'success', data })
+    }
+    stream.onerror = () => setIsStreaming(false)
+
+    return () => {
+      stream.close()
+      streamRef.current = null
+      setIsStreaming(false)
+    }
+  }, [streamCode, streamToken, setGameRooms])
   useEffect(() => {
     if (fetchGameRooms.isPending) return
     if (fetchGameRooms.isError) {
