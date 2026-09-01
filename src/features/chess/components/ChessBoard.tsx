@@ -8,17 +8,16 @@ interface Props {
   board: ChessCell[]
   lastMove: ChessPromotion | null
   isLocked: boolean
-  isCompact: boolean
   onSubmitChessSquare: (square: string) => void
 }
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1']
 
-export default function ChessBoard({ board, lastMove, isLocked, isCompact, onSubmitChessSquare }: Props) {
+export default function ChessBoard({ board, lastMove, isLocked, onSubmitChessSquare }: Props) {
   const gridRef = useRef<HTMLDivElement | null>(null)
   const playedRef = useRef('')
-  const boardSize = isCompact ? 'max-w-[min(100%,calc(100dvh-30rem))]' : 'max-w-[min(100%,calc(100dvh-22rem))]'
+  const boardSize = 'max-w-[min(100%,calc(100dvh-22rem))]'
   const label = 'flex items-center justify-center text-[9px] font-bold text-[#eeeed2]/85 sm:text-[11px]'
 
   // Geser bidak dari petak asal ke petak tujuan (teknik FLIP) agar tidak terasa meloncat.

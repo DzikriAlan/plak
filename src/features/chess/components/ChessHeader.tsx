@@ -3,20 +3,10 @@
 import Link from 'next/link'
 
 interface Props {
-  isThinking: boolean
-  isEngineReady: boolean
   onLoadChessSettings: () => void
 }
 
-export default function ChessHeader({ isThinking, isEngineReady, onLoadChessSettings }: Props) {
-  const getIndicator = () => {
-    if (!isEngineReady) return { label: 'Loading engine', tone: '#a29d93' }
-    if (isThinking) return { label: 'Thinking', tone: '#f0b429' }
-    return null
-  }
-
-  const indicator = getIndicator()
-
+export default function ChessHeader({ onLoadChessSettings }: Props) {
   return (
     <header className="flex shrink-0 items-center gap-2">
       <Link
@@ -28,17 +18,7 @@ export default function ChessHeader({ isThinking, isEngineReady, onLoadChessSett
         <span className="text-base font-black uppercase leading-none tracking-tighter text-[#f2ede1]">Chess</span>
       </Link>
 
-      <div className="flex min-w-0 flex-1 items-center justify-center">
-        {indicator ? (
-          <span className="flex items-center gap-2 text-[11px] font-medium" style={{ color: indicator.tone }}>
-            <span
-              className="block h-2 w-2 animate-pulse rounded-full"
-              style={{ backgroundColor: indicator.tone }}
-            />
-            {indicator.label}
-          </span>
-        ) : null}
-      </div>
+      <div className="flex min-w-0 flex-1 items-center justify-center" />
 
       <button
         type="button"

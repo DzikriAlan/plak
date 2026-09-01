@@ -35,7 +35,6 @@ export interface DataChessGame {
   resultTitle: string
   resultSubtitle: string
   fen: string
-  insights: ChessInsight[]
 }
 
 export interface ChessGame {
@@ -43,28 +42,4 @@ export interface ChessGame {
   statusTitle: string
   statusSubtitle: string
   data: DataChessGame | null
-}
-
-export type ChessInsight = {
-  id: string
-  turnLabel: string
-  moverLabel: string
-  color: ChessColor
-  san: string
-  reasons: string[]
-  threat: string
-  plan: string
-  expectedReply: string
-  counter: string
-  evalText: string
-  qualityLabel: string
-  qualityTone: string
-}
-
-export type PayloadChessAnalysis = {
-  fen: string
-  scoreCp: number | null
-  scoreMate: number | null
-  depth: number
-  pv: string[]
 }
