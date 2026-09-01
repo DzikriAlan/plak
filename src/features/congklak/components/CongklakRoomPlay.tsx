@@ -21,18 +21,21 @@ interface Props {
 }
 
 export default function CongklakRoomPlay({ code }: Props) {
-  const { gameRooms, setGameRooms, setGetGameRooms } = useGameRoomsStates()
+  const { gameRooms, setGetGameRooms } = useGameRoomsStates()
   const { storeGameRoomsJoin, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
   const [filters, setFilters] = useState({
     isExitOpen: false,
     isSoundOn: true,
+    displayBoard: [] as number[],
+    animatedMove: 0,
     isCopied: false,
     inviteUrl: '',
     pagination: { currentPage: 1, perPage: 0, totalItem: 0, totalPage: 1 },
   })
   const data = useMemo(() => {
     const room = gameRooms.data
-    const board = room?.board ?? []
+    // Papan yang dilihat pemain berasal dari tahapan animasi supaya biji terlihat ditaburkan.
+    const board = filters.displayBoard.length ? filters.displayBoard : room?.board ?? []
     const seat = room?.seat ?? ''
     const isHostSeat = seat !== 'p2'
 
@@ -106,22 +109,6 @@ export default function CongklakRoomPlay({ code }: Props) {
   const submitCongklakHole = (holeIndex: number) => {
     const room = gameRooms.data
     if (!room || room.turn !== room.seat) return
-
-    // Papan langsung diperbarui memakai aturan yang sama dengan server, lalu server yang memutuskan.
-    const getPredictedRoom = () => {
-      const side = room.seat === 'p1' ? 'host' : 'guest'
-      const resolved = getCongklakResolvedMove(room.board, side, holeIndex, room.moveTotal)
-      return {
-        ...room,
-        board: resolved.board,
-        turn: resolved.turn === 'host' ? 'p1' : 'p2',
-        moveTotal: resolved.moveTotal,
-        hostStore: resolved.board[7] ?? 0,
-        guestStore: resolved.board[15] ?? 0,
-      }
-    }
-
-    setGameRooms({ status: 'success', data: getPredictedRoom() })
     storeGameRoomsMove.mutate({ code, token: room.token, holeIndex })
   }
   const submitGameRoomsInvite = () => {
@@ -139,7 +126,7 @@ export default function CongklakRoomPlay({ code }: Props) {
     setFilters((prev) => ({ ...prev, isSoundOn: !prev.isSoundOn }))
   }
   const clearCongklakRoom = () => {
-    window.location.href = '/congklak'
+    window.location.href = data.isLeftByRival ? '/' : '/congklak'
   }
 
   const loadCongklakExit = () => {
@@ -170,6 +157,55 @@ export default function CongklakRoomPlay({ code }: Props) {
     storeGameRoomsJoin.mutate({ code, token, name: '' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, setGetGameRooms])
+  useEffect(() => {
+    const room = gameRooms.data
+    if (!room) return
+
+    // Papan disamakan tanpa animasi saat pertama dibuka atau saat tidak ada langkah baru.
+    const getIsSameBoard = (left: number[], right: number[]) =>
+      left.length === right.length && left.every((seed, index) => seed === right[index])
+    const previous = filters.displayBoard
+    const isNewMove = room.moveTotal > filters.animatedMove && room.lastHole >= 0 && previous.length === room.board.length
+
+    if (!isNewMove) {
+      if (!getIsSameBoard(previous, room.board)) {
+        setFilters((prev) => ({ ...prev, displayBoard: room.board, animatedMove: room.moveTotal }))
+      }
+      return
+    }
+
+    const side = room.lastSeat === 'p1' ? 'host' : 'guest'
+    const resolved = getCongklakResolvedMove(previous, side, room.lastHole, 0)
+    const frames = resolved.frames
+    if (!getIsSameBoard(resolved.board, room.board)) {
+      setFilters((prev) => ({ ...prev, displayBoard: room.board, animatedMove: room.moveTotal }))
+      return
+    }
+
+    // Tempo menaburkan biji dijaga tetap terbaca, tetapi langkah panjang dipercepat.
+    const stepDelay = Math.min(150, Math.max(60, Math.round(1400 / Math.max(frames.length, 1))))
+    let step = 0
+    const timer = window.setInterval(() => {
+      step += 1
+      if (step >= frames.length) {
+        window.clearInterval(timer)
+        setFilters((prev) => ({ ...prev, displayBoard: room.board, animatedMove: room.moveTotal }))
+        return
+      }
+      setFilters((prev) => ({ ...prev, displayBoard: frames[step] }))
+    }, stepDelay)
+
+    return () => window.clearInterval(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameRooms.data?.moveTotal, gameRooms.data?.board])
+  useEffect(() => {
+    // Sesi yang ditutup lawan tidak bisa dilanjutkan, jadi pemain diantar kembali ke beranda.
+    if (!data.isLeftByRival) return
+    const timer = window.setTimeout(() => {
+      window.location.href = '/'
+    }, 3000)
+    return () => window.clearTimeout(timer)
+  }, [data.isLeftByRival])
   useEffect(() => {
     const token = gameRooms.data?.token
     if (!token) return
