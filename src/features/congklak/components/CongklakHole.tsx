@@ -69,9 +69,14 @@ export default function CongklakHole({ hole, onSubmitCongklakHole }: Props) {
   }
 
   const seeds = getSeeds()
-  const ringTone = hole.side === 'player' ? 'shadow-[inset_0_3px_0_#f0b429]' : 'shadow-[inset_0_3px_0_#6d4bc4]'
-  const activeTone = hole.isActive ? 'border-[#f2ede1]' : 'border-[#26262b]'
-  const playableTone = hole.isPlayable ? 'hover:border-[#43434d] active:opacity-80' : ''
+  // Warna cincin dibuat pekat, bukan transparan, supaya ketebalannya terbaca rata di seluruh sisi.
+  const getRingTone = () => {
+    if (hole.isActive) return 'border-[#f2ede1]'
+    if (hole.side === 'player') return hole.isPlayable ? 'border-[#f0b429]' : 'border-[#8d6f24]'
+    return 'border-[#5b46a3]'
+  }
+  const ringTone = getRingTone()
+  const playableTone = hole.isPlayable ? 'hover:border-[#f7d06a] active:scale-95' : ''
 
   return (
     <button
@@ -79,8 +84,11 @@ export default function CongklakHole({ hole, onSubmitCongklakHole }: Props) {
       disabled={!hole.isPlayable}
       aria-label={`Lubang ${hole.index + 1} berisi ${hole.seedTotal} biji`}
       onClick={() => onSubmitCongklakHole(hole.index)}
-      className={`relative h-full max-h-[76px] max-w-full rounded-full border bg-[#121214] transition-colors [aspect-ratio:1] disabled:cursor-default sm:max-h-[92px] ${ringTone} ${activeTone} ${playableTone}`}
+      className={`relative h-full max-h-[76px] max-w-full rounded-full border-2 bg-[#0d0d0f] transition-all [aspect-ratio:1] disabled:cursor-default sm:max-h-[92px] ${ringTone} ${playableTone}`}
     >
+      {/* Bayangan cekung dipasang di lapisan terpisah supaya tidak menutupi sebagian cincin. */}
+      <span className="pointer-events-none absolute inset-0 rounded-full shadow-[inset_0_3px_8px_rgba(0,0,0,0.7)]" />
+
       {seeds.map((seed) => (
         <span
           key={seed.id}
