@@ -133,7 +133,7 @@ export default function UnoPlay() {
     const room = gameRooms.data
     if (!filters.isInviting || !room?.code || !room.token) return
     try {
-      window.localStorage.setItem(`game-room-${room.code}`, room.token)
+      window.sessionStorage.setItem(`game-room-${room.code}`, room.token)
     } catch {
       /* penyimpanan bisa ditolak peramban, kursi tetap dikirim lewat permintaan gabung. */
     }

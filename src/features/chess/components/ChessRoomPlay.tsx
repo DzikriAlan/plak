@@ -143,10 +143,10 @@ export default function ChessRoomPlay({ code }: Props) {
   }
 
   useEffect(() => {
-    // Kursi disimpan per ruangan supaya pemain tetap di kursinya saat halaman dimuat ulang.
+    // Kursi disimpan per tab supaya dua tab di peramban yang sama tetap dapat kursi berbeda.
     const getStoredToken = () => {
       try {
-        return window.localStorage.getItem(`game-room-${code}`) ?? ''
+        return window.sessionStorage.getItem(`game-room-${code}`) ?? ''
       } catch {
         return ''
       }
@@ -162,7 +162,7 @@ export default function ChessRoomPlay({ code }: Props) {
     const token = gameRooms.data?.token
     if (!token) return
     try {
-      window.localStorage.setItem(`game-room-${code}`, token)
+      window.sessionStorage.setItem(`game-room-${code}`, token)
     } catch {
       return
     }
