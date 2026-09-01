@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import {
+  getGameRoomAbandonedSeat,
   getGameRoomDealtState,
   getGameRoomFreeSeat,
   getGameRoomSeat,
@@ -27,14 +28,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const seat = getGameRoomSeat(room.players, token)
     if (seat) return res.status(200).json({ ...getGameRoomView(room, seat), token })
 
-    const freeSeat = getGameRoomFreeSeat(room.players, room.seatTotal)
-    if (!freeSeat) return res.status(409).json({ message: 'Room is full' })
-
     const nextToken = getGameRoomToken()
-    const players = [
-      ...room.players,
-      { seat: freeSeat, token: nextToken, name: name || `Pemain ${room.players.length + 1}` },
-    ]
+    const freeSeat = getGameRoomFreeSeat(room.players, room.seatTotal)
+    // Kursi kosong dipakai lebih dulu; bila penuh, kursi yang ditinggalkan boleh diambil alih.
+    const takenSeat = freeSeat ?? getGameRoomAbandonedSeat(room.players)
+    if (!takenSeat) return res.status(409).json({ message: 'Room is full' })
+
+    const players = freeSeat
+      ? [
+          ...room.players,
+          { seat: freeSeat, token: nextToken, name: name || `Pemain ${room.players.length + 1}`, seenAt: Date.now() },
+        ]
+      : room.players.map((player) =>
+          player.seat === takenSeat
+            ? { ...player, token: nextToken, name: name || player.name, seenAt: Date.now() }
+            : player,
+        )
     const isTableFull = players.length >= room.seatTotal
     const seats = players.map((player) => player.seat)
     const dealt = isTableFull ? getGameRoomDealtState(room.game, seats) : null
@@ -46,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!updated) return res.status(404).json({ message: 'Room not found' })
     postGameRoomEvent(code, updated)
 
-    return res.status(200).json({ ...getGameRoomView(updated, freeSeat), token: nextToken })
+    return res.status(200).json({ ...getGameRoomView(updated, takenSeat), token: nextToken })
   } catch {
     return res.status(500).json({ message: 'Failed to join room' })
   }
