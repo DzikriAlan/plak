@@ -24,7 +24,7 @@ interface Props {
 }
 
 export default function UnoRoomPlay({ code }: Props) {
-  const { gameRooms, setGetGameRooms } = useGameRoomsStates()
+  const { gameRooms, setGameRooms, setGetGameRooms } = useGameRoomsStates()
   const { storeGameRoomsJoin, storeGameRoomsStart, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
   const [filters, setFilters] = useState({
     isExitOpen: false,
@@ -115,6 +115,12 @@ export default function UnoRoomPlay({ code }: Props) {
       setFilters((prev) => ({ ...prev, pendingWildCardId: cardId }))
       return
     }
+    const getPredictedRoom = () => ({
+      ...room,
+      uno: room.uno ? { ...room.uno, hand: room.uno.hand.filter((item) => item.id !== cardId) } : room.uno,
+    })
+
+    setGameRooms({ status: 'success', data: getPredictedRoom() })
     storeGameRoomsMove.mutate({ code, token: room.token, action: 'play', cardId })
   }
   const submitUnoColor = (color: UnoColor) => {

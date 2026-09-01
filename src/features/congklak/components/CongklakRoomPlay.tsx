@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { CongklakHole } from '../types/congklakTypes'
+import { getCongklakResolvedMove } from '@/shared/lib/congklakEngine'
 import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates'
 import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import GameRoomsInvite from '@/features/game-rooms/components/GameRoomsInvite'
@@ -20,7 +21,7 @@ interface Props {
 }
 
 export default function CongklakRoomPlay({ code }: Props) {
-  const { gameRooms, setGetGameRooms } = useGameRoomsStates()
+  const { gameRooms, setGameRooms, setGetGameRooms } = useGameRoomsStates()
   const { storeGameRoomsJoin, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
   const [filters, setFilters] = useState({
     isExitOpen: false,
@@ -105,6 +106,22 @@ export default function CongklakRoomPlay({ code }: Props) {
   const submitCongklakHole = (holeIndex: number) => {
     const room = gameRooms.data
     if (!room || room.turn !== room.seat) return
+
+    // Papan langsung diperbarui memakai aturan yang sama dengan server, lalu server yang memutuskan.
+    const getPredictedRoom = () => {
+      const side = room.seat === 'p1' ? 'host' : 'guest'
+      const resolved = getCongklakResolvedMove(room.board, side, holeIndex, room.moveTotal)
+      return {
+        ...room,
+        board: resolved.board,
+        turn: resolved.turn === 'host' ? 'p1' : 'p2',
+        moveTotal: resolved.moveTotal,
+        hostStore: resolved.board[7] ?? 0,
+        guestStore: resolved.board[15] ?? 0,
+      }
+    }
+
+    setGameRooms({ status: 'success', data: getPredictedRoom() })
     storeGameRoomsMove.mutate({ code, token: room.token, holeIndex })
   }
   const submitGameRoomsInvite = () => {

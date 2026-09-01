@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function ChessRoomPlay({ code }: Props) {
-  const { gameRooms, setGetGameRooms } = useGameRoomsStates()
+  const { gameRooms, setGameRooms, setGetGameRooms } = useGameRoomsStates()
   const { storeGameRoomsJoin, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
   const [filters, setFilters] = useState({
     isExitOpen: false,
@@ -134,6 +134,24 @@ export default function ChessRoomPlay({ code }: Props) {
     }
 
     if (filters.selected && getIsTarget(filters.selected, square)) {
+      const getPredictedRoom = () => {
+        const chess = new Chess(room.fen)
+        try {
+          chess.move({ from: filters.selected, to: square, promotion: 'q' })
+        } catch {
+          return null
+        }
+        return {
+          ...room,
+          fen: chess.fen(),
+          lastMove: { from: filters.selected, to: square },
+          turn: chess.turn() === 'w' ? 'p1' : 'p2',
+          moveTotal: room.moveTotal + 1,
+        }
+      }
+
+      const predicted = getPredictedRoom()
+      if (predicted) setGameRooms({ status: 'success', data: predicted })
       storeGameRoomsMove.mutate({ code, token: room.token, from: filters.selected, to: square, promotion: 'q' })
       setFilters((prev) => ({ ...prev, selected: '' }))
       return
