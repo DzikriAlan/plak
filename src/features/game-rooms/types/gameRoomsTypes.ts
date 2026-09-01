@@ -65,6 +65,8 @@ export interface DataGameRooms {
   playerTotal: number
   playerNames: string[]
   board: number[]
+  lastHole: number
+  lastSeat: string
   fen: string
   lastMove: { from: string; to: string } | null
   hostStore: number

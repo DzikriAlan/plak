@@ -101,7 +101,8 @@ const getCongklakAppliedMove = (room: GameRoomRecord, seat: GameRoomSeat, payloa
 
   const resolved = getCongklakResolvedMove(board, side, holeIndex, room.moveTotal)
   return {
-    state: { board: resolved.board },
+    // Lubang asal ikut disimpan supaya lawan bisa menaburkan biji dengan tahapan yang sama.
+    state: { board: resolved.board, lastHole: holeIndex, lastSeat: seat },
     turn: resolved.turn === 'host' ? 'p1' : 'p2',
     moveTotal: resolved.moveTotal,
     status: resolved.isFinished ? 'finished' : 'playing',
@@ -177,6 +178,8 @@ export const getGameRoomView = (room: GameRoomRecord, seat: GameRoomSeat | null)
     playerTotal: room.players.length,
     playerNames: room.players.map((player) => player.name),
     board,
+    lastHole: typeof room.state.lastHole === 'number' ? room.state.lastHole : -1,
+    lastSeat: String(room.state.lastSeat ?? ''),
     fen: String(room.state.fen ?? ''),
     lastMove: (room.state.lastMove as { from: string; to: string } | null) ?? null,
     hostStore: board[CONGKLAK_HOST_STORE] ?? 0,

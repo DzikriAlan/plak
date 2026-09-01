@@ -2,6 +2,7 @@ export type CongklakSeat = 'host' | 'guest'
 
 export type CongklakResolvedMove = {
   board: number[]
+  frames: number[][]
   turn: CongklakSeat
   moveTotal: number
   captureTotal: number
@@ -79,11 +80,14 @@ export const getCongklakResolvedMove = (
   let captureTotal = 0
   let isExtraTurn = false
   next[holeIndex] = 0
+  // Tiap tahap direkam supaya klien bisa menaburkan biji satu per satu, bukan melompat ke hasil.
+  const frames: number[][] = [[...next]]
 
   for (let guard = 0; guard < 4096 && hand > 0; guard += 1) {
     cursor = getNextIndex(seat, cursor)
     next[cursor] += 1
     hand -= 1
+    frames.push([...next])
     if (hand > 0) continue
 
     // Berhenti di rumah sendiri berarti pemain mendapat giliran tambahan.
@@ -95,6 +99,7 @@ export const getCongklakResolvedMove = (
     if (next[cursor] > 1) {
       hand = next[cursor]
       next[cursor] = 0
+      frames.push([...next])
       continue
     }
     // Berhenti di lubang kosong milik sendiri berarti menembak isi lubang seberang.
@@ -104,16 +109,21 @@ export const getCongklakResolvedMove = (
       next[getStoreIndex(seat)] += captureTotal
       next[cursor] = 0
       next[opposite] = 0
+      frames.push([...next])
     }
   }
 
   const turn = isExtraTurn ? seat : getRivalSeat(seat)
   // Permainan berakhir saat pemain yang mendapat giliran kehabisan biji.
   const isFinished = !getCongklakSideTotal(next, turn)
-  if (isFinished) getSweptBoard(next)
+  if (isFinished) {
+    getSweptBoard(next)
+    frames.push([...next])
+  }
 
   return {
     board: next,
+    frames,
     turn,
     moveTotal: moveTotal + 1,
     captureTotal,
