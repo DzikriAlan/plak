@@ -9,6 +9,8 @@ interface Props {
   playerStore: CongklakHoleType
   botStore: CongklakHoleType
   turn: string
+  playerLabel?: string
+  botLabel?: string
   onSubmitCongklakHole: (holeIndex: number) => void
 }
 
@@ -18,6 +20,8 @@ export default function CongklakBoard({
   playerStore,
   botStore,
   turn,
+  playerLabel = 'Rumah Kamu',
+  botLabel = 'Rumah Bot',
   onSubmitCongklakHole,
 }: Props) {
   // Baris papan dibaca dari atas: lubang lawan naik ke rumahnya, lubang pemain turun ke rumahnya.
@@ -44,7 +48,7 @@ export default function CongklakBoard({
           !isPlayerTurn,
         )} ${getStoreBorder(botStore.isActive)}`}
       >
-        <p className="text-[8px] font-semibold uppercase tracking-[0.22em] text-[#0a0a0b]">Rumah Bot</p>
+        <p className="text-[8px] font-semibold uppercase tracking-[0.22em] text-[#0a0a0b]">{botLabel}</p>
         <p className="text-[26px] font-black leading-none text-[#0a0a0b]">{botStore.seedTotal}</p>
       </div>
 
@@ -68,7 +72,7 @@ export default function CongklakBoard({
           isPlayerTurn,
         )} ${getStoreBorder(playerStore.isActive)}`}
       >
-        <p className="text-[8px] font-semibold uppercase tracking-[0.22em] text-[#0a0a0b]">Rumah Kamu</p>
+        <p className="text-[8px] font-semibold uppercase tracking-[0.22em] text-[#0a0a0b]">{playerLabel}</p>
         <p className="text-[26px] font-black leading-none text-[#0a0a0b]">{playerStore.seedTotal}</p>
       </div>
     </div>

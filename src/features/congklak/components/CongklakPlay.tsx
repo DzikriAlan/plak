@@ -1,7 +1,10 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/router'
 import { useCongklakStates } from '../states/congklakStates'
+import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates'
+import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import GameAudio, { type GameAudioCue } from '@/shared/components/reusable/GameAudio'
 import CongklakHeader from './CongklakHeader'
 import CongklakBoard from './CongklakBoard'
@@ -13,8 +16,12 @@ const BOT_DELAY = 620
 export default function CongklakPlay() {
   const { congklakGame, setCongklakInit, setCongklakSow, setCongklakStep, setCongklakBot, setCongklakUndo, setCongklakRestart } =
     useCongklakStates()
+  const { gameRooms } = useGameRoomsStates()
+  const { storeGameRooms } = useGameRoomsControllers()
+  const router = useRouter()
   const [filters, setFilters] = useState({
     isSoundOn: true,
+    isInviting: false,
     lastCaptureTotal: 0,
     cue: null as GameAudioCue | null,
     pagination: { currentPage: 1, perPage: 0, totalItem: 0, totalPage: 1 },
@@ -59,11 +66,16 @@ export default function CongklakPlay() {
       resultLabel: getResultLabel(game?.winner ?? ''),
       winner: game?.winner ?? '',
       isSoundOn: filters.isSoundOn,
+      isInviting: filters.isInviting,
       cue: filters.cue,
     }
   }, [congklakGame, filters])
   const submitCongklakHole = (holeIndex: number) => {
     setCongklakSow(holeIndex)
+  }
+  const submitCongklakInvite = () => {
+    setFilters((prev) => ({ ...prev, isInviting: true }))
+    storeGameRooms.mutate({ game: 'congklak', name: 'Pemain 1' })
   }
   const editCongklakSound = () => {
     setFilters((prev) => ({ ...prev, isSoundOn: !prev.isSoundOn }))
@@ -79,6 +91,17 @@ export default function CongklakPlay() {
   useEffect(() => {
     setCongklakInit()
   }, [setCongklakInit])
+  useEffect(() => {
+    // Ruangan baru langsung dibuka setelah server mengirim kode dan kursi tuan rumah.
+    const room = gameRooms.data
+    if (!filters.isInviting || !room?.code || !room.token) return
+    try {
+      window.localStorage.setItem(`game-room-${room.code}`, room.token)
+    } catch {
+      /* penyimpanan bisa ditolak peramban, kursi tetap dikirim lewat permintaan gabung. */
+    }
+    router.push(`/congklak/${room.code}`)
+  }, [gameRooms.data, filters.isInviting, router])
   useEffect(() => {
     if (!data.isSowing) return
     const timer = window.setInterval(() => setCongklakStep(), STEP_DELAY)
@@ -107,7 +130,13 @@ export default function CongklakPlay() {
   return (
     <div className="flex h-[100dvh] w-full touch-none items-stretch justify-center overflow-hidden overscroll-none bg-[#0a0a0b] p-2 sm:p-4">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
-        <CongklakHeader isSoundOn={data.isSoundOn} onEditCongklakSound={editCongklakSound} />
+        <CongklakHeader
+          isSoundOn={data.isSoundOn}
+          isInviteVisible
+          isInviteLoading={data.isInviting}
+          onSubmitCongklakInvite={submitCongklakInvite}
+          onEditCongklakSound={editCongklakSound}
+        />
 
         <GameAudio
           isActive
