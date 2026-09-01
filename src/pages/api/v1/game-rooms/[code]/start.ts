@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getGameRoomDealtState, getGameRoomSeat, getGameRoomView } from '@/shared/lib/gameRoom'
 import { getGameRoomRow, updateGameRoomRow } from '@/shared/lib/gameRoomStore'
+import { postGameRoomEvent } from '@/shared/lib/gameRoomEvents'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -27,6 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const updated = await updateGameRoomRow(code, { status: 'playing', state, turn: seats[0], moveTotal: 0 })
     if (!updated) return res.status(404).json({ message: 'Room not found' })
+    postGameRoomEvent(code, updated)
 
     return res.status(200).json({ ...getGameRoomView(updated, seat), token })
   } catch {

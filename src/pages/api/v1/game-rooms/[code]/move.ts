@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getGameRoomAppliedMove, getGameRoomSeat, getGameRoomView } from '@/shared/lib/gameRoom'
 import { getGameRoomRow, updateGameRoomRow } from '@/shared/lib/gameRoomStore'
+import { postGameRoomEvent } from '@/shared/lib/gameRoomEvents'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -36,8 +37,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
     if (!applied) return res.status(422).json({ message: 'Move not allowed' })
 
+    // Lawan dikabari lebih dulu supaya papannya ikut berubah tanpa menunggu tulisan basis data,
+    // lalu hasil simpanan disiarkan ulang sebagai kebenaran akhir.
+    postGameRoomEvent(code, { ...room, ...applied, updatedAt: new Date() })
+
     const updated = await updateGameRoomRow(code, applied)
     if (!updated) return res.status(404).json({ message: 'Room not found' })
+    postGameRoomEvent(code, updated)
 
     return res.status(200).json({ ...getGameRoomView(updated, seat), token })
   } catch {
