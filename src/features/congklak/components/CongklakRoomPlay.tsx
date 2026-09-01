@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CongklakHole } from '../types/congklakTypes'
 import { getCongklakResolvedMove } from '@/shared/lib/congklakEngine'
 import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates'
@@ -22,6 +22,8 @@ interface Props {
 
 export default function CongklakRoomPlay({ code }: Props) {
   const { gameRooms, setGetGameRooms } = useGameRoomsStates()
+  // Penanda langkah yang sedang ditaburkan supaya pembaruan berkala tidak memotong animasi.
+  const animatingRef = useRef(-1)
   const { storeGameRoomsJoin, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
   const [filters, setFilters] = useState({
     isExitOpen: false,
@@ -160,17 +162,21 @@ export default function CongklakRoomPlay({ code }: Props) {
   useEffect(() => {
     const room = gameRooms.data
     if (!room) return
+    if (animatingRef.current === room.moveTotal) return
 
     // Papan disamakan tanpa animasi saat pertama dibuka atau saat tidak ada langkah baru.
     const getIsSameBoard = (left: number[], right: number[]) =>
       left.length === right.length && left.every((seed, index) => seed === right[index])
+    const postSettledBoard = () => {
+      animatingRef.current = room.moveTotal
+      setFilters((prev) => ({ ...prev, displayBoard: room.board, animatedMove: room.moveTotal }))
+    }
+
     const previous = filters.displayBoard
     const isNewMove = room.moveTotal > filters.animatedMove && room.lastHole >= 0 && previous.length === room.board.length
 
     if (!isNewMove) {
-      if (!getIsSameBoard(previous, room.board)) {
-        setFilters((prev) => ({ ...prev, displayBoard: room.board, animatedMove: room.moveTotal }))
-      }
+      if (!getIsSameBoard(previous, room.board)) postSettledBoard()
       return
     }
 
@@ -178,12 +184,14 @@ export default function CongklakRoomPlay({ code }: Props) {
     const resolved = getCongklakResolvedMove(previous, side, room.lastHole, 0)
     const frames = resolved.frames
     if (!getIsSameBoard(resolved.board, room.board)) {
-      setFilters((prev) => ({ ...prev, displayBoard: room.board, animatedMove: room.moveTotal }))
+      postSettledBoard()
       return
     }
 
-    // Tempo menaburkan biji dijaga tetap terbaca, tetapi langkah panjang dipercepat.
-    const stepDelay = Math.min(150, Math.max(60, Math.round(1400 / Math.max(frames.length, 1))))
+    // Tempo menaburkan biji disamakan dengan mode solo; langkah yang sangat panjang saja yang
+    // dipercepat supaya satu giliran tidak melebihi sekitar empat detik.
+    const stepDelay = Math.min(220, Math.max(100, Math.round(4000 / Math.max(frames.length, 1))))
+    animatingRef.current = room.moveTotal
     let step = 0
     const timer = window.setInterval(() => {
       step += 1
@@ -196,8 +204,9 @@ export default function CongklakRoomPlay({ code }: Props) {
     }, stepDelay)
 
     return () => window.clearInterval(timer)
+    // Efek hanya diikat ke nomor langkah supaya pembaruan berkala tidak menghentikan animasi.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameRooms.data?.moveTotal, gameRooms.data?.board])
+  }, [gameRooms.data?.moveTotal, gameRooms.data?.code])
   useEffect(() => {
     // Sesi yang ditutup lawan tidak bisa dilanjutkan, jadi pemain diantar kembali ke beranda.
     if (!data.isLeftByRival) return
