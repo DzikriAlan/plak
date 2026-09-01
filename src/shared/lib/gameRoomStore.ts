@@ -135,6 +135,7 @@ export const updateGameRoomRow = async (code: string, patch: GameRoomPatch): Pro
     where: { code },
     data: {
       status: patch.status,
+      seatTotal: patch.seatTotal,
       players: patch.players as unknown as Prisma.InputJsonValue | undefined,
       turn: patch.turn,
       state: patch.state as Prisma.InputJsonValue | undefined,

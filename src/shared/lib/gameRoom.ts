@@ -47,6 +47,15 @@ const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const SEATS: GameRoomSeat[] = ['p1', 'p2', 'p3', 'p4']
 
 export const GAME_ROOM_SEAT_TOTAL: Record<string, number> = { congklak: 2, chess: 2, uno: 4 }
+// Hanya uno yang jumlah pemainnya bisa dipilih tuan rumah; papan lain selalu berdua.
+export const GAME_ROOM_SEAT_MIN: Record<string, number> = { congklak: 2, chess: 2, uno: 2 }
+
+export const getGameRoomSeatOptions = (game: string) => {
+  const min = GAME_ROOM_SEAT_MIN[game]
+  const max = GAME_ROOM_SEAT_TOTAL[game]
+  if (!min || !max || min === max) return []
+  return Array.from({ length: max - min + 1 }, (_, step) => min + step)
+}
 
 export const getGameRoomCode = () => {
   const bytes = randomBytes(6)
@@ -164,6 +173,7 @@ export const getGameRoomView = (room: GameRoomRecord, seat: GameRoomSeat | null)
     seat: seat ?? '',
     turn: room.turn,
     seatTotal: room.seatTotal,
+    seatOptions: getGameRoomSeatOptions(room.game),
     playerTotal: room.players.length,
     playerNames: room.players.map((player) => player.name),
     board,
