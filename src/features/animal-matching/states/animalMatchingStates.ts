@@ -41,11 +41,11 @@ export const useAnimalMatchingStates = create<AnimalMatchingStore>((set, get) =>
   }
 
   const getLayout = () => {
-    // Papan tetap 8x12 seperti contoh; level mengatur seberapa padat terisi.
-    const colTotal = 10
-    const rowTotal = 14
+    // Papan tetap 9x12 seperti contoh; level mengatur seberapa padat terisi.
+    const colTotal = 9
+    const rowTotal = 12
     const cellTotal = colTotal * rowTotal
-    // 140 sel genap, jadi seluruh papan terisi tanpa sel kosong.
+    // 108 sel genap, jadi seluruh papan terisi tanpa sel kosong.
     const pairTotal = cellTotal / 2
     const iconTotal = ANIMALS.length
     return { colTotal, rowTotal, pairTotal, iconTotal }

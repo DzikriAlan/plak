@@ -188,6 +188,44 @@ export default function StoreCover({ gameId, tone, accent }: Props) {
     )
   }
 
+  if (gameId === 'congklak') {
+    const holes = [0, 1, 2, 3, 4, 5].flatMap((column) =>
+      [0, 1].map((row) => ({ column, row, seeds: (column + row) % 3 + 2 })),
+    )
+    const seedTones = ['#e0452a', '#3b6fd4', '#f0b429', '#2ec4b6']
+    return (
+      <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={frame} aria-hidden="true">
+        <rect width="320" height="200" fill={PAPER} />
+        <circle cx="286" cy="26" r="40" fill={accent} />
+        <rect x="18" y="52" width="284" height="96" rx="46" fill={tone} stroke={INK} strokeWidth="5" />
+        <ellipse cx="52" cy="100" rx="20" ry="30" fill={PAPER} stroke={INK} strokeWidth="4" />
+        <ellipse cx="268" cy="100" rx="20" ry="30" fill={PAPER} stroke={INK} strokeWidth="4" />
+        {holes.map((hole) => (
+          <g key={`${hole.column}-${hole.row}`}>
+            <circle
+              cx={92 + hole.column * 27}
+              cy={82 + hole.row * 36}
+              r="12"
+              fill={PAPER}
+              stroke={INK}
+              strokeWidth="3.5"
+            />
+            {Array.from({ length: hole.seeds }, (_, index) => index).map((index) => (
+              <circle
+                key={index}
+                cx={87 + hole.column * 27 + (index % 2) * 10}
+                cy={78 + hole.row * 36 + Math.floor(index / 2) * 9}
+                r="3.2"
+                fill={seedTones[(hole.column + index) % seedTones.length]}
+              />
+            ))}
+          </g>
+        ))}
+        {grain}
+      </svg>
+    )
+  }
+
   return (
     <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: tone }}>
       <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0a0a0b]">Soon</span>

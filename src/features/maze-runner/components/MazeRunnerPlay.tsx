@@ -17,6 +17,10 @@ const KEY_DIRECTIONS: Record<string, MazeRunnerDirection> = {
   d: 'right',
   s: 'down',
   a: 'left',
+  k: 'up',
+  l: 'right',
+  j: 'down',
+  h: 'left',
 }
 
 export default function MazeRunnerPlay() {
@@ -116,7 +120,9 @@ export default function MazeRunnerPlay() {
     )
   }, [mazeRunnerGame])
   useEffect(() => {
-    const getPressedDirection = (event: KeyboardEvent) => KEY_DIRECTIONS[event.key] ?? null
+    // Tombol huruf disamakan ke huruf kecil supaya caps lock atau shift tetap terbaca.
+    const getPressedDirection = (event: KeyboardEvent) =>
+      KEY_DIRECTIONS[event.key.length === 1 ? event.key.toLowerCase() : event.key] ?? null
     const editPressedKey = (event: KeyboardEvent) => {
       const direction = getPressedDirection(event)
       if (!direction) return
@@ -156,7 +162,7 @@ export default function MazeRunnerPlay() {
   }, [data.isCleared, data.isTimeUp, data.secondsLeft])
 
   return (
-    <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-2 sm:p-4">
+    <div className="flex h-[100dvh] w-full touch-none items-stretch justify-center overflow-hidden overscroll-none bg-[#0a0a0b] p-2 sm:p-4">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
         <MazeRunnerHeader
           level={data.level}

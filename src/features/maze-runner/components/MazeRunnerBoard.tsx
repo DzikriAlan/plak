@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import type { MazeRunnerCell, MazeRunnerDirection, MazeRunnerPoint } from '../types/mazeRunnerTypes'
 import MazeRunnerIcon from './MazeRunnerIcon'
 
@@ -100,20 +100,36 @@ export default function MazeRunnerBoard({
   }
 
   // Usapan dua jari di trackpad terbaca sebagai wheel, jadi diakumulasi sampai cukup untuk satu petak.
-  // Nilai delta wheel berlawanan arah jari, karena itu tandanya dibalik supaya pemain ikut arah usapan.
+  // Arahnya sengaja berlawanan dengan usapan: scroll ke atas menjalankan pemain ke bawah.
   const editMazeRunnerWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     const wheel = wheelRef.current
     wheel.x += event.deltaX
     wheel.y += event.deltaY
     if (Math.abs(wheel.x) > Math.abs(wheel.y)) {
       if (Math.abs(wheel.x) < WHEEL_STEP) return
-      onEditMazeRunnerMove(wheel.x > 0 ? 'left' : 'right')
+      onEditMazeRunnerMove(wheel.x > 0 ? 'right' : 'left')
     } else {
       if (Math.abs(wheel.y) < WHEEL_STEP) return
-      onEditMazeRunnerMove(wheel.y > 0 ? 'up' : 'down')
+      onEditMazeRunnerMove(wheel.y > 0 ? 'down' : 'up')
     }
     wheelRef.current = { x: 0, y: 0 }
   }
+
+  // Sentuhan di papan ditahan di level DOM dengan listener non passive supaya usapan tidak
+  // memicu gestur bawaan peramban seperti geser mundur halaman atau tarik untuk muat ulang.
+  useEffect(() => {
+    const board = boardRef.current
+    if (!board) return
+    const editTouchGesture = (event: TouchEvent) => {
+      if (event.cancelable) event.preventDefault()
+    }
+    board.addEventListener('touchstart', editTouchGesture, { passive: false })
+    board.addEventListener('touchmove', editTouchGesture, { passive: false })
+    return () => {
+      board.removeEventListener('touchstart', editTouchGesture)
+      board.removeEventListener('touchmove', editTouchGesture)
+    }
+  }, [])
 
   const getWallLines = () => {
     const lines: Array<{ id: string; x1: number; y1: number; x2: number; y2: number }> = []
@@ -136,7 +152,7 @@ export default function MazeRunnerBoard({
   const hintPoints = hintPath.map((point) => `${point.col * CELL + CELL / 2},${point.row * CELL + CELL / 2}`).join(' ')
 
   return (
-    <div className="h-full w-full rounded-2xl border border-[#26262b] bg-[#121214] p-1.5 sm:p-2">
+    <div className="h-full w-full touch-none overscroll-none rounded-2xl border border-[#26262b] bg-[#121214] p-1.5 sm:p-2">
       <svg
         ref={boardRef}
         viewBox={`0 0 ${boardWidth} ${boardHeight}`}

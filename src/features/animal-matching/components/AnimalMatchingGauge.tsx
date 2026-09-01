@@ -31,14 +31,14 @@ export default function AnimalMatchingGauge({ secondsLeft, timeLimit }: Props) {
   const needleY = 46 - 30 * Math.sin(Math.PI * ratio)
 
   return (
-    <div className="flex items-center gap-2">
-      <svg viewBox="0 0 100 56" className="h-[38px] w-[68px] shrink-0" aria-hidden="true">
+    <div className="flex min-w-0 items-center gap-2">
+      <svg viewBox="0 0 100 56" className="hidden h-[38px] w-[68px] shrink-0 sm:block" aria-hidden="true">
         <path d="M12 46 A38 38 0 0 1 88 46" fill="none" stroke="#26262b" strokeWidth="8" strokeLinecap="round" />
         <path d={arc.d} fill="none" stroke={tone} strokeWidth="8" strokeLinecap="round" />
         <line x1="50" y1="46" x2={needleX.toFixed(2)} y2={needleY.toFixed(2)} stroke="#f2ede1" strokeWidth="2.6" strokeLinecap="round" />
         <circle cx="50" cy="46" r="4" fill="#f2ede1" />
       </svg>
-      <span className="text-[15px] font-black tabular-nums" style={{ color: tone }}>
+      <span className="shrink-0 text-[13px] font-black tabular-nums sm:text-[15px]" style={{ color: tone }}>
         {getClock(secondsLeft)}
       </span>
     </div>
