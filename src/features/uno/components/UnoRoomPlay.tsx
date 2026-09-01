@@ -179,7 +179,7 @@ export default function UnoRoomPlay({ code }: Props) {
     setFilters((prev) => ({ ...prev, isSoundOn: !prev.isSoundOn }))
   }
   const clearUnoRoom = () => {
-    window.location.href = '/uno'
+    window.location.href = data.isLeftByRival ? '/' : '/uno'
   }
 
   const loadUnoExit = () => {
@@ -210,6 +210,14 @@ export default function UnoRoomPlay({ code }: Props) {
     storeGameRoomsJoin.mutate({ code, token, name: '' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, setGetGameRooms])
+  useEffect(() => {
+    // Sesi yang ditutup lawan tidak bisa dilanjutkan, jadi pemain diantar kembali ke beranda.
+    if (!data.isLeftByRival) return
+    const timer = window.setTimeout(() => {
+      window.location.href = '/'
+    }, 3000)
+    return () => window.clearTimeout(timer)
+  }, [data.isLeftByRival])
   useEffect(() => {
     const token = gameRooms.data?.token
     if (!token) return

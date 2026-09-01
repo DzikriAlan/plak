@@ -170,7 +170,7 @@ export default function ChessRoomPlay({ code }: Props) {
     loadCopiedInvite()
   }
   const clearChessRoom = () => {
-    window.location.href = '/chess'
+    window.location.href = data.isLeftByRival ? '/' : '/chess'
   }
 
   const loadChessExit = () => {
@@ -201,6 +201,14 @@ export default function ChessRoomPlay({ code }: Props) {
     storeGameRoomsJoin.mutate({ code, token, name: '' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, setGetGameRooms])
+  useEffect(() => {
+    // Sesi yang ditutup lawan tidak bisa dilanjutkan, jadi pemain diantar kembali ke beranda.
+    if (!data.isLeftByRival) return
+    const timer = window.setTimeout(() => {
+      window.location.href = '/'
+    }, 3000)
+    return () => window.clearTimeout(timer)
+  }, [data.isLeftByRival])
   useEffect(() => {
     const token = gameRooms.data?.token
     if (!token) return
