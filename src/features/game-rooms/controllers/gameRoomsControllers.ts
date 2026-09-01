@@ -15,11 +15,15 @@ import type {
   PayloadPostGameRoomsStart,
 } from '../types/gameRoomsTypes'
 
-const POLL_INTERVAL = 1000
+const POLL_WAITING = 400
+const POLL_OWN_TURN = 1200
+const POLL_LOBBY = 700
+const POLL_FINISHED = 4000
 
 export const useGameRoomsControllers = () => {
   const queryClient = useQueryClient()
   const {
+    gameRooms,
     payloadGetGameRooms,
     setGameRooms,
     setGameRoomsJoin,
@@ -28,12 +32,20 @@ export const useGameRoomsControllers = () => {
     setGetGameRooms,
   } = useGameRoomsStates()
 
-  // Ruangan ditarik ulang tiap detik supaya papan kedua pemain tetap seiring.
+  // Penarikan dipercepat saat menunggu lawan dan dilonggarkan saat giliran sendiri.
+  const getPollInterval = () => {
+    const room = gameRooms.data
+    if (!room) return POLL_LOBBY
+    if (room.status === 'finished') return POLL_FINISHED
+    if (room.status === 'lobby') return POLL_LOBBY
+    return room.turn === room.seat ? POLL_OWN_TURN : POLL_WAITING
+  }
+
   const fetchGameRooms = useQuery({
     queryKey: ['gameRooms', payloadGetGameRooms],
     queryFn: () => getGameRooms(payloadGetGameRooms),
     enabled: !!payloadGetGameRooms.code,
-    refetchInterval: POLL_INTERVAL,
+    refetchInterval: getPollInterval(),
     refetchIntervalInBackground: true,
   })
 
