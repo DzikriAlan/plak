@@ -71,4 +71,18 @@ export const STORE_GAMES: StoreGame[] = [
     modeLabel: 'Solo',
     isAvailable: true,
   },
+  {
+    id: 'congklak',
+    name: 'Congklak',
+    tagline: 'Kumpulkan biji terbanyak!',
+    description: 'Congklak tradisional melawan bot. Sebar biji, tembak lubang lawan, penuhi rumahmu.',
+    category: 'board',
+    categoryLabel: 'Board',
+    path: '/congklak',
+    tone: '#6d4bc4',
+    accent: '#f0b429',
+    mode: 'bot',
+    modeLabel: 'vs Bot',
+    isAvailable: true,
+  },
 ]
