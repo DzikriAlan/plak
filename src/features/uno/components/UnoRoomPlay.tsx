@@ -5,6 +5,7 @@ import type { UnoCard, UnoColor } from '../types/unoTypes'
 import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates'
 import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import GameRoomsInvite from '@/features/game-rooms/components/GameRoomsInvite'
+import GameTurnStatus from '@/shared/components/reusable/GameTurnStatus'
 import UnoHeader from './UnoHeader'
 import UnoBoard from './UnoBoard'
 import UnoHand from './UnoHand'
@@ -68,6 +69,9 @@ export default function UnoRoomPlay({ code }: Props) {
       seat,
       seatLabel: seat ? getSeatLabel(seat) : 'Penonton',
       turnLabel: isMyTurn ? 'Giliranmu' : 'Giliran lawan',
+      // Penanda besar dipakai supaya pemain tahu kenapa kartu belum bisa dibuang.
+      statusLabel: isMyTurn ? 'Giliranmu, buang kartu' : 'Menunggu langkah lawan',
+      isWaiting: isPlaying && !isMyTurn,
       opponents: getOpponents(),
       topCard: (uno?.topCard ?? null) as UnoCard | null,
       activeColor: (uno?.activeColor ?? 'red') as UnoColor,
@@ -193,6 +197,8 @@ export default function UnoRoomPlay({ code }: Props) {
           onLoadUnoRoomCode={submitGameRoomsInvite}
           onEditUnoSound={editUnoSound}
         />
+
+        <GameTurnStatus label={data.statusLabel} isWaiting={data.isWaiting} className="mx-3 mt-2" />
 
         {data.isLoading ? (
           <div className="flex flex-1 items-center justify-center text-xs font-semibold uppercase tracking-[0.3em] text-[#a29d93]">

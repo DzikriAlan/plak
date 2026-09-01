@@ -5,6 +5,7 @@ import type { CongklakHole } from '../types/congklakTypes'
 import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates'
 import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import GameRoomsInvite from '@/features/game-rooms/components/GameRoomsInvite'
+import GameTurnStatus from '@/shared/components/reusable/GameTurnStatus'
 import CongklakHeader from './CongklakHeader'
 import CongklakBoard from './CongklakBoard'
 import CongklakResult from './CongklakResult'
@@ -74,6 +75,9 @@ export default function CongklakRoomPlay({ code }: Props) {
       playerStore: getHole(ownStoreIndex, true, false),
       botStore: getHole(rivalStoreIndex, false, false),
       turn: isMyTurn ? 'player' : 'bot',
+      // Penanda besar dipakai supaya pemain tahu kenapa lubang belum bisa disentuh.
+      statusLabel: isMyTurn ? 'Giliranmu, pilih lubang' : 'Menunggu langkah lawan',
+      isWaiting: isPlaying && !isMyTurn,
       seat,
       code,
       inviteUrl: filters.inviteUrl,
@@ -144,6 +148,8 @@ export default function CongklakRoomPlay({ code }: Props) {
     <div className="flex h-[100dvh] w-full touch-none items-stretch justify-center overflow-hidden overscroll-none bg-[#0a0a0b] p-2 sm:p-4">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
         <CongklakHeader isSoundOn={data.isSoundOn} onEditCongklakSound={editCongklakSound} />
+
+        <GameTurnStatus label={data.statusLabel} isWaiting={data.isWaiting} />
 
         <main className="flex min-h-0 flex-1 items-stretch justify-center">
           {data.isLoading ? (

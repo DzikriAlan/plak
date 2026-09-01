@@ -6,6 +6,7 @@ import type { ChessCell, ChessColor } from '../types/chessTypes'
 import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates'
 import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import GameRoomsInvite from '@/features/game-rooms/components/GameRoomsInvite'
+import GameTurnStatus from '@/shared/components/reusable/GameTurnStatus'
 import ChessRoomHeader from './ChessRoomHeader'
 import ChessBoard from './ChessBoard'
 
@@ -89,6 +90,11 @@ export default function ChessRoomPlay({ code }: Props) {
       seatColor,
       seatLabel: seatColor === 'w' ? 'Putih' : 'Hitam',
       turnLabel: isMyTurn ? 'Giliranmu' : 'Giliran lawan',
+      // Penanda besar dipakai supaya pemain tahu kenapa papan belum bisa disentuh.
+      statusLabel: isMyTurn
+        ? 'Giliranmu, silakan jalan'
+        : `Menunggu langkah ${seatColor === 'w' ? 'Hitam' : 'Putih'}`,
+      isWaiting: isPlaying && !isMyTurn,
       lastMove: room?.lastMove ?? null,
       isFlipped: seatColor === 'b',
       isLocked: !isMyTurn || storeGameRoomsMove.isPending,
@@ -177,6 +183,8 @@ export default function ChessRoomPlay({ code }: Props) {
           moveTotal={data.moveTotal}
           code={data.code}
         />
+
+        <GameTurnStatus label={data.statusLabel} isWaiting={data.isWaiting} />
 
         <main className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
           {data.isLoading ? (
