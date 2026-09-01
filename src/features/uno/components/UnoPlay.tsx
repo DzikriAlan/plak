@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 import type { UnoColor } from '../types/unoTypes'
 import { useUnoStates } from '../states/unoStates'
 import GameAudio, { type GameAudioCue } from '@/shared/components/reusable/GameAudio'
+import { useRouter } from 'next/router'
+import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates'
+import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import UnoHeader from './UnoHeader'
 import UnoBoard from './UnoBoard'
 import UnoHand from './UnoHand'
@@ -28,9 +31,13 @@ export default function UnoPlay() {
     setUnoBotTurn,
     setUnoRestart,
   } = useUnoStates()
+  const { gameRooms } = useGameRoomsStates()
+  const { storeGameRooms } = useGameRoomsControllers()
+  const router = useRouter()
   const [filters, setFilters] = useState({
     isCopied: false,
     isSoundOn: true,
+    isInviting: false,
     cue: null as GameAudioCue | null,
   })
   const data = useMemo(() => {
@@ -76,6 +83,7 @@ export default function UnoPlay() {
       isWinner: game?.winnerId === 0,
       isCopied: filters.isCopied,
       isSoundOn: filters.isSoundOn,
+      isInviting: filters.isInviting,
       cue: filters.cue,
     }
   }, [unoGame, filters])
@@ -93,6 +101,10 @@ export default function UnoPlay() {
   }
   const loadUnoPass = () => {
     setUnoPass()
+  }
+  const submitUnoInvite = () => {
+    setFilters((prev) => ({ ...prev, isInviting: true }))
+    storeGameRooms.mutate({ game: 'uno', name: 'Pemain 1' })
   }
   const loadUnoRoomCode = () => {
     const getCopiedCode = async () => {
@@ -116,6 +128,17 @@ export default function UnoPlay() {
     setUnoRestart()
   }
 
+  useEffect(() => {
+    // Ruangan baru langsung dibuka setelah server mengirim kode dan kursi tuan rumah.
+    const room = gameRooms.data
+    if (!filters.isInviting || !room?.code || !room.token) return
+    try {
+      window.localStorage.setItem(`game-room-${room.code}`, room.token)
+    } catch {
+      /* penyimpanan bisa ditolak peramban, kursi tetap dikirim lewat permintaan gabung. */
+    }
+    router.push(`/uno/${room.code}`)
+  }, [gameRooms.data, filters.isInviting, router])
   useEffect(() => {
     setUnoInit()
   }, [setUnoInit])
@@ -159,6 +182,9 @@ export default function UnoPlay() {
           turnName={data.turnName}
           isCopied={data.isCopied}
           isSoundOn={data.isSoundOn}
+          isInviteVisible
+          isInviteLoading={data.isInviting}
+          onSubmitUnoInvite={submitUnoInvite}
           onLoadUnoRoomCode={loadUnoRoomCode}
           onEditUnoSound={editUnoSound}
         />

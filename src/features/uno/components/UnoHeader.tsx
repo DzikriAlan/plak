@@ -8,6 +8,9 @@ interface Props {
   turnName: string
   isCopied: boolean
   isSoundOn: boolean
+  isInviteVisible?: boolean
+  isInviteLoading?: boolean
+  onSubmitUnoInvite?: () => void
   onLoadUnoRoomCode: () => void
   onEditUnoSound: () => void
 }
@@ -17,6 +20,9 @@ export default function UnoHeader({
   turnName,
   isCopied,
   isSoundOn,
+  isInviteVisible = false,
+  isInviteLoading = false,
+  onSubmitUnoInvite,
   onLoadUnoRoomCode,
   onEditUnoSound,
 }: Props) {
@@ -42,6 +48,19 @@ export default function UnoHeader({
             {turnName}
           </span>
         </span>
+
+        {isInviteVisible ? (
+          <button
+            type="button"
+            disabled={isInviteLoading}
+            onClick={onSubmitUnoInvite}
+            className="flex shrink-0 items-center gap-1.5 rounded border border-[#3a3a42] px-2 py-[3px] text-[#f2ede1] transition-colors active:bg-[#1b1b1f] disabled:opacity-45"
+          >
+            <span className="text-[8px] font-semibold uppercase leading-none tracking-[0.14em]">
+              {isInviteLoading ? 'Menyiapkan…' : 'Main bareng'}
+            </span>
+          </button>
+        ) : null}
 
         <button
           type="button"
