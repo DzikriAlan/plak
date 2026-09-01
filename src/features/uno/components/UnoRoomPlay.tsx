@@ -25,7 +25,8 @@ interface Props {
 
 export default function UnoRoomPlay({ code }: Props) {
   const { gameRooms, setGameRooms, setGetGameRooms } = useGameRoomsStates()
-  const { storeGameRoomsJoin, storeGameRoomsStart, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
+  const { storeGameRoomsJoin, storeGameRoomsStart, storeGameRoomsMove, storeGameRoomsLeave, storeGameRoomsSeats } =
+    useGameRoomsControllers()
   const [filters, setFilters] = useState({
     isExitOpen: false,
     pendingWildCardId: '',
@@ -90,6 +91,9 @@ export default function UnoRoomPlay({ code }: Props) {
       isColorPickerOpen: !!filters.pendingWildCardId,
       isLobbyOpen: !!room && room.status === 'lobby',
       isStartVisible: isHost,
+      seatOptions: room?.seatOptions ?? [],
+      isSeatEditable: isHost,
+      isSeatLoading: storeGameRoomsSeats.isPending,
       isStartDisabled: (room?.playerTotal ?? 0) < 2 || storeGameRoomsStart.isPending,
       playerTotal: room?.playerTotal ?? 0,
       seatTotal: room?.seatTotal ?? 4,
@@ -102,7 +106,7 @@ export default function UnoRoomPlay({ code }: Props) {
       resultLabel: getResultLabel(room?.winner ?? ''),
       isMyTurn,
     }
-  }, [gameRooms, filters, code, storeGameRoomsMove.isPending, storeGameRoomsStart.isPending])
+  }, [gameRooms, filters, code, storeGameRoomsMove.isPending, storeGameRoomsStart.isPending, storeGameRoomsSeats.isPending])
   const submitUnoCard = (cardId: string) => {
     const room = gameRooms.data
     if (!room || !data.isMyTurn) return
@@ -154,6 +158,11 @@ export default function UnoRoomPlay({ code }: Props) {
     const room = gameRooms.data
     if (!room) return
     storeGameRoomsStart.mutate({ code, token: room.token })
+  }
+  const editGameRoomsSeats = (seatTotal: number) => {
+    const room = gameRooms.data
+    if (!room) return
+    storeGameRoomsSeats.mutate({ code, token: room.token, seatTotal })
   }
   const submitGameRoomsInvite = () => {
     const loadCopiedInvite = async () => {
@@ -263,6 +272,10 @@ export default function UnoRoomPlay({ code }: Props) {
           playerTotal={data.playerTotal}
           seatTotal={data.seatTotal}
           isCopied={data.isCopied}
+          seatOptions={data.seatOptions}
+          isSeatEditable={data.isSeatEditable}
+          isSeatLoading={data.isSeatLoading}
+          onEditGameRoomsSeats={editGameRoomsSeats}
           isStartVisible={data.isStartVisible}
           isStartDisabled={data.isStartDisabled}
           onSubmitGameRoomsInvite={submitGameRoomsInvite}
