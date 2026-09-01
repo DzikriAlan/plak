@@ -19,6 +19,11 @@ export interface PayloadPostGameRoomsStart {
   token: string
 }
 
+export interface PayloadPostGameRoomsLeave {
+  code: string
+  token: string
+}
+
 export interface PayloadPostGameRoomsMove {
   code: string
   token: string
@@ -59,11 +64,14 @@ export interface DataGameRooms {
   guestStore: number
   moveTotal: number
   winner: string
+  leftSeat: string
   uno: DataGameRoomsUno | null
   hostSeat: string
   updatedAt: string
   token: string
 }
+
+export type DataGameRoomsLeave = DataGameRooms
 
 export type DataGameRoomsStart = DataGameRooms
 
@@ -76,6 +84,13 @@ export interface GameRooms {
   statusTitle: string
   statusSubtitle: string
   data: DataGameRooms | null
+}
+
+export interface GameRoomsLeave {
+  status: string
+  statusTitle: string
+  statusSubtitle: string
+  data: DataGameRoomsLeave | null
 }
 
 export interface GameRoomsStart {

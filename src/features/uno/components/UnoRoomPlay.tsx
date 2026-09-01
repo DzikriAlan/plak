@@ -6,6 +6,7 @@ import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates
 import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import GameRoomsInvite from '@/features/game-rooms/components/GameRoomsInvite'
 import GameTurnStatus from '@/shared/components/reusable/GameTurnStatus'
+import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import UnoHeader from './UnoHeader'
 import UnoBoard from './UnoBoard'
 import UnoHand from './UnoHand'
@@ -24,8 +25,9 @@ interface Props {
 
 export default function UnoRoomPlay({ code }: Props) {
   const { gameRooms, setGetGameRooms } = useGameRoomsStates()
-  const { storeGameRoomsJoin, storeGameRoomsStart, storeGameRoomsMove } = useGameRoomsControllers()
+  const { storeGameRoomsJoin, storeGameRoomsStart, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
   const [filters, setFilters] = useState({
+    isExitOpen: false,
     pendingWildCardId: '',
     isCopied: false,
     isSoundOn: true,
@@ -48,6 +50,8 @@ export default function UnoRoomPlay({ code }: Props) {
         isActive: room?.turn === opponent.seat,
       }))
     const getResultLabel = (winner: string) => {
+      if (room?.leftSeat && room.leftSeat !== seat) return 'Lawan keluar, permainan diakhiri'
+      if (room?.leftSeat && room.leftSeat === seat) return 'Kamu keluar dari permainan'
       if (!winner) return ''
       return winner === seat ? 'Kamu menang!' : `${getSeatLabel(winner)} menang`
     }
@@ -57,6 +61,7 @@ export default function UnoRoomPlay({ code }: Props) {
     const isHost = !!seat && seat === room?.hostSeat
 
     return {
+      isExitOpen: filters.isExitOpen,
       data: hand.map((card) => ({ card })),
       isLoading: gameRooms.status === 'loading' && !room,
       isError: gameRooms.status === 'error',
@@ -92,6 +97,8 @@ export default function UnoRoomPlay({ code }: Props) {
       isCopied: filters.isCopied,
       isSoundOn: filters.isSoundOn,
       isFinished: room?.status === 'finished',
+      leftSeat: room?.leftSeat ?? '',
+      isLeftByRival: !!room?.leftSeat && room.leftSeat !== seat,
       resultLabel: getResultLabel(room?.winner ?? ''),
       isMyTurn,
     }
@@ -160,6 +167,18 @@ export default function UnoRoomPlay({ code }: Props) {
     window.location.href = '/uno'
   }
 
+  const loadUnoExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: true }))
+  }
+  const clearUnoExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: false }))
+  }
+  const submitUnoExit = () => {
+    // Keluar mengakhiri sesi untuk kedua pemain, jadi server dikabari lebih dulu.
+    const room = gameRooms.data
+    if (room?.token) storeGameRoomsLeave.mutate({ code, token: room.token })
+    window.location.href = '/uno'
+  }
   useEffect(() => {
     // Kursi disimpan per tab supaya dua tab di peramban yang sama tetap dapat kursi berbeda.
     const getStoredToken = () => {
@@ -190,6 +209,7 @@ export default function UnoRoomPlay({ code }: Props) {
     <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-2 sm:p-4">
       <div className="flex h-full w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-[#26262b] bg-[#0f0f11]">
         <UnoHeader
+          onLoadUnoExit={loadUnoExit}
           roomCode={data.code}
           turnName={data.turnLabel}
           isCopied={data.isCopied}
@@ -278,6 +298,18 @@ export default function UnoRoomPlay({ code }: Props) {
           </div>
         </div>
       ) : null}
+      {data.isExitOpen ? (
+        <GameExitConfirm
+          title="Keluar dari permainan?"
+          subtitle="Sesi ini akan diakhiri untuk kamu dan lawanmu."
+          cancelLabel="Batal"
+          confirmLabel="Keluar"
+          isConfirmLoading={storeGameRoomsLeave.isPending}
+          onClearGameExit={clearUnoExit}
+          onSubmitGameExit={submitUnoExit}
+        />
+      ) : null}
+
     </div>
   )
 }

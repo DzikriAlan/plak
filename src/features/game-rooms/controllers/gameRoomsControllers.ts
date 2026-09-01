@@ -6,12 +6,14 @@ import {
   postGameRooms,
   postGameRoomsJoin,
   postGameRoomsMove,
+  postGameRoomsLeave,
   postGameRoomsStart,
 } from '../services/gameRoomsServices'
 import type {
   PayloadPostGameRooms,
   PayloadPostGameRoomsJoin,
   PayloadPostGameRoomsMove,
+  PayloadPostGameRoomsLeave,
   PayloadPostGameRoomsStart,
 } from '../types/gameRoomsTypes'
 
@@ -28,6 +30,7 @@ export const useGameRoomsControllers = () => {
     setGameRooms,
     setGameRoomsJoin,
     setGameRoomsMove,
+    setGameRoomsLeave,
     setGameRoomsStart,
     setGetGameRooms,
   } = useGameRoomsStates()
@@ -94,6 +97,21 @@ export const useGameRoomsControllers = () => {
     },
   })
 
+  const storeGameRoomsLeave = useMutation({
+    mutationFn: (payload: PayloadPostGameRoomsLeave) => postGameRoomsLeave(payload),
+    onMutate: () => {
+      setGameRoomsLeave({ status: 'loading' })
+    },
+    onSuccess: (data) => {
+      setGameRoomsLeave({ status: data ? 'success' : 'empty', data: data ?? null })
+      setGameRooms({ status: 'success', data: data ?? null })
+      queryClient.invalidateQueries({ queryKey: ['gameRooms'] })
+    },
+    onError: () => {
+      setGameRoomsLeave({ status: 'error' })
+    },
+  })
+
   const storeGameRoomsMove = useMutation({
     mutationFn: (payload: PayloadPostGameRoomsMove) => postGameRoomsMove(payload),
     onMutate: () => {
@@ -119,5 +137,12 @@ export const useGameRoomsControllers = () => {
     setGameRooms({ status: data ? 'success' : 'empty', data })
   }, [fetchGameRooms.data, fetchGameRooms.isError, fetchGameRooms.isPending, setGameRooms])
 
-  return { fetchGameRooms, storeGameRooms, storeGameRoomsJoin, storeGameRoomsStart, storeGameRoomsMove }
+  return {
+    fetchGameRooms,
+    storeGameRooms,
+    storeGameRoomsJoin,
+    storeGameRoomsStart,
+    storeGameRoomsMove,
+    storeGameRoomsLeave,
+  }
 }

@@ -6,6 +6,7 @@ import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates
 import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import GameRoomsInvite from '@/features/game-rooms/components/GameRoomsInvite'
 import GameTurnStatus from '@/shared/components/reusable/GameTurnStatus'
+import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import CongklakHeader from './CongklakHeader'
 import CongklakBoard from './CongklakBoard'
 import CongklakResult from './CongklakResult'
@@ -20,8 +21,9 @@ interface Props {
 
 export default function CongklakRoomPlay({ code }: Props) {
   const { gameRooms, setGetGameRooms } = useGameRoomsStates()
-  const { storeGameRoomsJoin, storeGameRoomsMove } = useGameRoomsControllers()
+  const { storeGameRoomsJoin, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
   const [filters, setFilters] = useState({
+    isExitOpen: false,
     isSoundOn: true,
     isCopied: false,
     inviteUrl: '',
@@ -56,12 +58,15 @@ export default function CongklakRoomPlay({ code }: Props) {
     const rivalScore = board[rivalStoreIndex] ?? 0
 
     const getResultLabel = (winner: string) => {
+      if (room?.leftSeat && room.leftSeat !== seat) return 'Lawan keluar, kamu menang'
+      if (room?.leftSeat && room.leftSeat === seat) return 'Kamu keluar dari permainan'
       if (!winner) return ''
       if (winner === 'draw') return 'Seri'
       return winner === seat ? 'Kamu menang' : 'Lawan menang'
     }
 
     return {
+      isExitOpen: filters.isExitOpen,
       data: board,
       isLoading: gameRooms.status === 'loading' && !room,
       isError: gameRooms.status === 'error',
@@ -91,6 +96,8 @@ export default function CongklakRoomPlay({ code }: Props) {
       rivalScore,
       moveTotal: room?.moveTotal ?? 0,
       isFinished: room?.status === 'finished',
+      leftSeat: room?.leftSeat ?? '',
+      isLeftByRival: !!room?.leftSeat && room.leftSeat !== seat,
       resultLabel: getResultLabel(room?.winner ?? ''),
       isSoundOn: filters.isSoundOn,
     }
@@ -118,6 +125,18 @@ export default function CongklakRoomPlay({ code }: Props) {
     window.location.href = '/congklak'
   }
 
+  const loadCongklakExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: true }))
+  }
+  const clearCongklakExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: false }))
+  }
+  const submitCongklakExit = () => {
+    // Keluar mengakhiri sesi untuk kedua pemain, jadi server dikabari lebih dulu.
+    const room = gameRooms.data
+    if (room?.token) storeGameRoomsLeave.mutate({ code, token: room.token })
+    window.location.href = '/congklak'
+  }
   useEffect(() => {
     // Kursi disimpan per tab supaya dua tab di peramban yang sama tetap dapat kursi berbeda.
     const getStoredToken = () => {
@@ -147,7 +166,7 @@ export default function CongklakRoomPlay({ code }: Props) {
   return (
     <div className="flex h-[100dvh] w-full touch-none items-stretch justify-center overflow-hidden overscroll-none bg-[#0a0a0b] p-2 sm:p-4">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
-        <CongklakHeader isSoundOn={data.isSoundOn} onEditCongklakSound={editCongklakSound} />
+        <CongklakHeader onLoadCongklakExit={loadCongklakExit} isSoundOn={data.isSoundOn} onEditCongklakSound={editCongklakSound} />
 
         <GameTurnStatus label={data.statusLabel} isWaiting={data.isWaiting} />
 
@@ -200,12 +219,25 @@ export default function CongklakRoomPlay({ code }: Props) {
       {data.isFinished ? (
         <CongklakResult
           resultLabel={data.resultLabel}
+          rivalLabel="Rumah lawan"
           playerScore={data.ownScore}
           botScore={data.rivalScore}
           moveTotal={data.moveTotal}
           onClearCongklakGame={clearCongklakRoom}
         />
       ) : null}
+      {data.isExitOpen ? (
+        <GameExitConfirm
+          title="Keluar dari permainan?"
+          subtitle="Sesi ini akan diakhiri untuk kamu dan lawanmu."
+          cancelLabel="Batal"
+          confirmLabel="Keluar"
+          isConfirmLoading={storeGameRoomsLeave.isPending}
+          onClearGameExit={clearCongklakExit}
+          onSubmitGameExit={submitCongklakExit}
+        />
+      ) : null}
+
     </div>
   )
 }

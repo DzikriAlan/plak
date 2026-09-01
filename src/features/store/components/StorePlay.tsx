@@ -131,7 +131,6 @@ export default function StorePlay() {
     <div className="h-[100dvh] w-full overflow-y-auto bg-[#0a0a0b] text-[#f2ede1]">
       <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 px-5 py-6 sm:gap-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <StoreHeader
-          tagline={data.text.app.tagline}
           activeLocale={data.activeLocale}
           switchLabel={data.text.locale.switch}
           onEditStoreLocale={editStoreLocale}

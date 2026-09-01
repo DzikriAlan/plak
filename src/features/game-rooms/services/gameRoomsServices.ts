@@ -3,6 +3,7 @@ import type {
   PayloadPostGameRooms,
   PayloadPostGameRoomsJoin,
   PayloadPostGameRoomsMove,
+  PayloadPostGameRoomsLeave,
   PayloadPostGameRoomsStart,
 } from '../types/gameRoomsTypes'
 
@@ -56,6 +57,21 @@ export const postGameRoomsJoin = async (payload: PayloadPostGameRoomsJoin) => {
 export const postGameRoomsStart = async (payload: PayloadPostGameRoomsStart) => {
   try {
     const res = await fetch(`${baseUrl}/api/v1/game-rooms/${payload.code}/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: payload.token }),
+    })
+    if (!res.ok) throw new Error(res.statusText)
+    return res.json()
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') return null
+    throw error
+  }
+}
+
+export const postGameRoomsLeave = async (payload: PayloadPostGameRoomsLeave) => {
+  try {
+    const res = await fetch(`${baseUrl}/api/v1/game-rooms/${payload.code}/leave`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: payload.token }),

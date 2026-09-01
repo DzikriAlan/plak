@@ -2,6 +2,7 @@
 
 interface Props {
   resultLabel: string
+  rivalLabel?: string
   playerScore: number
   botScore: number
   moveTotal: number
@@ -10,6 +11,7 @@ interface Props {
 
 export default function CongklakResult({
   resultLabel,
+  rivalLabel = 'Rumah bot',
   playerScore,
   botScore,
   moveTotal,
@@ -17,7 +19,7 @@ export default function CongklakResult({
 }: Props) {
   const stats = [
     { id: 'player', label: 'Rumah kamu', value: String(playerScore) },
-    { id: 'bot', label: 'Rumah bot', value: String(botScore) },
+    { id: 'bot', label: rivalLabel, value: String(botScore) },
     { id: 'move', label: 'Langkah', value: String(moveTotal) },
   ]
 

@@ -7,6 +7,7 @@ import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates
 import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import GameRoomsInvite from '@/features/game-rooms/components/GameRoomsInvite'
 import GameTurnStatus from '@/shared/components/reusable/GameTurnStatus'
+import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import ChessRoomHeader from './ChessRoomHeader'
 import ChessBoard from './ChessBoard'
 
@@ -16,8 +17,9 @@ interface Props {
 
 export default function ChessRoomPlay({ code }: Props) {
   const { gameRooms, setGetGameRooms } = useGameRoomsStates()
-  const { storeGameRoomsJoin, storeGameRoomsMove } = useGameRoomsControllers()
+  const { storeGameRoomsJoin, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
   const [filters, setFilters] = useState({
+    isExitOpen: false,
     selected: '',
     isCopied: false,
     inviteUrl: '',
@@ -67,6 +69,8 @@ export default function ChessRoomPlay({ code }: Props) {
         })
     }
     const getResultLabel = (winner: string) => {
+      if (room?.leftSeat && room.leftSeat !== seat) return 'Lawan keluar, kamu menang'
+      if (room?.leftSeat && room.leftSeat === seat) return 'Kamu keluar dari permainan'
       if (!winner) return ''
       if (winner === 'draw') return 'Seri'
       return winner === seat ? 'Kamu menang' : 'Lawan menang'
@@ -77,6 +81,7 @@ export default function ChessRoomPlay({ code }: Props) {
     const board = getBoard()
 
     return {
+      isExitOpen: filters.isExitOpen,
       data: board,
       isLoading: gameRooms.status === 'loading' && !room,
       isError: gameRooms.status === 'error',
@@ -107,6 +112,8 @@ export default function ChessRoomPlay({ code }: Props) {
       seatTotal: room?.seatTotal ?? 2,
       isLobbyOpen: !!room && room.status === 'lobby',
       isFinished: room?.status === 'finished',
+      leftSeat: room?.leftSeat ?? '',
+      isLeftByRival: !!room?.leftSeat && room.leftSeat !== seat,
       resultLabel: getResultLabel(room?.winner ?? ''),
       selected: filters.selected,
     }
@@ -148,6 +155,18 @@ export default function ChessRoomPlay({ code }: Props) {
     window.location.href = '/chess'
   }
 
+  const loadChessExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: true }))
+  }
+  const clearChessExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: false }))
+  }
+  const submitChessExit = () => {
+    // Keluar mengakhiri sesi untuk kedua pemain, jadi server dikabari lebih dulu.
+    const room = gameRooms.data
+    if (room?.token) storeGameRoomsLeave.mutate({ code, token: room.token })
+    window.location.href = '/chess'
+  }
   useEffect(() => {
     // Kursi disimpan per tab supaya dua tab di peramban yang sama tetap dapat kursi berbeda.
     const getStoredToken = () => {
@@ -178,6 +197,7 @@ export default function ChessRoomPlay({ code }: Props) {
     <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-3 sm:p-5">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
         <ChessRoomHeader
+          onLoadChessExit={loadChessExit}
           seatLabel={data.seatLabel}
           turnLabel={data.turnLabel}
           moveTotal={data.moveTotal}
@@ -227,6 +247,18 @@ export default function ChessRoomPlay({ code }: Props) {
           </div>
         </div>
       ) : null}
+      {data.isExitOpen ? (
+        <GameExitConfirm
+          title="Keluar dari permainan?"
+          subtitle="Sesi ini akan diakhiri untuk kamu dan lawanmu."
+          cancelLabel="Batal"
+          confirmLabel="Keluar"
+          isConfirmLoading={storeGameRoomsLeave.isPending}
+          onClearGameExit={clearChessExit}
+          onSubmitGameExit={submitChessExit}
+        />
+      ) : null}
+
     </div>
   )
 }

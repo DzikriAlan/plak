@@ -1,19 +1,19 @@
 'use client'
 
-import Link from 'next/link'
-
 interface Props {
+  onLoadChessExit: () => void
   seatLabel: string
   turnLabel: string
   moveTotal: number
   code: string
 }
 
-export default function ChessRoomHeader({ seatLabel, turnLabel, moveTotal, code }: Props) {
+export default function ChessRoomHeader({ onLoadChessExit, seatLabel, turnLabel, moveTotal, code }: Props) {
   return (
     <header className="flex min-h-[48px] shrink-0 items-stretch gap-2">
-      <Link
-        href="/chess"
+      <button
+        type="button"
+        onClick={onLoadChessExit}
         aria-label="Kembali ke catur solo"
         className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#26262b] bg-[#121214] px-2 transition-colors hover:border-[#43434d] sm:px-3"
       >
@@ -21,7 +21,7 @@ export default function ChessRoomHeader({ seatLabel, turnLabel, moveTotal, code 
         <span className="text-sm font-black uppercase leading-none tracking-tighter text-[#f2ede1] sm:text-base">
           Chess
         </span>
-      </Link>
+      </button>
 
       <div className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl border border-[#26262b] bg-[#121214] px-2 sm:px-3">
         <span className="shrink-0 text-[8px] font-semibold uppercase tracking-[0.2em] text-[#a29d93]">{seatLabel}</span>

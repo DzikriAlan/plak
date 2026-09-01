@@ -173,6 +173,7 @@ export const getGameRoomView = (room: GameRoomRecord, seat: GameRoomSeat | null)
     guestStore: board[CONGKLAK_GUEST_STORE] ?? 0,
     moveTotal: room.moveTotal,
     winner: room.winner,
+    leftSeat: String(room.state.leftSeat ?? ''),
     uno,
     hostSeat: room.players[0]?.seat ?? 'p1',
     updatedAt: room.updatedAt.toISOString(),
