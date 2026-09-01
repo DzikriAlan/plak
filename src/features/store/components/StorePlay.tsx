@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { StoreGame } from '../types/storeTypes'
 import { useStoreStates } from '../states/storeStates'
+import { useLocaleStates } from '@/shared/states/localeStates'
+import type { LocaleCode } from '@/shared/states/localeStates'
 import StoreHeader from './StoreHeader'
 import StoreFilter from './StoreFilter'
 import StoreSection from './StoreSection'
@@ -13,6 +15,7 @@ const LIST_TOTAL = 3
 
 export default function StorePlay() {
   const { storeCatalog, setStoreCategory, setStoreHistory, setStoreHistoryInit, setStoreReset } = useStoreStates()
+  const { activeLocale, text, setLocale, setLocaleInit } = useLocaleStates()
   const railRef = useRef<HTMLDivElement | null>(null)
   const sliderRef = useRef<HTMLDivElement | null>(null)
   const [filters, setFilters] = useState({
@@ -56,8 +59,8 @@ export default function StorePlay() {
       isLoading: storeCatalog.status === 'loading',
       isError: storeCatalog.status === 'error',
       isEmpty: storeCatalog.status === 'success' && !games.length,
-      emptyTitle: 'Permainan tidak ditemukan',
-      emptySubtitle: 'Belum ada permainan di kategori ini. Coba pilih Semua.',
+      emptyTitle: text.store.emptyTitle,
+      emptySubtitle: text.store.emptySubtitle,
       emptyImage: '',
       pagination: { ...filters.pagination, perPage: games.length, totalItem: games.length },
       categories: catalog?.categories ?? [],
@@ -69,8 +72,10 @@ export default function StorePlay() {
       isRailEnd: filters.activeRail.isEnd,
       isSliderScrollable: filters.activeSlider.isScrollable,
       isSliderEnd: filters.activeSlider.isEnd,
+      text,
+      activeLocale,
     }
-  }, [storeCatalog, filters])
+  }, [storeCatalog, filters, text, activeLocale])
   const loadStoreRail = useCallback(() => {
     const getRailState = (element: HTMLDivElement | null) => {
       if (!element) return { isScrollable: false, isEnd: false }
@@ -99,6 +104,9 @@ export default function StorePlay() {
   const editStoreCategory = (categoryId: string) => {
     setStoreCategory(categoryId)
   }
+  const editStoreLocale = (locale: string) => {
+    setLocale(locale as LocaleCode)
+  }
   const submitStoreGame = (gameId: string) => {
     setStoreHistory(gameId)
   }
@@ -107,9 +115,10 @@ export default function StorePlay() {
   }
 
   useEffect(() => {
-    // Riwayat baru dibaca di peramban supaya hasil render server tetap sama.
+    // Riwayat dan pilihan bahasa baru dibaca di peramban supaya hasil render server tetap sama.
     setStoreHistoryInit()
-  }, [setStoreHistoryInit])
+    setLocaleInit()
+  }, [setStoreHistoryInit, setLocaleInit])
   useEffect(() => {
     loadStoreRail()
     const observer = new ResizeObserver(loadStoreRail)
@@ -121,7 +130,12 @@ export default function StorePlay() {
   return (
     <div className="h-[100dvh] w-full overflow-y-auto bg-[#0a0a0b] text-[#f2ede1]">
       <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 px-5 py-6 sm:gap-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
-        <StoreHeader />
+        <StoreHeader
+          tagline={data.text.app.tagline}
+          activeLocale={data.activeLocale}
+          switchLabel={data.text.locale.switch}
+          onEditStoreLocale={editStoreLocale}
+        />
 
         <StoreFilter
           categories={data.categories}
@@ -131,8 +145,8 @@ export default function StorePlay() {
 
         <section className="flex flex-col gap-2">
           <StoreSection
-            title="Daftar Permainan"
-            actionLabel={data.isSliderEnd ? 'Kembali ke awal daftar' : 'Geser daftar permainan'}
+            title={data.text.store.games}
+            actionLabel={data.isSliderEnd ? data.text.store.scrollGamesBack : data.text.store.scrollGames}
             isActionDisabled={!data.isSliderScrollable}
             isActionFlipped={data.isSliderEnd}
             onLoadStoreSection={loadStoreSliderNext}
@@ -147,7 +161,7 @@ export default function StorePlay() {
                 onClick={clearStoreFilter}
                 className="mt-3 rounded-full border border-[#f2ede1] px-4 py-2 text-[12px] font-medium text-[#f2ede1] transition-colors hover:bg-[#f2ede1] hover:text-[#0a0a0b]"
               >
-                Tampilkan semua
+                {data.text.store.emptyAction}
               </button>
             </div>
           ) : (
@@ -163,7 +177,17 @@ export default function StorePlay() {
                   className="flex w-[89%] shrink-0 snap-start flex-col divide-y divide-[#1c1c20] pr-3 sm:w-[62%] lg:w-1/3"
                 >
                   {page.map((game) => (
-                    <StoreRow key={game.id} game={game} onSubmitStoreGame={submitStoreGame} />
+                    <StoreRow
+                      key={game.id}
+                      game={game}
+                      tagline={data.text.games[game.id as keyof typeof data.text.games]}
+                      playLabel={data.text.store.play}
+                      soonLabel={data.text.store.soon}
+                      minuteUnit={data.text.unit.minute}
+                      playerUnit={data.text.unit.player}
+                      playersUnit={data.text.unit.players}
+                      onSubmitStoreGame={submitStoreGame}
+                    />
                   ))}
                 </div>
               ))}
@@ -177,8 +201,8 @@ export default function StorePlay() {
         {data.isHistoryVisible ? (
           <section className="flex flex-col gap-3">
             <StoreSection
-              title="Riwayat"
-              actionLabel={data.isRailEnd ? 'Kembali ke awal riwayat' : 'Geser riwayat'}
+              title={data.text.store.history}
+              actionLabel={data.isRailEnd ? data.text.store.scrollHistoryBack : data.text.store.scrollHistory}
               isActionDisabled={!data.isRailScrollable}
               isActionFlipped={data.isRailEnd}
               onLoadStoreSection={loadStoreRailNext}

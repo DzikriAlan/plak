@@ -7,8 +7,8 @@ export type StoreGame = {
   description: string
   category: string
   categoryLabel: string
-  durationLabel: string
-  playerLabel: string
+  durationValue: string
+  playerValue: string
   path: string
   tone: string
   accent: string

@@ -6,14 +6,32 @@ import StoreCover from './StoreCover'
 
 interface Props {
   game: StoreGame
+  tagline: string
+  playLabel: string
+  soonLabel: string
+  minuteUnit: string
+  playerUnit: string
+  playersUnit: string
   onSubmitStoreGame: (gameId: string) => void
 }
 
-export default function StoreRow({ game, onSubmitStoreGame }: Props) {
+export default function StoreRow({
+  game,
+  tagline,
+  playLabel,
+  soonLabel,
+  minuteUnit,
+  playerUnit,
+  playersUnit,
+  onSubmitStoreGame,
+}: Props) {
+  // Satuan pemain mengikuti jumlahnya supaya bahasa Inggris tetap luwes dibaca.
+  const getPlayerLabel = () => `${game.playerValue} ${game.playerValue === '1' ? playerUnit : playersUnit}`
+
   const infos = [
     {
       id: 'duration',
-      label: game.durationLabel,
+      label: `${game.durationValue} ${minuteUnit}`,
       icon: (
         <svg viewBox="0 0 16 16" className="h-[13px] w-[13px]" fill="none" stroke="currentColor" strokeWidth="1.5">
           <circle cx="8" cy="8" r="6" />
@@ -23,7 +41,7 @@ export default function StoreRow({ game, onSubmitStoreGame }: Props) {
     },
     {
       id: 'player',
-      label: game.playerLabel,
+      label: getPlayerLabel(),
       icon: (
         <svg viewBox="0 0 16 16" className="h-[13px] w-[13px]" fill="none" stroke="currentColor" strokeWidth="1.5">
           <circle cx="6.2" cy="6" r="2.6" />
@@ -42,8 +60,8 @@ export default function StoreRow({ game, onSubmitStoreGame }: Props) {
   const body = (
     <span className="flex min-w-0 flex-1 flex-col gap-1">
       <span className="text-[15px] font-black uppercase leading-tight tracking-tight text-[#f2ede1]">{game.name}</span>
-      <span className="text-[10px] font-semibold uppercase leading-snug tracking-[0.14em] text-[#a29d93]">
-        {game.tagline}
+      <span className="text-[10px] font-semibold uppercase leading-snug tracking-[0.08em] text-[#a29d93] sm:tracking-[0.14em]">
+        {tagline}
       </span>
       <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 sm:gap-x-3">
         {infos.map((info) => (
@@ -62,7 +80,7 @@ export default function StoreRow({ game, onSubmitStoreGame }: Props) {
         {cover}
         {body}
         <span className="shrink-0 self-center rounded-lg border border-[#3a3a42] px-3 py-[6px] text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a29d93]">
-          Soon
+          {soonLabel}
         </span>
       </article>
     )
@@ -77,7 +95,7 @@ export default function StoreRow({ game, onSubmitStoreGame }: Props) {
       {cover}
       {body}
       <span className="shrink-0 self-center rounded-lg border border-[#f2ede1] bg-[#f2ede1] px-3 py-[7px] text-[10px] font-semibold uppercase tracking-[0.14em] text-[#0a0a0b] transition-opacity group-active:opacity-80 sm:px-4 sm:py-2 sm:text-[11px]">
-        Main
+        {playLabel}
       </span>
     </Link>
   )
