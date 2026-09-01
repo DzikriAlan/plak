@@ -7,6 +7,8 @@ export type StoreGame = {
   description: string
   category: string
   categoryLabel: string
+  durationLabel: string
+  playerLabel: string
   path: string
   tone: string
   accent: string
@@ -25,6 +27,7 @@ export interface DataStoreCatalog {
   games: StoreGame[]
   categories: StoreCategory[]
   activeCategory: string
+  historyIds: string[]
 }
 
 export interface StoreCatalog {

@@ -5,13 +5,22 @@ import type { StoreGame } from '../types/storeTypes'
 import { useStoreStates } from '../states/storeStates'
 import StoreHeader from './StoreHeader'
 import StoreFilter from './StoreFilter'
-import StoreCard from './StoreCard'
+import StoreSection from './StoreSection'
+import StoreTile from './StoreTile'
+import StoreRow from './StoreRow'
+
+const LIST_TOTAL = 3
 
 export default function StorePlay() {
-  const { storeCatalog, setStoreCategory, setStoreReset } = useStoreStates()
+  const { storeCatalog, setStoreCategory, setStoreHistory, setStoreHistoryInit, setStoreReset } = useStoreStates()
   const railRef = useRef<HTMLDivElement | null>(null)
+  const sliderRef = useRef<HTMLDivElement | null>(null)
   const [filters, setFilters] = useState({
     activeRail: {
+      isScrollable: false,
+      isEnd: false,
+    },
+    activeSlider: {
       isScrollable: false,
       isEnd: false,
     },
@@ -25,63 +34,93 @@ export default function StorePlay() {
   const data = useMemo(() => {
     const getCategoryGames = (games: StoreGame[], activeCategory: string) =>
       games.filter((game) => activeCategory === 'all' || game.category === activeCategory)
+    const getHistoryGames = (games: StoreGame[], historyIds: string[]) =>
+      historyIds.map((id) => games.find((game) => game.id === id)).filter((game): game is StoreGame => !!game)
 
     const catalog = storeCatalog.data
     const activeCategory = catalog?.activeCategory ?? 'all'
     const games = getCategoryGames(catalog?.games ?? [], activeCategory)
+    const history = getHistoryGames(catalog?.games ?? [], catalog?.historyIds ?? [])
+    // Daftar dibagi per halaman berisi tiga baris, halaman berikutnya digeser mendatar.
+    const getPages = (items: StoreGame[]) => {
+      const pages: StoreGame[][] = []
+      for (let start = 0; start < items.length; start += LIST_TOTAL) {
+        pages.push(items.slice(start, start + LIST_TOTAL))
+      }
+      return pages
+    }
+    const pages = getPages(games)
 
     return {
       data: games,
       isLoading: storeCatalog.status === 'loading',
       isError: storeCatalog.status === 'error',
       isEmpty: storeCatalog.status === 'success' && !games.length,
-      emptyTitle: 'No games found',
-      emptySubtitle: 'No games in this category yet. Pick All instead.',
+      emptyTitle: 'Permainan tidak ditemukan',
+      emptySubtitle: 'Belum ada permainan di kategori ini. Coba pilih Semua.',
       emptyImage: '',
       pagination: { ...filters.pagination, perPage: games.length, totalItem: games.length },
       categories: catalog?.categories ?? [],
       activeCategory,
-      isScrollable: filters.activeRail.isScrollable,
+      history,
+      pages,
+      isHistoryVisible: !!history.length,
+      isRailScrollable: filters.activeRail.isScrollable,
       isRailEnd: filters.activeRail.isEnd,
+      isSliderScrollable: filters.activeSlider.isScrollable,
+      isSliderEnd: filters.activeSlider.isEnd,
     }
   }, [storeCatalog, filters])
   const loadStoreRail = useCallback(() => {
-    const rail = railRef.current
-    if (!rail) return
-
-    const getRailState = (element: HTMLDivElement) => {
+    const getRailState = (element: HTMLDivElement | null) => {
+      if (!element) return { isScrollable: false, isEnd: false }
       const room = element.scrollWidth - element.clientWidth
       if (room <= 4) return { isScrollable: false, isEnd: false }
       return { isScrollable: true, isEnd: element.scrollLeft >= room - 4 }
     }
 
-    setFilters((prev) => ({ ...prev, activeRail: getRailState(rail) }))
+    setFilters((prev) => ({
+      ...prev,
+      activeRail: getRailState(railRef.current),
+      activeSlider: getRailState(sliderRef.current),
+    }))
   }, [])
-  const editStoreCategory = (categoryId: string) => {
-    setStoreCategory(categoryId)
-    railRef.current?.scrollTo({ left: 0, behavior: 'smooth' })
-  }
-  const clearStoreFilter = () => {
-    setStoreReset()
-  }
   const loadStoreRailNext = () => {
     const rail = railRef.current
     if (!rail) return
     rail.scrollBy({ left: data.isRailEnd ? -rail.scrollWidth : rail.clientWidth * 0.8, behavior: 'smooth' })
   }
+  const loadStoreSliderNext = () => {
+    const slider = sliderRef.current
+    if (!slider) return
+    // Satu geseran memindahkan tepat satu halaman berisi tiga baris permainan.
+    slider.scrollBy({ left: data.isSliderEnd ? -slider.scrollWidth : slider.clientWidth, behavior: 'smooth' })
+  }
+  const editStoreCategory = (categoryId: string) => {
+    setStoreCategory(categoryId)
+  }
+  const submitStoreGame = (gameId: string) => {
+    setStoreHistory(gameId)
+  }
+  const clearStoreFilter = () => {
+    setStoreReset()
+  }
 
   useEffect(() => {
+    // Riwayat baru dibaca di peramban supaya hasil render server tetap sama.
+    setStoreHistoryInit()
+  }, [setStoreHistoryInit])
+  useEffect(() => {
     loadStoreRail()
-    const rail = railRef.current
-    if (!rail) return
     const observer = new ResizeObserver(loadStoreRail)
-    observer.observe(rail)
+    if (railRef.current) observer.observe(railRef.current)
+    if (sliderRef.current) observer.observe(sliderRef.current)
     return () => observer.disconnect()
-  }, [loadStoreRail, data.data.length])
+  }, [loadStoreRail, data.history.length, data.pages.length])
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#0a0a0b] text-[#f2ede1]">
-      <div className="mx-auto flex h-full w-full max-w-[1280px] flex-col gap-4 px-5 py-6 sm:gap-6 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+    <div className="h-[100dvh] w-full overflow-y-auto bg-[#0a0a0b] text-[#f2ede1]">
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 px-5 py-6 sm:gap-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <StoreHeader />
 
         <StoreFilter
@@ -90,56 +129,72 @@ export default function StorePlay() {
           onEditStoreCategory={editStoreCategory}
         />
 
-        {data.isEmpty ? (
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 rounded-2xl border border-[#26262b] bg-[#121214] px-6 text-center">
-            <p className="text-base font-black uppercase tracking-tight text-[#f2ede1]">{data.emptyTitle}</p>
-            <p className="text-[13px] font-medium text-[#9aa3b2]">{data.emptySubtitle}</p>
-            <button
-              type="button"
-              onClick={clearStoreFilter}
-              className="mt-3 rounded-full border border-[#f2ede1] px-4 py-2 text-[12px] font-medium text-[#f2ede1] transition-colors hover:bg-[#f2ede1] hover:text-[#0a0a0b]"
-            >
-              Show all games
-            </button>
-          </div>
-        ) : (
-          <section className="relative flex min-h-0 flex-1 flex-col">
+        {data.isHistoryVisible ? (
+          <section className="flex flex-col gap-3">
+            <StoreSection
+              title="Riwayat"
+              actionLabel={data.isRailEnd ? 'Kembali ke awal riwayat' : 'Geser riwayat'}
+              isActionDisabled={!data.isRailScrollable}
+              isActionFlipped={data.isRailEnd}
+              onLoadStoreSection={loadStoreRailNext}
+            />
+
             <div
               ref={railRef}
               onScroll={loadStoreRail}
-              className="flex min-h-0 flex-1 snap-x snap-mandatory items-stretch gap-4 max-h-[460px] overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] lg:gap-5 [&::-webkit-scrollbar]:hidden"
+              className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] sm:gap-5 [&::-webkit-scrollbar]:hidden"
             >
-              {data.data.map((game) => (
-                <div
-                  key={game.id}
-                  className="h-full w-[calc(100vw-3.5rem)] max-w-[320px] shrink-0 snap-start sm:w-[300px] lg:w-[310px]"
-                >
-                  <StoreCard game={game} />
-                </div>
+              {data.history.map((game) => (
+                <StoreTile key={game.id} game={game} onSubmitStoreGame={submitStoreGame} />
               ))}
             </div>
+          </section>
+        ) : null}
 
-            {data.isScrollable ? (
+        <section className="flex flex-col gap-2">
+          <StoreSection
+            title="Daftar Permainan"
+            actionLabel={data.isSliderEnd ? 'Kembali ke awal daftar' : 'Geser daftar permainan'}
+            isActionDisabled={!data.isSliderScrollable}
+            isActionFlipped={data.isSliderEnd}
+            onLoadStoreSection={loadStoreSliderNext}
+          />
+
+          {data.isEmpty ? (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-[#26262b] bg-[#121214] px-6 py-10 text-center">
+              <p className="text-base font-black uppercase tracking-tight text-[#f2ede1]">{data.emptyTitle}</p>
+              <p className="text-[13px] font-medium text-[#9aa3b2]">{data.emptySubtitle}</p>
               <button
                 type="button"
-                onClick={loadStoreRailNext}
-                aria-label={data.isRailEnd ? 'Back to the start' : 'Scroll the game list'}
-                className="absolute -right-7 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#3a3a42] bg-[#0a0a0b] text-[#f2ede1] transition-colors hover:border-[#f2ede1] lg:flex"
+                onClick={clearStoreFilter}
+                className="mt-3 rounded-full border border-[#f2ede1] px-4 py-2 text-[12px] font-medium text-[#f2ede1] transition-colors hover:bg-[#f2ede1] hover:text-[#0a0a0b]"
               >
-                <svg
-                  viewBox="0 0 16 16"
-                  className={`h-4 w-4 transition-transform ${data.isRailEnd ? 'rotate-180' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                Tampilkan semua
               </button>
-            ) : null}
+            </div>
+          ) : (
+            <div
+              ref={sliderRef}
+              onScroll={loadStoreRail}
+              className="flex snap-x snap-mandatory overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {data.pages.map((page) => (
+                <div
+                  key={page[0].id}
+                  // Di ponsel section berikutnya sengaja mengintip di tepi layar, di desktop tampil tiga section.
+                  className="flex w-[89%] shrink-0 snap-start flex-col divide-y divide-[#1c1c20] pr-3 sm:w-[62%] lg:w-1/3"
+                >
+                  {page.map((game) => (
+                    <StoreRow key={game.id} game={game} onSubmitStoreGame={submitStoreGame} />
+                  ))}
+                </div>
+              ))}
 
-          </section>
-        )}
+              {/* Pengganjal akhir supaya section terakhir tetap bisa rapat ke tepi kiri saat digeser. */}
+              <span aria-hidden="true" className="w-[12%] shrink-0 sm:w-[38%] lg:w-0" />
+            </div>
+          )}
+        </section>
       </div>
     </div>
   )
