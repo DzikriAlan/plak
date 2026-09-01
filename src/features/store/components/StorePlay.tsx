@@ -129,28 +129,6 @@ export default function StorePlay() {
           onEditStoreCategory={editStoreCategory}
         />
 
-        {data.isHistoryVisible ? (
-          <section className="flex flex-col gap-3">
-            <StoreSection
-              title="Riwayat"
-              actionLabel={data.isRailEnd ? 'Kembali ke awal riwayat' : 'Geser riwayat'}
-              isActionDisabled={!data.isRailScrollable}
-              isActionFlipped={data.isRailEnd}
-              onLoadStoreSection={loadStoreRailNext}
-            />
-
-            <div
-              ref={railRef}
-              onScroll={loadStoreRail}
-              className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] sm:gap-5 [&::-webkit-scrollbar]:hidden"
-            >
-              {data.history.map((game) => (
-                <StoreTile key={game.id} game={game} onSubmitStoreGame={submitStoreGame} />
-              ))}
-            </div>
-          </section>
-        ) : null}
-
         <section className="flex flex-col gap-2">
           <StoreSection
             title="Daftar Permainan"
@@ -195,6 +173,28 @@ export default function StorePlay() {
             </div>
           )}
         </section>
+
+        {data.isHistoryVisible ? (
+          <section className="flex flex-col gap-3">
+            <StoreSection
+              title="Riwayat"
+              actionLabel={data.isRailEnd ? 'Kembali ke awal riwayat' : 'Geser riwayat'}
+              isActionDisabled={!data.isRailScrollable}
+              isActionFlipped={data.isRailEnd}
+              onLoadStoreSection={loadStoreRailNext}
+            />
+
+            <div
+              ref={railRef}
+              onScroll={loadStoreRail}
+              className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] sm:gap-5 [&::-webkit-scrollbar]:hidden"
+            >
+              {data.history.map((game) => (
+                <StoreTile key={game.id} game={game} onSubmitStoreGame={submitStoreGame} />
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   )
