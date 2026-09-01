@@ -139,7 +139,7 @@ export default function CongklakRoomPlay({ code }: Props) {
     // Keluar mengakhiri sesi untuk kedua pemain, jadi server dikabari lebih dulu.
     const room = gameRooms.data
     if (room?.token) storeGameRoomsLeave.mutate({ code, token: room.token })
-    window.location.href = '/congklak'
+    window.location.href = '/'
   }
   useEffect(() => {
     // Kursi disimpan per tab supaya dua tab di peramban yang sama tetap dapat kursi berbeda.
