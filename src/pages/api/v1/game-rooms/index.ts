@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         game,
         status: 'lobby',
         seatTotal,
-        players: [{ seat: 'p1', token, name }],
+        players: [{ seat: 'p1', token, name, seenAt: Date.now() }],
         turn: 'p1',
         state: getGameRoomNewState(game),
         moveTotal: 0,

@@ -17,7 +17,14 @@ export type GameRoomPlayer = {
   seat: GameRoomSeat
   token: string
   name: string
+  seenAt?: number
 }
+
+// Kursi yang pemiliknya tidak terlihat selama tiga puluh detik dianggap ditinggalkan.
+export const GAME_ROOM_ABSENT_MS = 30000
+
+export const getGameRoomIsPresent = (player: GameRoomPlayer, now = Date.now()) =>
+  typeof player.seenAt === 'number' && now - player.seenAt < GAME_ROOM_ABSENT_MS
 
 export type GameRoomRecord = {
   code: string
@@ -76,6 +83,14 @@ export const getGameRoomSeat = (players: GameRoomPlayer[], token: string) => {
 
 export const getGameRoomFreeSeat = (players: GameRoomPlayer[], seatTotal: number) =>
   SEATS.slice(0, seatTotal).find((seat) => !players.some((player) => player.seat === seat)) ?? null
+
+// Kursi yang ditinggalkan boleh diambil alih supaya ruangan tidak terkunci oleh tab yang ditutup.
+export const getGameRoomAbandonedSeat = (players: GameRoomPlayer[]) => {
+  const now = Date.now()
+  const absent = players.filter((player) => !getGameRoomIsPresent(player, now))
+  if (!absent.length) return null
+  return absent.sort((left, right) => (left.seenAt ?? 0) - (right.seenAt ?? 0))[0].seat
+}
 
 // Papan awal setiap game disiapkan di server supaya kedua pemain berangkat dari state yang sama.
 export const getGameRoomNewState = (game: string) => {
@@ -176,6 +191,8 @@ export const getGameRoomView = (room: GameRoomRecord, seat: GameRoomSeat | null)
     seatTotal: room.seatTotal,
     seatOptions: getGameRoomSeatOptions(room.game),
     playerTotal: room.players.length,
+    // Kehadiran lawan dipakai untuk membedakan menunggu langkah dan menunggu sambungan.
+    rivalOnlineTotal: room.players.filter((player) => player.seat !== seat && getGameRoomIsPresent(player)).length,
     playerNames: room.players.map((player) => player.name),
     board,
     lastHole: typeof room.state.lastHole === 'number' ? room.state.lastHole : -1,

@@ -119,6 +119,31 @@ export const postGameRoomRow = async (row: Omit<GameRoomRow, 'updatedAt'>) => {
   return created
 }
 
+// Kehadiran cukup ditulis berkala supaya basis data tidak dibanjiri denyut dari setiap pemain.
+// Jadwal tulisnya dicatat terpisah karena cache selalu memegang waktu terlihat yang terbaru.
+const SEEN_WRITE_INTERVAL = 8000
+const seenWrites = new Map<string, number>()
+
+export const updateGameRoomSeen = async (code: string, token: string) => {
+  if (!token) return null
+  const room = await getGameRoomRow(code)
+  if (!room) return null
+
+  const now = Date.now()
+  const found = room.players.find((player) => player.token === token)
+  if (!found) return room
+
+  const players = room.players.map((player) => (player.token === token ? { ...player, seenAt: now } : player))
+  const isWriteDue = now - (seenWrites.get(token) ?? 0) > SEEN_WRITE_INTERVAL
+  if (!isWriteDue) {
+    postCachedRoom({ ...room, players })
+    return { ...room, players }
+  }
+
+  seenWrites.set(token, now)
+  return updateGameRoomRow(code, { players })
+}
+
 export const updateGameRoomRow = async (code: string, patch: GameRoomPatch): Promise<GameRoomRow | null> => {
   const updateMemoryRow = () => {
     const found = memoryRooms.get(code)
