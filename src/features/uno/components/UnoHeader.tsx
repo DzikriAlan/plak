@@ -1,9 +1,9 @@
 'use client'
 
-import Link from 'next/link'
 import GameSoundToggle from '@/shared/components/reusable/GameSoundToggle'
 
 interface Props {
+  onLoadUnoExit: () => void
   roomCode: string
   turnName: string
   isCopied: boolean
@@ -16,6 +16,7 @@ interface Props {
 }
 
 export default function UnoHeader({
+  onLoadUnoExit,
   roomCode,
   turnName,
   isCopied,
@@ -28,8 +29,9 @@ export default function UnoHeader({
 }: Props) {
   return (
     <header className="grid shrink-0 grid-cols-[auto_1fr_auto] gap-px border-b border-[#26262b] bg-[#26262b]">
-      <Link
-        href="/"
+      <button
+          type="button"
+          onClick={onLoadUnoExit}
         aria-label="Back to Waitplay Game Collection"
         className="flex items-center gap-1.5 bg-[#121214] px-3 py-3 transition-colors active:bg-[#1b1b1f]"
       >
@@ -37,7 +39,7 @@ export default function UnoHeader({
         <span className="text-base font-black leading-none tracking-tighter text-[#f2ede1] [font-family:'Arial_Black','Archivo_Black',system-ui] sm:text-lg">
           UNO
         </span>
-      </Link>
+      </button>
 
       <div className="flex min-w-0 items-center justify-between gap-2 bg-[#121214] px-2 sm:px-3">
         <span className="flex min-w-0 items-center gap-2">

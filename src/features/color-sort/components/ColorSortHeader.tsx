@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 
 interface Booster {
   count: number
@@ -9,6 +8,7 @@ interface Booster {
 }
 
 interface Props {
+  onLoadColorSortExit: () => void
   level: number
   coin: number
   star: number
@@ -20,6 +20,7 @@ interface Props {
 }
 
 export default function ColorSortHeader({
+  onLoadColorSortExit,
   level,
   coin,
   star,
@@ -44,8 +45,9 @@ export default function ColorSortHeader({
     <header className="relative z-20 space-y-2 px-3 pt-3">
       <div className="flex items-stretch gap-2">
         <div className="relative min-w-0 shrink">
-          <Link
-            href="/"
+          <button
+          type="button"
+          onClick={onLoadColorSortExit}
             aria-label="Back to Waitplay Game Collection"
             className="block rounded-xl border border-[#26262b] bg-[#121214] px-2 py-2 transition-colors hover:border-[#43434d] sm:px-3"
           >
@@ -56,7 +58,7 @@ export default function ColorSortHeader({
             <p className="mt-[2px] text-[17px] font-black uppercase leading-[0.9] tracking-tighter text-[#e0452a] [font-family:'Arial_Black','Archivo_Black',system-ui] sm:text-[20px]">
               Sort
             </p>
-          </Link>
+          </button>
           <div className="mt-2 rounded-xl border border-[#26262b] bg-[#121214] px-2 py-[3px] text-center">
             <p className="truncate text-[9px] font-semibold uppercase tracking-[0.15em] text-[#a29d93]">
               Sort the colors!

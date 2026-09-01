@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAnimalMatchingStates } from '../states/animalMatchingStates'
 import GameAudio, { type GameAudioCue } from '@/shared/components/reusable/GameAudio'
 import AnimalMatchingHeader from './AnimalMatchingHeader'
+import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import AnimalMatchingBoard from './AnimalMatchingBoard'
 
 export default function AnimalMatchingPlay() {
@@ -17,6 +18,7 @@ export default function AnimalMatchingPlay() {
     setAnimalMatchingRestart,
   } = useAnimalMatchingStates()
   const [filters, setFilters] = useState({
+    isExitOpen: false,
     activeLevel: 0,
     secondsLeft: 0,
     isSoundOn: true,
@@ -28,6 +30,7 @@ export default function AnimalMatchingPlay() {
     const tiles = game?.tiles ?? []
 
     return {
+      isExitOpen: filters.isExitOpen,
       data: tiles,
       isLoading: animalMatchingGame.status === 'loading',
       isError: animalMatchingGame.status === 'error',
@@ -71,6 +74,16 @@ export default function AnimalMatchingPlay() {
     setAnimalMatchingRestart()
   }
 
+  const loadAnimalMatchingExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: true }))
+  }
+  const clearAnimalMatchingExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: false }))
+  }
+  const submitAnimalMatchingExit = () => {
+    // Sesi permainan berakhir begitu pemain benar-benar keluar dari halaman.
+    window.location.href = '/'
+  }
   useEffect(() => {
     setAnimalMatchingInit()
   }, [setAnimalMatchingInit])
@@ -110,6 +123,7 @@ export default function AnimalMatchingPlay() {
     <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-2 sm:p-4">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
         <AnimalMatchingHeader
+          onLoadAnimalMatchingExit={loadAnimalMatchingExit}
           level={data.level}
           remainingTotal={data.remainingTotal}
           secondsLeft={data.secondsLeft}
@@ -202,6 +216,17 @@ export default function AnimalMatchingPlay() {
           </div>
         </div>
       ) : null}
+      {data.isExitOpen ? (
+        <GameExitConfirm
+          title="Keluar dari permainan?"
+          subtitle="Sesi permainan ini akan diakhiri dan kemajuanmu tidak disimpan."
+          cancelLabel="Batal"
+          confirmLabel="Keluar"
+          onClearGameExit={clearAnimalMatchingExit}
+          onSubmitGameExit={submitAnimalMatchingExit}
+        />
+      ) : null}
+
     </div>
   )
 }

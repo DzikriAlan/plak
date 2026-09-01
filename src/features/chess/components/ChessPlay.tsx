@@ -7,6 +7,7 @@ import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates
 import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import GameAudio, { type GameAudioCue } from '@/shared/components/reusable/GameAudio'
 import ChessHeader from './ChessHeader'
+import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import ChessBoard from './ChessBoard'
 import ChessCaptured from './ChessCaptured'
 import ChessSettings from './ChessSettings'
@@ -46,6 +47,7 @@ export default function ChessPlay() {
   const router = useRouter()
   const engineRef = useRef<Worker | null>(null)
   const [filters, setFilters] = useState({
+    isExitOpen: false,
     activeLevel: 2,
     activeMode: 'solo',
     isInviting: false,
@@ -69,6 +71,7 @@ export default function ChessPlay() {
     const isEngineDriven = isAutoMode && !!game?.moveTotal
 
     return {
+      isExitOpen: filters.isExitOpen,
       data: board,
       isLoading: chessGame.status === 'loading',
       isError: chessGame.status === 'error',
@@ -151,6 +154,16 @@ export default function ChessPlay() {
     setChessRestart()
   }
 
+  const loadChessExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: true }))
+  }
+  const clearChessExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: false }))
+  }
+  const submitChessExit = () => {
+    // Sesi permainan berakhir begitu pemain benar-benar keluar dari halaman.
+    window.location.href = '/'
+  }
   useEffect(() => {
     setChessInit()
   }, [setChessInit])
@@ -223,6 +236,7 @@ export default function ChessPlay() {
     <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-3 sm:p-5">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
         <ChessHeader
+          onLoadChessExit={loadChessExit}
           isInviteLoading={data.isInviting}
           onSubmitChessInvite={submitChessInvite}
           onLoadChessSettings={loadChessSettings}
@@ -322,6 +336,17 @@ export default function ChessPlay() {
           </div>
         </div>
       ) : null}
+      {data.isExitOpen ? (
+        <GameExitConfirm
+          title="Keluar dari permainan?"
+          subtitle="Sesi permainan ini akan diakhiri dan kemajuanmu tidak disimpan."
+          cancelLabel="Batal"
+          confirmLabel="Keluar"
+          onClearGameExit={clearChessExit}
+          onSubmitGameExit={submitChessExit}
+        />
+      ) : null}
+
     </div>
   )
 }

@@ -8,6 +8,7 @@ import { useRouter } from 'next/router'
 import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates'
 import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import UnoHeader from './UnoHeader'
+import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import UnoBoard from './UnoBoard'
 import UnoHand from './UnoHand'
 
@@ -35,6 +36,7 @@ export default function UnoPlay() {
   const { storeGameRooms } = useGameRoomsControllers()
   const router = useRouter()
   const [filters, setFilters] = useState({
+    isExitOpen: false,
     isCopied: false,
     isSoundOn: true,
     isInviting: false,
@@ -49,6 +51,7 @@ export default function UnoPlay() {
     const handCards = (human?.hand ?? []).map((card) => ({ card }))
 
     return {
+      isExitOpen: filters.isExitOpen,
       data: handCards,
       isLoading: unoGame.status === 'loading',
       isError: unoGame.status === 'error',
@@ -128,6 +131,16 @@ export default function UnoPlay() {
     setUnoRestart()
   }
 
+  const loadUnoExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: true }))
+  }
+  const clearUnoExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: false }))
+  }
+  const submitUnoExit = () => {
+    // Sesi permainan berakhir begitu pemain benar-benar keluar dari halaman.
+    window.location.href = '/'
+  }
   useEffect(() => {
     // Ruangan baru langsung dibuka setelah server mengirim kode dan kursi tuan rumah.
     const room = gameRooms.data
@@ -178,6 +191,7 @@ export default function UnoPlay() {
         />
 
         <UnoHeader
+          onLoadUnoExit={loadUnoExit}
           roomCode={data.roomCode}
           turnName={data.turnName}
           isCopied={data.isCopied}
@@ -256,6 +270,17 @@ export default function UnoPlay() {
           </div>
         </div>
       ) : null}
+      {data.isExitOpen ? (
+        <GameExitConfirm
+          title="Keluar dari permainan?"
+          subtitle="Sesi permainan ini akan diakhiri dan kemajuanmu tidak disimpan."
+          cancelLabel="Batal"
+          confirmLabel="Keluar"
+          onClearGameExit={clearUnoExit}
+          onSubmitGameExit={submitUnoExit}
+        />
+      ) : null}
+
     </div>
   )
 }

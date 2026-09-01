@@ -5,6 +5,7 @@ import type { MazeRunnerDirection } from '../types/mazeRunnerTypes'
 import { useMazeRunnerStates } from '../states/mazeRunnerStates'
 import GameAudio, { type GameAudioCue } from '@/shared/components/reusable/GameAudio'
 import MazeRunnerHeader from './MazeRunnerHeader'
+import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import MazeRunnerBoard from './MazeRunnerBoard'
 import MazeRunnerResult from './MazeRunnerResult'
 
@@ -34,6 +35,7 @@ export default function MazeRunnerPlay() {
     setMazeRunnerRestart,
   } = useMazeRunnerStates()
   const [filters, setFilters] = useState({
+    isExitOpen: false,
     activeLevel: 0,
     secondsLeft: 0,
     isSoundOn: true,
@@ -58,6 +60,7 @@ export default function MazeRunnerPlay() {
     const isTimeUp = !!game && !game.isCleared && filters.activeLevel === level && filters.secondsLeft <= 0
 
     return {
+      isExitOpen: filters.isExitOpen,
       data: cells,
       isLoading: mazeRunnerGame.status === 'loading',
       isError: mazeRunnerGame.status === 'error',
@@ -106,6 +109,16 @@ export default function MazeRunnerPlay() {
     setMazeRunnerRestart()
   }
 
+  const loadMazeRunnerExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: true }))
+  }
+  const clearMazeRunnerExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: false }))
+  }
+  const submitMazeRunnerExit = () => {
+    // Sesi permainan berakhir begitu pemain benar-benar keluar dari halaman.
+    window.location.href = '/'
+  }
   useEffect(() => {
     setMazeRunnerInit()
   }, [setMazeRunnerInit])
@@ -165,6 +178,7 @@ export default function MazeRunnerPlay() {
     <div className="flex h-[100dvh] w-full touch-none items-stretch justify-center overflow-hidden overscroll-none bg-[#0a0a0b] p-2 sm:p-4">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
         <MazeRunnerHeader
+          onLoadMazeRunnerExit={loadMazeRunnerExit}
           level={data.level}
           timeLabel={data.timeLabel}
           hintLabel={data.hintLabel}
@@ -233,6 +247,17 @@ export default function MazeRunnerPlay() {
           onClearMazeRunnerLevel={clearMazeRunnerLevel}
         />
       ) : null}
+      {data.isExitOpen ? (
+        <GameExitConfirm
+          title="Keluar dari permainan?"
+          subtitle="Sesi permainan ini akan diakhiri dan kemajuanmu tidak disimpan."
+          cancelLabel="Batal"
+          confirmLabel="Keluar"
+          onClearGameExit={clearMazeRunnerExit}
+          onSubmitGameExit={submitMazeRunnerExit}
+        />
+      ) : null}
+
     </div>
   )
 }

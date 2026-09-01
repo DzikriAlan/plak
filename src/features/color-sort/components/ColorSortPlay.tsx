@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useColorSortStates } from '../states/colorSortStates'
 import ColorSortHeader from './ColorSortHeader'
+import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import ColorSortControls from './ColorSortControls'
 
 const ColorSortBoard = dynamic(() => import('./ColorSortBoard'), { ssr: false })
@@ -28,6 +29,7 @@ export default function ColorSortPlay() {
     setColorSortProgress,
   } = useColorSortStates()
   const [filters, setFilters] = useState({
+    isExitOpen: false,
     isShopOpen: false,
     isPauseOpen: false,
     isMusicOn: true,
@@ -63,6 +65,7 @@ export default function ColorSortPlay() {
     const colorTotal = level?.colorTotal ?? 0
 
     return {
+      isExitOpen: filters.isExitOpen,
       data: level?.bottles ?? [],
       isLoading: colorSortLevel.status === 'loading',
       isError: colorSortLevel.status === 'error',
@@ -142,6 +145,16 @@ export default function ColorSortPlay() {
     setFilters((prev) => ({ ...prev, isPauseOpen: false }))
   }
 
+  const loadColorSortExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: true }))
+  }
+  const clearColorSortExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: false }))
+  }
+  const submitColorSortExit = () => {
+    // Sesi permainan berakhir begitu pemain benar-benar keluar dari halaman.
+    window.location.href = '/'
+  }
   useEffect(() => {
     setColorSortInit()
   }, [setColorSortInit])
@@ -180,6 +193,7 @@ export default function ColorSortPlay() {
 
       <main className="relative z-10 flex h-[100dvh] w-full max-w-[480px] flex-col overflow-hidden">
         <ColorSortHeader
+          onLoadColorSortExit={loadColorSortExit}
           level={data.levelNumber}
           coin={data.coin}
           star={data.star}
@@ -315,6 +329,17 @@ export default function ColorSortPlay() {
           </div>
         ) : null}
       </main>
+      {data.isExitOpen ? (
+        <GameExitConfirm
+          title="Keluar dari permainan?"
+          subtitle="Sesi permainan ini akan diakhiri dan kemajuanmu tidak disimpan."
+          cancelLabel="Batal"
+          confirmLabel="Keluar"
+          onClearGameExit={clearColorSortExit}
+          onSubmitGameExit={submitColorSortExit}
+        />
+      ) : null}
+
     </div>
   )
 }

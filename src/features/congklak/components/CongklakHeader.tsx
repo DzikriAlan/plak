@@ -1,10 +1,10 @@
 'use client'
 
-import Link from 'next/link'
 
 import GameSoundToggle from '@/shared/components/reusable/GameSoundToggle'
 
 interface Props {
+  onLoadCongklakExit: () => void
   isSoundOn: boolean
   isInviteVisible?: boolean
   isInviteLoading?: boolean
@@ -13,6 +13,7 @@ interface Props {
 }
 
 export default function CongklakHeader({
+  onLoadCongklakExit,
   isSoundOn,
   isInviteVisible = false,
   isInviteLoading = false,
@@ -22,8 +23,9 @@ export default function CongklakHeader({
   return (
     <header className="shrink-0 space-y-3">
       <div className="flex min-h-[48px] items-stretch gap-2">
-        <Link
-          href="/"
+        <button
+          type="button"
+          onClick={onLoadCongklakExit}
           aria-label="Back to Waitplay Game Collection"
           className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#26262b] bg-[#121214] px-2 transition-colors hover:border-[#43434d] sm:px-3"
         >
@@ -31,7 +33,7 @@ export default function CongklakHeader({
           <span className="text-sm font-black uppercase leading-none tracking-tighter text-[#f2ede1] sm:text-base">
             Congklak
           </span>
-        </Link>
+        </button>
 
         {isInviteVisible ? (
           <button

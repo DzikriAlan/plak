@@ -7,6 +7,7 @@ import { useGameRoomsStates } from '@/features/game-rooms/states/gameRoomsStates
 import { useGameRoomsControllers } from '@/features/game-rooms/controllers/gameRoomsControllers'
 import GameAudio, { type GameAudioCue } from '@/shared/components/reusable/GameAudio'
 import CongklakHeader from './CongklakHeader'
+import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import CongklakBoard from './CongklakBoard'
 import CongklakResult from './CongklakResult'
 
@@ -20,6 +21,7 @@ export default function CongklakPlay() {
   const { storeGameRooms } = useGameRoomsControllers()
   const router = useRouter()
   const [filters, setFilters] = useState({
+    isExitOpen: false,
     isSoundOn: true,
     isInviting: false,
     lastCaptureTotal: 0,
@@ -41,6 +43,7 @@ export default function CongklakPlay() {
     const turn = game?.turn ?? 'player'
 
     return {
+      isExitOpen: filters.isExitOpen,
       data: holes,
       isLoading: congklakGame.status === 'loading',
       isError: congklakGame.status === 'error',
@@ -88,6 +91,16 @@ export default function CongklakPlay() {
     setCongklakRestart()
   }
 
+  const loadCongklakExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: true }))
+  }
+  const clearCongklakExit = () => {
+    setFilters((prev) => ({ ...prev, isExitOpen: false }))
+  }
+  const submitCongklakExit = () => {
+    // Sesi permainan berakhir begitu pemain benar-benar keluar dari halaman.
+    window.location.href = '/'
+  }
   useEffect(() => {
     setCongklakInit()
   }, [setCongklakInit])
@@ -131,6 +144,7 @@ export default function CongklakPlay() {
     <div className="flex h-[100dvh] w-full touch-none items-stretch justify-center overflow-hidden overscroll-none bg-[#0a0a0b] p-2 sm:p-4">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
         <CongklakHeader
+          onLoadCongklakExit={loadCongklakExit}
           isSoundOn={data.isSoundOn}
           isInviteVisible
           isInviteLoading={data.isInviting}
@@ -202,6 +216,17 @@ export default function CongklakPlay() {
           onClearCongklakGame={clearCongklakGame}
         />
       ) : null}
+      {data.isExitOpen ? (
+        <GameExitConfirm
+          title="Keluar dari permainan?"
+          subtitle="Sesi permainan ini akan diakhiri dan kemajuanmu tidak disimpan."
+          cancelLabel="Batal"
+          confirmLabel="Keluar"
+          onClearGameExit={clearCongklakExit}
+          onSubmitGameExit={submitCongklakExit}
+        />
+      ) : null}
+
     </div>
   )
 }

@@ -1,11 +1,11 @@
 'use client'
 
-import Link from 'next/link'
 
 import GameSoundToggle from '@/shared/components/reusable/GameSoundToggle'
 import AnimalMatchingGauge from './AnimalMatchingGauge'
 
 interface Props {
+  onLoadAnimalMatchingExit: () => void
   level: number
   remainingTotal: number
   secondsLeft: number
@@ -15,6 +15,7 @@ interface Props {
 }
 
 export default function AnimalMatchingHeader({
+  onLoadAnimalMatchingExit,
   level,
   remainingTotal,
   secondsLeft,
@@ -25,8 +26,9 @@ export default function AnimalMatchingHeader({
   return (
     <header className="shrink-0 space-y-3">
       <div className="flex items-stretch gap-2">
-        <Link
-          href="/"
+        <button
+          type="button"
+          onClick={onLoadAnimalMatchingExit}
           aria-label="Back to Waitplay Game Collection"
           className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#26262b] bg-[#121214] px-2 transition-colors hover:border-[#43434d] sm:px-3"
         >
@@ -34,7 +36,7 @@ export default function AnimalMatchingHeader({
           <span className="text-sm font-black uppercase leading-none tracking-tighter text-[#f2ede1] sm:text-base">
             Animals
           </span>
-        </Link>
+        </button>
 
         <div className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl border border-[#26262b] bg-[#121214] px-2 py-1 sm:px-3">
           <span className="shrink-0 text-[8px] font-semibold uppercase tracking-[0.2em] text-[#a29d93]">
