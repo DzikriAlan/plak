@@ -17,7 +17,7 @@ export default function StoreSection({
 }: Props) {
   return (
     <div className="flex shrink-0 items-center justify-between gap-3">
-      <h2 className="text-[19px] font-black uppercase leading-none tracking-tight text-[#f2ede1] sm:text-[22px]">
+      <h2 className="text-[18px] font-black uppercase leading-none tracking-tight text-[#f2ede1] sm:text-[20px]">
         {title}
       </h2>
       <button
@@ -25,7 +25,7 @@ export default function StoreSection({
         aria-label={actionLabel}
         disabled={isActionDisabled}
         onClick={onLoadStoreSection}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#2e2e34] bg-[#131316] text-[#f2ede1] transition-colors hover:border-[#f2ede1] disabled:opacity-35"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#2e2e34] bg-[#131316] text-[#f2ede1] transition-colors hover:border-[#f2ede1] disabled:opacity-35"
       >
         <svg
           viewBox="0 0 16 16"

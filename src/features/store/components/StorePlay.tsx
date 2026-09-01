@@ -129,7 +129,7 @@ export default function StorePlay() {
 
   return (
     <div className="h-[100dvh] w-full overflow-y-auto bg-[#0a0a0b] text-[#f2ede1]">
-      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 px-5 py-6 sm:gap-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 px-5 py-6 sm:gap-7 sm:px-8 sm:py-8 lg:px-12 lg:py-9">
         <StoreHeader
           activeLocale={data.activeLocale}
           switchLabel={data.text.locale.switch}
@@ -142,7 +142,7 @@ export default function StorePlay() {
           onEditStoreCategory={editStoreCategory}
         />
 
-        <section className="flex flex-col gap-2">
+        <section className="flex flex-col gap-1.5">
           <StoreSection
             title={data.text.store.games}
             actionLabel={data.isSliderEnd ? data.text.store.scrollGamesBack : data.text.store.scrollGames}
@@ -197,7 +197,7 @@ export default function StorePlay() {
         </section>
 
         {data.isHistoryVisible ? (
-          <section className="flex flex-col gap-3">
+          <section className="flex flex-col gap-2">
             <StoreSection
               title={data.text.store.history}
               actionLabel={data.isRailEnd ? data.text.store.scrollHistoryBack : data.text.store.scrollHistory}
