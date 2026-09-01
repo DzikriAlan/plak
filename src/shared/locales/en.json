@@ -92,14 +92,6 @@
       "minute": "min",
       "player": "player",
       "players": "players"
-    },
-    "games": {
-      "color-sort": "Sort the colors!",
-      "uno": "Empty your hand first!",
-      "chess": "Checkmate your rival",
-      "animal-matching": "Match the animals!",
-      "maze-runner": "Guide the beetle home",
-      "congklak": "Collect the most seeds"
     }
   }
 }

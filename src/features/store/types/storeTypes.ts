@@ -3,8 +3,6 @@ export type StoreMode = 'solo' | 'bot' | 'online'
 export type StoreGame = {
   id: string
   name: string
-  tagline: string
-  description: string
   category: string
   categoryLabel: string
   durationValue: string

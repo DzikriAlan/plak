@@ -30,7 +30,7 @@ export default function UnoHeader({
     <header className="grid shrink-0 grid-cols-[auto_1fr_auto] gap-px border-b border-[#26262b] bg-[#26262b]">
       <Link
         href="/"
-        aria-label="Back to Waitplay Game Store"
+        aria-label="Back to Waitplay Game Collection"
         className="flex items-center gap-1.5 bg-[#121214] px-3 py-3 transition-colors active:bg-[#1b1b1f]"
       >
         <span className="text-[10px] font-black leading-none text-[#a29d93]">&#9664;</span>

@@ -4,8 +4,6 @@ export const STORE_GAMES: StoreGame[] = [
   {
     id: 'color-sort',
     name: 'Color Sort 3D',
-    tagline: 'Sort the colors!',
-    description: 'Pour liquid between bottles until each holds a single color. Endless levels.',
     category: 'puzzle',
     categoryLabel: 'Puzzle',
     durationValue: '3-5',
@@ -20,8 +18,6 @@ export const STORE_GAMES: StoreGame[] = [
   {
     id: 'uno',
     name: 'UNO',
-    tagline: 'Empty your hand first!',
-    description: 'Classic UNO against three bots. Skip, reverse, draw two, up to wild four.',
     category: 'cards',
     categoryLabel: 'Cards',
     durationValue: '10',
@@ -36,8 +32,6 @@ export const STORE_GAMES: StoreGame[] = [
   {
     id: 'chess',
     name: 'Chess',
-    tagline: 'Checkmate your rival',
-    description: 'Classic chess against the Stockfish engine. Pick a level up to world class.',
     category: 'board',
     categoryLabel: 'Board',
     durationValue: '15',
@@ -52,8 +46,6 @@ export const STORE_GAMES: StoreGame[] = [
   {
     id: 'animal-matching',
     name: 'Animal Matching',
-    tagline: 'Match the animals!',
-    description: 'Connect two identical animals with at most two turns. Levels get denser.',
     category: 'puzzle',
     categoryLabel: 'Puzzle',
     durationValue: '5',
@@ -68,8 +60,6 @@ export const STORE_GAMES: StoreGame[] = [
   {
     id: 'maze-runner',
     name: 'Labirin Kumbang',
-    tagline: 'Antar kumbang ke gua!',
-    description: 'Susuri labirin dan bawa kumbang sampai ke gua sebelum waktu habis. Level makin luas.',
     category: 'puzzle',
     categoryLabel: 'Puzzle',
     durationValue: '3',
@@ -84,8 +74,6 @@ export const STORE_GAMES: StoreGame[] = [
   {
     id: 'congklak',
     name: 'Congklak',
-    tagline: 'Kumpulkan biji terbanyak!',
-    description: 'Congklak tradisional melawan bot. Sebar biji, tembak lubang lawan, penuhi rumahmu.',
     category: 'board',
     categoryLabel: 'Board',
     durationValue: '10',

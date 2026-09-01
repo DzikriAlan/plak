@@ -180,7 +180,6 @@ export default function StorePlay() {
                     <StoreRow
                       key={game.id}
                       game={game}
-                      tagline={data.text.games[game.id as keyof typeof data.text.games]}
                       playLabel={data.text.store.play}
                       soonLabel={data.text.store.soon}
                       minuteUnit={data.text.unit.minute}

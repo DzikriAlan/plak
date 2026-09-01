@@ -6,7 +6,6 @@ import StoreCover from './StoreCover'
 
 interface Props {
   game: StoreGame
-  tagline: string
   playLabel: string
   soonLabel: string
   minuteUnit: string
@@ -17,7 +16,6 @@ interface Props {
 
 export default function StoreRow({
   game,
-  tagline,
   playLabel,
   soonLabel,
   minuteUnit,
@@ -60,9 +58,6 @@ export default function StoreRow({
   const body = (
     <span className="flex min-w-0 flex-1 flex-col gap-1">
       <span className="text-[15px] font-black uppercase leading-tight tracking-tight text-[#f2ede1]">{game.name}</span>
-      <span className="text-[10px] font-semibold uppercase leading-snug tracking-[0.08em] text-[#a29d93] sm:tracking-[0.14em]">
-        {tagline}
-      </span>
       <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 sm:gap-x-3">
         {infos.map((info) => (
           <span key={info.id} className="flex items-center gap-1 text-[10px] font-medium text-[#9aa3b2] sm:text-[11px]">

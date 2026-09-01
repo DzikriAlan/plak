@@ -6,7 +6,7 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Waitplay — Game Store</title>
+        <title>Waitplay — Game Collection</title>
         <meta
           name="description"
           content="A collection of light games you can play straight in the browser, free and without signing up."

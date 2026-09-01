@@ -13,7 +13,7 @@ export default function ChessHeader({ isInviteLoading = false, onSubmitChessInvi
     <header className="flex shrink-0 items-center gap-2">
       <Link
         href="/"
-        aria-label="Back to Waitplay Game Store"
+        aria-label="Back to Waitplay Game Collection"
         className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#26262b] bg-[#121214] px-3 py-2 transition-colors hover:border-[#43434d]"
       >
         <span className="text-[10px] leading-none text-[#a29d93]">&#9664;</span>

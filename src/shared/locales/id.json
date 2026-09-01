@@ -92,14 +92,6 @@
       "minute": "menit",
       "player": "pemain",
       "players": "pemain"
-    },
-    "games": {
-      "color-sort": "Rapiin semua warnanya",
-      "uno": "Habisin kartumu duluan",
-      "chess": "Skak mat lawanmu",
-      "animal-matching": "Samain hewannya, buruan",
-      "maze-runner": "Anterin kumbang ke gua",
-      "congklak": "Kumpulin biji terbanyak"
     }
   }
 }
