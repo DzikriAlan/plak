@@ -51,18 +51,18 @@ export default function StoreRow({
   ]
 
   const cover = (
-    <span className="block h-[58px] w-[58px] shrink-0 overflow-hidden rounded-2xl border border-[#26262b] bg-[#121214] sm:h-[76px] sm:w-[76px]">
+    <span className="block h-[60px] w-[60px] shrink-0 overflow-hidden rounded-2xl border border-[#26262b] bg-[#121214] sm:h-[64px] sm:w-[64px]">
       <StoreCover gameId={game.id} tone={game.tone} accent={game.accent} />
     </span>
   )
   const body = (
     <span className="flex min-w-0 flex-1 flex-col gap-1">
-      <span className="text-[13px] font-black uppercase leading-tight tracking-tight text-[#f2ede1] sm:text-[15px]">
+      <span className="text-[14px] font-black uppercase leading-tight tracking-tight text-[#f2ede1] sm:text-[15px]">
         {game.name}
       </span>
-      <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 sm:gap-x-3">
+      <span className="mt-1 flex items-center gap-x-3 whitespace-nowrap">
         {infos.map((info) => (
-          <span key={info.id} className="flex items-center gap-1 text-[10px] font-medium text-[#9aa3b2] sm:text-[11px]">
+          <span key={info.id} className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-[#9aa3b2] sm:text-[12px]">
             {info.icon}
             {info.label}
           </span>
@@ -87,7 +87,7 @@ export default function StoreRow({
     <Link
       href={game.path}
       onClick={() => onSubmitStoreGame(game.id)}
-      className="group flex w-full items-start gap-2.5 rounded-2xl p-2 transition-colors hover:bg-[#121214] sm:gap-4"
+      className="group flex w-full items-start gap-2.5 rounded-2xl p-2 transition-colors hover:bg-[#121214] sm:gap-3"
     >
       {cover}
       {body}
