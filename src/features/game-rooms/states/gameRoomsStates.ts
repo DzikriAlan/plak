@@ -89,7 +89,16 @@ export const useGameRoomsStates = create<GameRoomsStore>((set) => ({
   setPostGameRoomsMove: (payload) =>
     set((state) => ({ payloadPostGameRoomsMove: { ...state.payloadPostGameRoomsMove, ...payload } })),
 
-  setGameRooms: (next) => set((state) => ({ gameRooms: { ...state.gameRooms, ...next } })),
+  // Balasan yang datang terlambat diabaikan supaya papan tidak melompat mundur ke keadaan lama.
+  setGameRooms: (next) =>
+    set((state) => {
+      const current = state.gameRooms.data
+      const incoming = next.data
+      const isStale =
+        !!current && !!incoming && current.code === incoming.code && incoming.moveTotal < current.moveTotal
+      if (isStale) return {}
+      return { gameRooms: { ...state.gameRooms, ...next } }
+    }),
 
   setGameRoomsJoin: (next) => set((state) => ({ gameRoomsJoin: { ...state.gameRoomsJoin, ...next } })),
 
