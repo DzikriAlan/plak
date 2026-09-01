@@ -23,10 +23,31 @@ const getIsDatabaseReady = () => /^postgres(ql)?:\/\//.test(process.env.SUPABASE
 
 const globalForRooms = globalThis as unknown as {
   gameRooms: Map<string, GameRoomRow> | undefined
+  gameRoomsCache: Map<string, { row: GameRoomRow; at: number }> | undefined
   gameRoomsFallback: boolean | undefined
 }
 const memoryRooms = globalForRooms.gameRooms ?? new Map<string, GameRoomRow>()
 globalForRooms.gameRooms = memoryRooms
+
+// Ruangan yang baru saja dibaca atau ditulis disimpan sebentar supaya setiap langkah tidak
+// menunggu perjalanan bolak-balik ke basis data yang jauh.
+const CACHE_TTL = 10000
+const cachedRooms = globalForRooms.gameRoomsCache ?? new Map<string, { row: GameRoomRow; at: number }>()
+globalForRooms.gameRoomsCache = cachedRooms
+
+const getCachedRoom = (code: string) => {
+  const found = cachedRooms.get(code)
+  if (!found) return null
+  if (Date.now() - found.at > CACHE_TTL) {
+    cachedRooms.delete(code)
+    return null
+  }
+  return found.row
+}
+
+const postCachedRoom = (row: GameRoomRow) => {
+  cachedRooms.set(row.code, { row, at: Date.now() })
+}
 
 // Di luar produksi, basis data yang tidak terjangkau dialihkan ke memori supaya permainan tetap
 // bisa dicoba; di produksi kegagalan tetap dilempar agar salah konfigurasi cepat ketahuan.
@@ -45,12 +66,16 @@ export const getGameRoomStoreMode = () => (getIsMemoryMode() ? 'memory' : 'datab
 export const getGameRoomRow = async (code: string): Promise<GameRoomRow | null> => {
   if (getIsMemoryMode()) return memoryRooms.get(code) ?? null
 
+  const cached = getCachedRoom(code)
+  if (cached) return cached
+
   const room = await prisma.gameRoom.findUnique({ where: { code } }).catch((error) => {
     postFallbackMode(error)
     return null
   })
   if (!room) return getIsMemoryMode() ? memoryRooms.get(code) ?? null : null
-  return {
+
+  const row: GameRoomRow = {
     code: room.code,
     game: room.game,
     status: room.status,
@@ -62,6 +87,8 @@ export const getGameRoomRow = async (code: string): Promise<GameRoomRow | null> 
     winner: room.winner,
     updatedAt: room.updatedAt,
   }
+  postCachedRoom(row)
+  return row
 }
 
 export const postGameRoomRow = async (row: Omit<GameRoomRow, 'updatedAt'>) => {
@@ -88,6 +115,7 @@ export const postGameRoomRow = async (row: Omit<GameRoomRow, 'updatedAt'>) => {
     return null
   })
   if (!stored) memoryRooms.set(row.code, created)
+  postCachedRoom(created)
   return created
 }
 
@@ -97,6 +125,7 @@ export const updateGameRoomRow = async (code: string, patch: GameRoomPatch): Pro
     if (!found) return null
     const next: GameRoomRow = { ...found, ...patch, updatedAt: new Date() }
     memoryRooms.set(code, next)
+    postCachedRoom(next)
     return next
   }
 
@@ -117,7 +146,8 @@ export const updateGameRoomRow = async (code: string, patch: GameRoomPatch): Pro
     return null
   })
   if (!room) return updateMemoryRow()
-  return {
+
+  const next: GameRoomRow = {
     code: room.code,
     game: room.game,
     status: room.status,
@@ -129,4 +159,6 @@ export const updateGameRoomRow = async (code: string, patch: GameRoomPatch): Pro
     winner: room.winner,
     updatedAt: room.updatedAt,
   }
+  postCachedRoom(next)
+  return next
 }

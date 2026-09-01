@@ -45,7 +45,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const room = await postRoom(token)
     if (!room) return res.status(503).json({ message: 'Room code unavailable' })
     return res.status(201).json({ ...getGameRoomView(room, 'p1'), token })
-  } catch {
+  } catch (error) {
+    console.error('[game-rooms] gagal membuat ruangan:', error instanceof Error ? error.message : error)
     return res.status(500).json({ message: 'Failed to create room' })
   }
 }
