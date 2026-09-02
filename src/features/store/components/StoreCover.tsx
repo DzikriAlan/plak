@@ -226,6 +226,215 @@ export default function StoreCover({ gameId, tone, accent }: Props) {
     )
   }
 
+  if (gameId === 'dots-and-boxes') {
+    const dots = [0, 1, 2, 3, 4].flatMap((row) => [0, 1, 2, 3, 4].map((column) => ({ row, column })))
+    const rowLines = [
+      { row: 0, column: 0, tone: '#e0452a' },
+      { row: 0, column: 2, tone: tone },
+      { row: 1, column: 1, tone: tone },
+      { row: 2, column: 3, tone: '#e0452a' },
+      { row: 3, column: 0, tone: tone },
+      { row: 4, column: 2, tone: '#e0452a' },
+    ]
+    const columnLines = [
+      { row: 0, column: 1, tone: tone },
+      { row: 1, column: 3, tone: '#e0452a' },
+      { row: 2, column: 0, tone: '#e0452a' },
+      { row: 3, column: 4, tone: tone },
+    ]
+    const boxes = [
+      { row: 1, column: 1, tone: tone, label: 'A' },
+      { row: 2, column: 3, tone: '#e0452a', label: 'B' },
+    ]
+    const getX = (column: number) => 96 + column * 32
+    const getY = (row: number) => 36 + row * 32
+    return (
+      <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={frame} aria-hidden="true">
+        <rect width="320" height="200" fill={PAPER} />
+        <rect x="0" y="0" width="64" height="200" fill={tone} />
+        <circle cx="292" cy="30" r="34" fill={accent} />
+        {boxes.map((box) => (
+          <g key={`${box.row}-${box.column}`}>
+            <rect
+              x={getX(box.column) + 4}
+              y={getY(box.row) + 4}
+              width="24"
+              height="24"
+              rx="4"
+              fill={box.tone}
+              opacity="0.25"
+            />
+            <text
+              x={getX(box.column) + 16}
+              y={getY(box.row) + 22}
+              textAnchor="middle"
+              fontSize="14"
+              fontWeight="800"
+              fill={box.tone}
+            >
+              {box.label}
+            </text>
+          </g>
+        ))}
+        <g strokeWidth="6" strokeLinecap="round">
+          {rowLines.map((line) => (
+            <line
+              key={`row-${line.row}-${line.column}`}
+              x1={getX(line.column)}
+              y1={getY(line.row)}
+              x2={getX(line.column + 1)}
+              y2={getY(line.row)}
+              stroke={line.tone}
+            />
+          ))}
+          {columnLines.map((line) => (
+            <line
+              key={`column-${line.row}-${line.column}`}
+              x1={getX(line.column)}
+              y1={getY(line.row)}
+              x2={getX(line.column)}
+              y2={getY(line.row + 1)}
+              stroke={line.tone}
+            />
+          ))}
+        </g>
+        {dots.map((dot) => (
+          <circle key={`${dot.row}-${dot.column}`} cx={getX(dot.column)} cy={getY(dot.row)} r="6" fill={INK} />
+        ))}
+        {grain}
+      </svg>
+    )
+  }
+
+  if (gameId === 'othello') {
+    const discs = [
+      { row: 1, column: 1, isDark: true },
+      { row: 1, column: 2, isDark: false },
+      { row: 2, column: 1, isDark: false },
+      { row: 2, column: 2, isDark: true },
+      { row: 0, column: 3, isDark: true },
+      { row: 3, column: 0, isDark: false },
+      { row: 3, column: 3, isDark: true },
+      { row: 0, column: 0, isDark: false },
+    ]
+    const getX = (column: number) => 116 + column * 44
+    const getY = (row: number) => 26 + row * 44
+    return (
+      <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={frame} aria-hidden="true">
+        <rect width="320" height="200" fill={PAPER} />
+        <rect x="0" y="0" width="72" height="200" fill={tone} />
+        <rect x="96" y="6" width="180" height="180" rx="10" fill={tone} stroke={INK} strokeWidth="5" />
+        <g stroke={INK} strokeWidth="2.5" opacity="0.55">
+          {[1, 2, 3].map((step) => (
+            <line key={`row-${step}`} x1="96" y1={6 + step * 45} x2="276" y2={6 + step * 45} />
+          ))}
+          {[1, 2, 3].map((step) => (
+            <line key={`column-${step}`} x1={96 + step * 45} y1="6" x2={96 + step * 45} y2="186" />
+          ))}
+        </g>
+        {discs.map((disc) => (
+          <circle
+            key={`${disc.row}-${disc.column}`}
+            cx={getX(disc.column)}
+            cy={getY(disc.row)}
+            r="15"
+            fill={disc.isDark ? INK : accent}
+            stroke={INK}
+            strokeWidth="3"
+          />
+        ))}
+        {grain}
+      </svg>
+    )
+  }
+
+  if (gameId === 'gomoku') {
+    const stones = [
+      { row: 1, column: 1, isDark: true },
+      { row: 2, column: 2, isDark: true },
+      { row: 3, column: 3, isDark: true },
+      { row: 1, column: 3, isDark: false },
+      { row: 2, column: 1, isDark: false },
+      { row: 3, column: 1, isDark: false },
+      { row: 0, column: 2, isDark: false },
+    ]
+    const getX = (column: number) => 112 + column * 42
+    const getY = (row: number) => 30 + row * 42
+    return (
+      <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={frame} aria-hidden="true">
+        <rect width="320" height="200" fill={tone} />
+        <rect x="0" y="0" width="64" height="200" fill={accent} />
+        <g stroke={INK} strokeWidth="2.5" opacity="0.6">
+          {[0, 1, 2, 3, 4].map((step) => (
+            <line key={`row-${step}`} x1="90" y1={30 + step * 42} x2="300" y2={30 + step * 42} />
+          ))}
+          {[0, 1, 2, 3, 4].map((step) => (
+            <line key={`column-${step}`} x1={112 + step * 42} y1="8" x2={112 + step * 42} y2="192" />
+          ))}
+        </g>
+        {stones.map((stone) => (
+          <circle
+            key={`${stone.row}-${stone.column}`}
+            cx={getX(stone.column)}
+            cy={getY(stone.row)}
+            r="14"
+            fill={stone.isDark ? INK : PAPER}
+            stroke={INK}
+            strokeWidth="3"
+          />
+        ))}
+        {grain}
+      </svg>
+    )
+  }
+
+  if (gameId === 'rubik') {
+    const faceTones = ['#e0452a', '#f0b429', '#2f8f46', '#3b6fd4', '#e8862c', '#f2ede1']
+    const top = [0, 1, 2].flatMap((row) => [0, 1, 2].map((column) => ({ row, column })))
+    return (
+      <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={frame} aria-hidden="true">
+        <rect width="320" height="200" fill={PAPER} />
+        <circle cx="52" cy="40" r="42" fill={accent} />
+        <g stroke={INK} strokeWidth="4" strokeLinejoin="round">
+          {top.map((cell) => (
+            <polygon
+              key={`top-${cell.row}-${cell.column}`}
+              points={`${160 + (cell.column - cell.row) * 34},${44 + (cell.column + cell.row) * 19} ${
+                194 + (cell.column - cell.row) * 34
+              },${63 + (cell.column + cell.row) * 19} ${160 + (cell.column - cell.row) * 34},${
+                82 + (cell.column + cell.row) * 19
+              } ${126 + (cell.column - cell.row) * 34},${63 + (cell.column + cell.row) * 19}`}
+              fill={faceTones[(cell.row + cell.column) % faceTones.length]}
+            />
+          ))}
+          {top.map((cell) => (
+            <polygon
+              key={`left-${cell.row}-${cell.column}`}
+              points={`${92 + cell.column * 34},${101 + cell.column * 19 + cell.row * 30} ${
+                126 + cell.column * 34
+              },${120 + cell.column * 19 + cell.row * 30} ${126 + cell.column * 34},${
+                150 + cell.column * 19 + cell.row * 30
+              } ${92 + cell.column * 34},${131 + cell.column * 19 + cell.row * 30}`}
+              fill={faceTones[(cell.row + cell.column + 2) % faceTones.length]}
+            />
+          ))}
+          {top.map((cell) => (
+            <polygon
+              key={`right-${cell.row}-${cell.column}`}
+              points={`${194 + cell.column * 34},${120 - cell.column * 19 + cell.row * 30} ${
+                228 + cell.column * 34
+              },${101 - cell.column * 19 + cell.row * 30} ${228 + cell.column * 34},${
+                131 - cell.column * 19 + cell.row * 30
+              } ${194 + cell.column * 34},${150 - cell.column * 19 + cell.row * 30}`}
+              fill={faceTones[(cell.row + cell.column + 4) % faceTones.length]}
+            />
+          ))}
+        </g>
+        {grain}
+      </svg>
+    )
+  }
+
   return (
     <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: tone }}>
       <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0a0a0b]">Soon</span>
