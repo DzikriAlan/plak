@@ -152,6 +152,10 @@ export const useGameRoomsControllers = () => {
     },
     onError: () => {
       setGameRoomsMove({ status: 'error' })
+      // Papan ramalan yang terlanjur dipasang harus dibatalkan, jadi keadaan ruangan ditarik ulang
+      // supaya pemain tidak terlihat sudah jalan padahal langkahnya ditolak server.
+      streamAtRef.current = 0
+      queryClient.invalidateQueries({ queryKey: ['gameRooms'] })
     },
   })
 
@@ -187,11 +191,16 @@ export const useGameRoomsControllers = () => {
       streamAtRef.current = Date.now()
       setGameRooms({ status: 'success', data })
     }
-    stream.onerror = () => setIsStreaming(false)
+    stream.onerror = () => {
+      // Aliran yang putus tidak boleh lagi menahan hasil penarikan, jadi penanda kabarnya dinolkan.
+      streamAtRef.current = 0
+      setIsStreaming(false)
+    }
 
     return () => {
       stream.close()
       streamRef.current = null
+      streamAtRef.current = 0
       setIsStreaming(false)
     }
   }, [streamCode, streamToken, setGameRooms])
@@ -207,7 +216,15 @@ export const useGameRoomsControllers = () => {
 
     const data = fetchGameRooms.data ?? null
     setGameRooms({ status: data ? 'success' : 'empty', data })
-  }, [fetchGameRooms.data, fetchGameRooms.isError, fetchGameRooms.isPending, setGameRooms])
+    // Waktu penarikan ikut disimak supaya hasil yang isinya sama tetap diperiksa ulang; tanpa itu
+    // hasil yang sempat dilewati saat aliran ramai tidak pernah dipakai lagi dan tampilan membeku.
+  }, [
+    fetchGameRooms.data,
+    fetchGameRooms.dataUpdatedAt,
+    fetchGameRooms.isError,
+    fetchGameRooms.isPending,
+    setGameRooms,
+  ])
 
   return {
     fetchGameRooms,
