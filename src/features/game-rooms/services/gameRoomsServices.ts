@@ -121,6 +121,8 @@ export const postGameRoomsMove = async (payload: PayloadPostGameRoomsMove) => {
         action: payload.action,
         cardId: payload.cardId,
         color: payload.color,
+        lineIndex: payload.lineIndex,
+        cellIndex: payload.cellIndex,
       }),
     })
     if (!res.ok) throw new Error(res.statusText)

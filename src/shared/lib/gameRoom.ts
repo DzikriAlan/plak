@@ -8,6 +8,14 @@ import {
   getCongklakResolvedMove,
 } from './congklakEngine'
 import { CHESS_ROOM_START_FEN, getChessRoomAppliedMove } from './chessRoomEngine'
+import {
+  getDotsAndBoxesIsMoveAllowed,
+  getDotsAndBoxesNewLines,
+  getDotsAndBoxesNewOwners,
+  getDotsAndBoxesResolvedMove,
+} from './dotsAndBoxesEngine'
+import { getGomokuIsMoveAllowed, getGomokuNewCells, getGomokuResolvedMove } from './gomokuEngine'
+import { getOthelloIsMoveAllowed, getOthelloNewCells, getOthelloResolvedMove } from './othelloEngine'
 import { getUnoRoomAppliedMove, getUnoRoomNewState, getUnoRoomView } from './unoRoomEngine'
 import type { UnoRoomState } from './unoRoomEngine'
 
@@ -48,14 +56,16 @@ export type GameRoomMovePayload = {
   action?: string
   cardId?: string
   color?: string
+  lineIndex?: number
+  cellIndex?: number
 }
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const SEATS: GameRoomSeat[] = ['p1', 'p2', 'p3', 'p4']
 
-export const GAME_ROOM_SEAT_TOTAL: Record<string, number> = { congklak: 2, chess: 2, uno: 4 }
+export const GAME_ROOM_SEAT_TOTAL: Record<string, number> = { congklak: 2, chess: 2, uno: 4, 'dots-and-boxes': 2, othello: 2, gomoku: 2 }
 // Hanya uno yang jumlah pemainnya bisa dipilih tuan rumah; papan lain selalu berdua.
-export const GAME_ROOM_SEAT_MIN: Record<string, number> = { congklak: 2, chess: 2, uno: 2 }
+export const GAME_ROOM_SEAT_MIN: Record<string, number> = { congklak: 2, chess: 2, uno: 2, 'dots-and-boxes': 2, othello: 2, gomoku: 2 }
 
 export const getGameRoomSeatOptions = (game: string) => {
   const min = GAME_ROOM_SEAT_MIN[game]
@@ -96,6 +106,9 @@ export const getGameRoomAbandonedSeat = (players: GameRoomPlayer[]) => {
 export const getGameRoomNewState = (game: string) => {
   if (game === 'congklak') return { board: getCongklakNewBoard() }
   if (game === 'chess') return { fen: CHESS_ROOM_START_FEN, lastMove: null }
+  if (game === 'dots-and-boxes') return { lines: getDotsAndBoxesNewLines(), owners: getDotsAndBoxesNewOwners() }
+  if (game === 'othello') return { cells: getOthelloNewCells() }
+  if (game === 'gomoku') return { cells: getGomokuNewCells() }
   return {}
 }
 
@@ -143,6 +156,58 @@ const getChessAppliedMove = (room: GameRoomRecord, seat: GameRoomSeat, payload: 
   }
 }
 
+const getDotsAndBoxesAppliedMove = (room: GameRoomRecord, seat: GameRoomSeat, payload: GameRoomMovePayload) => {
+  const lines = (room.state.lines as string[]) ?? []
+  const owners = (room.state.owners as string[]) ?? []
+  const lineIndex = Number(payload.lineIndex)
+  // Hanya dua kursi yang dipakai, jadi kursi ketiga dan keempat tidak perlu ditangani.
+  if (seat !== 'p1' && seat !== 'p2') return null
+  if (!lines.length || !getDotsAndBoxesIsMoveAllowed(lines, lineIndex)) return null
+
+  const resolved = getDotsAndBoxesResolvedMove(lines, owners, seat, lineIndex, room.moveTotal)
+  return {
+    // Ruas terakhir ikut disimpan supaya lawan bisa menandai garis yang baru saja ditarik.
+    state: { lines: resolved.lines, owners: resolved.owners, lastLine: lineIndex, lastSeat: seat },
+    turn: resolved.turn as string,
+    moveTotal: resolved.moveTotal,
+    status: resolved.isFinished ? 'finished' : 'playing',
+    winner: resolved.winner,
+  }
+}
+
+const getOthelloAppliedMove = (room: GameRoomRecord, seat: GameRoomSeat, payload: GameRoomMovePayload) => {
+  const cells = (room.state.cells as string[]) ?? []
+  const cellIndex = Number(payload.cellIndex)
+  if (seat !== 'p1' && seat !== 'p2') return null
+  if (!cells.length || !getOthelloIsMoveAllowed(cells, seat, cellIndex)) return null
+
+  const resolved = getOthelloResolvedMove(cells, seat, cellIndex, room.moveTotal)
+  return {
+    // Petak terakhir ikut disimpan supaya lawan bisa menandai bidak yang baru saja turun.
+    state: { cells: resolved.cells, lastCell: cellIndex, lastSeat: seat },
+    turn: resolved.turn as string,
+    moveTotal: resolved.moveTotal,
+    status: resolved.isFinished ? 'finished' : 'playing',
+    winner: resolved.winner,
+  }
+}
+
+const getGomokuAppliedMove = (room: GameRoomRecord, seat: GameRoomSeat, payload: GameRoomMovePayload) => {
+  const cells = (room.state.cells as string[]) ?? []
+  const cellIndex = Number(payload.cellIndex)
+  if (seat !== 'p1' && seat !== 'p2') return null
+  if (!cells.length || !getGomokuIsMoveAllowed(cells, cellIndex)) return null
+
+  const resolved = getGomokuResolvedMove(cells, seat, cellIndex, room.moveTotal)
+  return {
+    state: { cells: resolved.cells, lastCell: cellIndex, lastSeat: seat, winningLine: resolved.winningLine },
+    turn: resolved.turn as string,
+    moveTotal: resolved.moveTotal,
+    status: resolved.isFinished ? 'finished' : 'playing',
+    winner: resolved.winner,
+  }
+}
+
 const getUnoAppliedMove = (room: GameRoomRecord, seat: GameRoomSeat, payload: GameRoomMovePayload) => {
   const state = room.state as unknown as UnoRoomState
   if (!state?.players?.length) return null
@@ -172,6 +237,9 @@ export const getGameRoomAppliedMove = (room: GameRoomRecord, seat: GameRoomSeat,
   if (room.turn !== seat) return null
   if (room.game === 'congklak') return getCongklakAppliedMove(room, seat, payload)
   if (room.game === 'chess') return getChessAppliedMove(room, seat, payload)
+  if (room.game === 'dots-and-boxes') return getDotsAndBoxesAppliedMove(room, seat, payload)
+  if (room.game === 'othello') return getOthelloAppliedMove(room, seat, payload)
+  if (room.game === 'gomoku') return getGomokuAppliedMove(room, seat, payload)
   return null
 }
 
@@ -198,6 +266,12 @@ export const getGameRoomView = (room: GameRoomRecord, seat: GameRoomSeat | null)
     lastHole: typeof room.state.lastHole === 'number' ? room.state.lastHole : -1,
     lastSeat: String(room.state.lastSeat ?? ''),
     fen: String(room.state.fen ?? ''),
+    lines: (room.state.lines as string[]) ?? [],
+    owners: (room.state.owners as string[]) ?? [],
+    lastLine: typeof room.state.lastLine === 'number' ? room.state.lastLine : -1,
+    cells: (room.state.cells as string[]) ?? [],
+    lastCell: typeof room.state.lastCell === 'number' ? room.state.lastCell : -1,
+    winningLine: (room.state.winningLine as number[]) ?? [],
     lastMove: (room.state.lastMove as { from: string; to: string } | null) ?? null,
     hostStore: board[CONGKLAK_HOST_STORE] ?? 0,
     guestStore: board[CONGKLAK_GUEST_STORE] ?? 0,

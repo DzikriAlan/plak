@@ -40,6 +40,8 @@ export interface PayloadPostGameRoomsMove {
   action?: string
   cardId?: string
   color?: string
+  lineIndex?: number
+  cellIndex?: number
 }
 
 export interface DataGameRoomsUno {
@@ -69,6 +71,12 @@ export interface DataGameRooms {
   lastHole: number
   lastSeat: string
   fen: string
+  lines: string[]
+  owners: string[]
+  lastLine: number
+  cells: string[]
+  lastCell: number
+  winningLine: number[]
   lastMove: { from: string; to: string } | null
   hostStore: number
   guestStore: number

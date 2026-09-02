@@ -18,6 +18,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const action = String(req.body?.action ?? '')
   const cardId = String(req.body?.cardId ?? '')
   const color = String(req.body?.color ?? '')
+  const lineIndex = Number(req.body?.lineIndex)
+  const cellIndex = Number(req.body?.cellIndex)
 
   try {
     const room = await getGameRoomRow(code)
@@ -34,6 +36,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       action: action || undefined,
       cardId: cardId || undefined,
       color: color || undefined,
+      lineIndex,
+      cellIndex,
     })
     if (!applied) return res.status(422).json({ message: 'Move not allowed' })
 
