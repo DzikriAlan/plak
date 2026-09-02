@@ -39,24 +39,21 @@ export default function Game2048Board({
     const tone = TONES[tile.value] ?? { background: '#f2ede1', text: '#0a0a0b' }
     return { backgroundColor: tone.background, color: tone.text }
   }
-  const getTileSize = (tile: Game2048Tile) => {
-    if (tile.value >= 1024) return 'text-[15px] sm:text-[19px]'
-    if (tile.value >= 128) return 'text-[18px] sm:text-[23px]'
-    return 'text-[21px] sm:text-[27px]'
-  }
-
   const gridStyle = { gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }
+  // Ukuran angka dikunci ke lebar papan, bukan ke nilai ubinnya, supaya tampilannya tidak
+  // berubah-ubah saat banyak ubin bergabung di tengah permainan.
+  const tileTextClass = 'text-[min(5.4vw,24px)] tabular-nums leading-none'
 
   return (
     <div className="flex h-full w-full flex-col gap-3 rounded-2xl border border-[#26262b] bg-[#121214] p-3">
       <div className="grid shrink-0 grid-cols-2 gap-2">
         <div className="rounded-xl border border-[#26262b] bg-[#0a0a0b] py-2 text-center">
           <p className="text-[8px] font-semibold uppercase tracking-[0.22em] text-[#a29d93]">{scoreLabel}</p>
-          <p className="text-[22px] font-black leading-none text-[#f2ede1]">{score}</p>
+          <p className="text-[22px] font-black leading-none tabular-nums text-[#f2ede1]">{score}</p>
         </div>
         <div className="rounded-xl border border-[#26262b] bg-[#0a0a0b] py-2 text-center">
           <p className="text-[8px] font-semibold uppercase tracking-[0.22em] text-[#a29d93]">{bestLabel}</p>
-          <p className="text-[22px] font-black leading-none text-[#f0b429]">{bestScore}</p>
+          <p className="text-[22px] font-black leading-none tabular-nums text-[#f0b429]">{bestScore}</p>
         </div>
       </div>
 
@@ -66,8 +63,8 @@ export default function Game2048Board({
             <span
               key={tile.index}
               style={getTileStyle(tile)}
-              className={`flex items-center justify-center rounded-lg font-black leading-none transition-colors ${
-                tile.value ? getTileSize(tile) : 'bg-[#17171b]'
+              className={`flex items-center justify-center overflow-hidden rounded-lg font-black transition-colors ${tileTextClass} ${
+                tile.value ? '' : 'bg-[#17171b]'
               }`}
             >
               {tile.label}
