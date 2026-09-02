@@ -37,7 +37,6 @@ export default function UnoPlay() {
   const router = useRouter()
   const [filters, setFilters] = useState({
     isExitOpen: false,
-    isCopied: false,
     isSoundOn: true,
     isInviting: false,
     cue: null as GameAudioCue | null,
@@ -84,7 +83,6 @@ export default function UnoPlay() {
       isFinished: !!game && game.winnerId !== null,
       winnerName: game && game.winnerId !== null ? (players[game.winnerId]?.name ?? '') : '',
       isWinner: game?.winnerId === 0,
-      isCopied: filters.isCopied,
       isSoundOn: filters.isSoundOn,
       isInviting: filters.isInviting,
       cue: filters.cue,
@@ -108,21 +106,6 @@ export default function UnoPlay() {
   const submitUnoInvite = () => {
     setFilters((prev) => ({ ...prev, isInviting: true }))
     storeGameRooms.mutate({ game: 'uno', name: 'Pemain 1' })
-  }
-  const loadUnoRoomCode = () => {
-    const getCopiedCode = async () => {
-      try {
-        await navigator.clipboard.writeText(data.roomCode)
-        return true
-      } catch {
-        return false
-      }
-    }
-
-    getCopiedCode().then((isCopied) => {
-      setFilters((prev) => ({ ...prev, isCopied }))
-      window.setTimeout(() => setFilters((prev) => ({ ...prev, isCopied: false })), 1500)
-    })
   }
   const editUnoSound = () => {
     setFilters((prev) => ({ ...prev, isSoundOn: !prev.isSoundOn }))
@@ -194,12 +177,10 @@ export default function UnoPlay() {
           onLoadUnoExit={loadUnoExit}
           roomCode={data.roomCode}
           turnName={data.turnName}
-          isCopied={data.isCopied}
           isSoundOn={data.isSoundOn}
           isInviteVisible
           isInviteLoading={data.isInviting}
           onSubmitUnoInvite={submitUnoInvite}
-          onLoadUnoRoomCode={loadUnoRoomCode}
           onEditUnoSound={editUnoSound}
         />
 

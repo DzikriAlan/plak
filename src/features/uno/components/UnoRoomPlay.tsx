@@ -241,9 +241,7 @@ export default function UnoRoomPlay({ code }: Props) {
           onLoadUnoExit={loadUnoExit}
           roomCode={data.code}
           turnName={data.turnLabel}
-          isCopied={data.isCopied}
           isSoundOn={data.isSoundOn}
-          onLoadUnoRoomCode={submitGameRoomsInvite}
           onEditUnoSound={editUnoSound}
         />
 
