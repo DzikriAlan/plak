@@ -57,11 +57,9 @@ export default function Game2048Play() {
       moveTotal: game?.moveTotal ?? 0,
       topValue: game?.topValue ?? 0,
       // Penanda besar dipakai supaya pemain tahu papan masih bisa digeser atau sudah buntu.
-      statusLabel: isOver
-        ? 'Papan penuh, tidak ada geseran lagi'
-        : isWon
-          ? 'Ubin 2048 tercapai, lanjutkan!'
-          : 'Geser papan untuk menggabungkan angka',
+      // Ketiga penanda dibuat sependek mungkin supaya tidak pernah pecah menjadi dua baris
+      // dan menggeser posisi papan di tengah permainan.
+      statusLabel: isOver ? 'Papan buntu' : isWon ? 'Ubin 2048 tercapai' : 'Geser untuk menggabungkan angka',
       isWaiting: isOver,
       hintLabel: 'Usap papan atau pakai tombol arah',
       isOver,
@@ -178,7 +176,7 @@ export default function Game2048Play() {
           cue={data.cue}
         />
 
-        <GameTurnStatus label={data.statusLabel} isWaiting={data.isWaiting} />
+        <GameTurnStatus label={data.statusLabel} isWaiting={data.isWaiting} className="h-[38px] py-0" />
 
         <main
           className="flex min-h-0 flex-1 items-stretch justify-center"
