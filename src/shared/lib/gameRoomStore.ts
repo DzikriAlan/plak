@@ -24,16 +24,40 @@ const getIsDatabaseReady = () => /^postgres(ql)?:\/\//.test(process.env.SUPABASE
 const globalForRooms = globalThis as unknown as {
   gameRooms: Map<string, GameRoomRow> | undefined
   gameRoomsCache: Map<string, { row: GameRoomRow; at: number }> | undefined
+  gameRoomsSeen: Map<string, number> | undefined
+  gameRoomsSeenWrites: Map<string, number> | undefined
   gameRoomsFallback: boolean | undefined
 }
 const memoryRooms = globalForRooms.gameRooms ?? new Map<string, GameRoomRow>()
 globalForRooms.gameRooms = memoryRooms
 
 // Ruangan yang baru saja dibaca atau ditulis disimpan sebentar supaya setiap langkah tidak
-// menunggu perjalanan bolak-balik ke basis data yang jauh.
-const CACHE_TTL = 10000
+// menunggu perjalanan bolak-balik ke basis data yang jauh. Umurnya dibuat singkat karena langkah
+// lawan bisa ditulis oleh instans lain dan tidak boleh tertahan lama di singgahan.
+const CACHE_TTL = 2000
 const cachedRooms = globalForRooms.gameRoomsCache ?? new Map<string, { row: GameRoomRow; at: number }>()
 globalForRooms.gameRoomsCache = cachedRooms
+
+// Kehadiran dicatat per pemain, bukan dengan menulis ulang seluruh daftar pemain, supaya denyut
+// satu pemain tidak pernah menimpa catatan pemain lain dengan salinan yang sudah basi.
+const seenTimes = globalForRooms.gameRoomsSeen ?? new Map<string, number>()
+globalForRooms.gameRoomsSeen = seenTimes
+
+const getSeenKey = (code: string, token: string) => `${code}:${token}`
+
+// Waktu terlihat dari memori proses selalu lebih baru daripada yang tersimpan, jadi dipakai
+// menimpa isi baris supaya pemain yang aktif tidak pernah terlihat menghilang.
+export const getGameRoomSeenPlayers = (code: string, players: GameRoomPlayer[]) =>
+  players.map((player) => {
+    const seenAt = seenTimes.get(getSeenKey(code, player.token)) ?? 0
+    return seenAt > (player.seenAt ?? 0) ? { ...player, seenAt } : player
+  })
+
+// Denyut kehadiran dicatat tanpa menyentuh basis data supaya bisa dipanggil dari jalur mana pun.
+export const postGameRoomSeen = (code: string, token: string) => {
+  if (!token) return
+  seenTimes.set(getSeenKey(code, token), Date.now())
+}
 
 const getCachedRoom = (code: string) => {
   const found = cachedRooms.get(code)
@@ -63,17 +87,23 @@ const postFallbackMode = (error: unknown) => {
 
 export const getGameRoomStoreMode = () => (getIsMemoryMode() ? 'memory' : 'database')
 
-export const getGameRoomRow = async (code: string): Promise<GameRoomRow | null> => {
-  if (getIsMemoryMode()) return memoryRooms.get(code) ?? null
+// Baris yang diserahkan ke pemanggil selalu memakai kehadiran terbaru dari memori proses.
+const getSeenRoom = (room: GameRoomRow | null) =>
+  room ? { ...room, players: getGameRoomSeenPlayers(room.code, room.players) } : null
 
-  const cached = getCachedRoom(code)
-  if (cached) return cached
+// Pembacaan segar dipakai jalur yang wajib melihat langkah terbaru, misalnya denyut aliran, supaya
+// langkah dari instans lain tidak tertahan oleh singgahan.
+export const getGameRoomRow = async (code: string, isFresh = false): Promise<GameRoomRow | null> => {
+  if (getIsMemoryMode()) return getSeenRoom(memoryRooms.get(code) ?? null)
+
+  const cached = isFresh ? null : getCachedRoom(code)
+  if (cached) return getSeenRoom(cached)
 
   const room = await prisma.gameRoom.findUnique({ where: { code } }).catch((error) => {
     postFallbackMode(error)
     return null
   })
-  if (!room) return getIsMemoryMode() ? memoryRooms.get(code) ?? null : null
+  if (!room) return getIsMemoryMode() ? getSeenRoom(memoryRooms.get(code) ?? null) : null
 
   const row: GameRoomRow = {
     code: room.code,
@@ -88,7 +118,7 @@ export const getGameRoomRow = async (code: string): Promise<GameRoomRow | null> 
     updatedAt: room.updatedAt,
   }
   postCachedRoom(row)
-  return row
+  return getSeenRoom(row)
 }
 
 export const postGameRoomRow = async (row: Omit<GameRoomRow, 'updatedAt'>) => {
@@ -120,28 +150,28 @@ export const postGameRoomRow = async (row: Omit<GameRoomRow, 'updatedAt'>) => {
 }
 
 // Kehadiran cukup ditulis berkala supaya basis data tidak dibanjiri denyut dari setiap pemain.
-// Jadwal tulisnya dicatat terpisah karena cache selalu memegang waktu terlihat yang terbaru.
+// Di antara penulisan, catatan memori sudah membuat pemain terlihat hadir, jadi salinan lama tidak
+// perlu dikembalikan ke singgahan.
 const SEEN_WRITE_INTERVAL = 8000
-const seenWrites = new Map<string, number>()
+const seenWrites = globalForRooms.gameRoomsSeenWrites ?? new Map<string, number>()
+globalForRooms.gameRoomsSeenWrites = seenWrites
 
-export const updateGameRoomSeen = async (code: string, token: string) => {
+export const updateGameRoomSeen = async (code: string, token: string, isFresh = false) => {
   if (!token) return null
-  const room = await getGameRoomRow(code)
-  if (!room) return null
+  // Denyut dicatat lebih dulu supaya kehadiran tidak bergantung pada berhasilnya penulisan.
+  postGameRoomSeen(code, token)
 
   const now = Date.now()
-  const found = room.players.find((player) => player.token === token)
-  if (!found) return room
+  const key = getSeenKey(code, token)
+  const isWriteDue = now - (seenWrites.get(key) ?? 0) > SEEN_WRITE_INTERVAL
+  // Daftar pemain hanya ditulis dari bacaan segar supaya pemain yang baru bergabung tidak tertimpa.
+  const room = await getGameRoomRow(code, isFresh || isWriteDue)
+  if (!room) return null
+  if (!room.players.some((player) => player.token === token)) return room
+  if (!isWriteDue) return room
 
-  const players = room.players.map((player) => (player.token === token ? { ...player, seenAt: now } : player))
-  const isWriteDue = now - (seenWrites.get(token) ?? 0) > SEEN_WRITE_INTERVAL
-  if (!isWriteDue) {
-    postCachedRoom({ ...room, players })
-    return { ...room, players }
-  }
-
-  seenWrites.set(token, now)
-  return updateGameRoomRow(code, { players })
+  seenWrites.set(key, now)
+  return updateGameRoomRow(code, { players: room.players })
 }
 
 export const updateGameRoomRow = async (code: string, patch: GameRoomPatch): Promise<GameRoomRow | null> => {
@@ -151,7 +181,7 @@ export const updateGameRoomRow = async (code: string, patch: GameRoomPatch): Pro
     const next: GameRoomRow = { ...found, ...patch, updatedAt: new Date() }
     memoryRooms.set(code, next)
     postCachedRoom(next)
-    return next
+    return getSeenRoom(next)
   }
 
   if (getIsMemoryMode()) return updateMemoryRow()
@@ -186,5 +216,5 @@ export const updateGameRoomRow = async (code: string, patch: GameRoomPatch): Pro
     updatedAt: room.updatedAt,
   }
   postCachedRoom(next)
-  return next
+  return getSeenRoom(next)
 }
