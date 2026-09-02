@@ -450,6 +450,98 @@ export default function StoreCover({ gameId, tone, accent }: Props) {
     )
   }
 
+  if (gameId === 'tetris') {
+    const blocks = [
+      { x: 0, y: 0, tone: '#2ec4b6' },
+      { x: 1, y: 0, tone: '#2ec4b6' },
+      { x: 2, y: 0, tone: '#2ec4b6' },
+      { x: 3, y: 0, tone: '#2ec4b6' },
+      { x: 0, y: 1, tone: '#f0b429' },
+      { x: 1, y: 1, tone: '#f0b429' },
+      { x: 0, y: 2, tone: '#f0b429' },
+      { x: 1, y: 2, tone: '#f0b429' },
+      { x: 2, y: 1, tone: '#8b5cf6' },
+      { x: 2, y: 2, tone: '#8b5cf6' },
+      { x: 3, y: 2, tone: '#8b5cf6' },
+      { x: 3, y: 1, tone: '#e0452a' },
+      { x: 4, y: 1, tone: '#e0452a' },
+      { x: 4, y: 2, tone: '#2f8f46' },
+      { x: 5, y: 2, tone: '#2f8f46' },
+      { x: 5, y: 1, tone: '#e8862c' },
+    ]
+    const CELL = 30
+    return (
+      <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={frame} aria-hidden="true">
+        <rect width="320" height="200" fill={PAPER} />
+        <rect x="0" y="0" width="70" height="200" fill={tone} />
+        <circle cx="286" cy="32" r="34" fill={accent} />
+        <rect x="88" y="42" width="184" height="128" rx="8" fill="#141416" stroke={INK} strokeWidth="5" />
+        {blocks.map((block) => (
+          <rect
+            key={`${block.x}-${block.y}`}
+            x={94 + block.x * CELL}
+            y={78 + block.y * CELL}
+            width={CELL - 4}
+            height={CELL - 4}
+            rx="4"
+            fill={block.tone}
+            stroke={INK}
+            strokeWidth="3"
+          />
+        ))}
+        {grain}
+      </svg>
+    )
+  }
+
+  if (gameId === 'game-2048') {
+    const tiles = [
+      { x: 0, y: 0, label: '2', fill: '#efe7d8', text: INK },
+      { x: 1, y: 0, label: '8', fill: '#e8862c', text: INK },
+      { x: 2, y: 0, label: '4', fill: '#efe7d8', text: INK },
+      { x: 0, y: 1, label: '32', fill: '#e0452a', text: PAPER },
+      { x: 1, y: 1, label: '64', fill: '#8b5cf6', text: PAPER },
+      { x: 2, y: 1, label: '16', fill: '#f0b429', text: INK },
+      { x: 0, y: 2, label: '512', fill: '#2f8f46', text: PAPER },
+      { x: 1, y: 2, label: '2048', fill: '#3b6fd4', text: PAPER },
+      { x: 2, y: 2, label: '128', fill: '#2ec4b6', text: INK },
+    ]
+    const CELL = 52
+    return (
+      <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={frame} aria-hidden="true">
+        <rect width="320" height="200" fill={PAPER} />
+        <rect x="0" y="0" width="64" height="200" fill={tone} />
+        <circle cx="44" cy="38" r="34" fill={accent} />
+        <rect x="92" y="12" width="176" height="176" rx="12" fill="#141416" stroke={INK} strokeWidth="5" />
+        {tiles.map((tile) => (
+          <g key={tile.label}>
+            <rect
+              x={102 + tile.x * CELL}
+              y={22 + tile.y * CELL}
+              width={CELL - 10}
+              height={CELL - 10}
+              rx="6"
+              fill={tile.fill}
+              stroke={INK}
+              strokeWidth="3"
+            />
+            <text
+              x={102 + tile.x * CELL + (CELL - 10) / 2}
+              y={22 + tile.y * CELL + (CELL - 10) / 2 + 6}
+              textAnchor="middle"
+              fontSize={tile.label.length > 3 ? 14 : 18}
+              fontWeight="800"
+              fill={tile.text}
+            >
+              {tile.label}
+            </text>
+          </g>
+        ))}
+        {grain}
+      </svg>
+    )
+  }
+
   return (
     <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: tone }}>
       <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#0a0a0b]">Soon</span>
