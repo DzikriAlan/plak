@@ -60,9 +60,12 @@ export default function StoreRow({
       <span className="text-[14px] font-black uppercase leading-tight tracking-tight text-[#f2ede1] sm:text-[15px]">
         {game.name}
       </span>
-      <span className="mt-1 flex items-center gap-x-3 whitespace-nowrap">
+      <span className="mt-1 flex min-w-0 flex-col items-start gap-1">
         {infos.map((info) => (
-          <span key={info.id} className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-[#9aa3b2] sm:text-[12px]">
+          <span
+            key={info.id}
+            className="flex items-center gap-1 whitespace-nowrap text-[11px] font-medium text-[#9aa3b2] sm:text-[12px]"
+          >
             {info.icon}
             {info.label}
           </span>
