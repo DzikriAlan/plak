@@ -10,6 +10,16 @@ import type {
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
 
+// Seluruh endpoint membalas dengan selubung baku, jadi isinya dibuka di satu tempat dan pesan
+// kesalahan dari server dipakai apa adanya supaya penyebabnya tidak hilang.
+export const getGameRoomsBody = async (res: Response) => {
+  const body = await res.json().catch(() => null)
+  if (!res.ok || !body?.success) {
+    throw new Error(body?.error?.message ?? res.statusText)
+  }
+  return body.data
+}
+
 // Aliran dipakai untuk menerima perubahan ruangan tanpa menunggu penarikan berikutnya.
 export const getGameRoomsStream = (payload: PayloadGetGameRooms) => {
   if (typeof window === 'undefined' || typeof window.EventSource === 'undefined') return null
@@ -24,8 +34,7 @@ export const postGameRooms = async (payload: PayloadPostGameRooms) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-    if (!res.ok) throw new Error(res.statusText)
-    return res.json()
+    return getGameRoomsBody(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error
@@ -39,8 +48,7 @@ export const getGameRooms = async (payload: PayloadGetGameRooms) => {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     })
-    if (!res.ok) throw new Error(res.statusText)
-    return res.json()
+    return getGameRoomsBody(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error
@@ -54,8 +62,7 @@ export const postGameRoomsJoin = async (payload: PayloadPostGameRoomsJoin) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: payload.token, name: payload.name }),
     })
-    if (!res.ok) throw new Error(res.statusText)
-    return res.json()
+    return getGameRoomsBody(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error
@@ -69,8 +76,7 @@ export const postGameRoomsStart = async (payload: PayloadPostGameRoomsStart) => 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: payload.token }),
     })
-    if (!res.ok) throw new Error(res.statusText)
-    return res.json()
+    return getGameRoomsBody(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error
@@ -84,8 +90,7 @@ export const postGameRoomsSeats = async (payload: PayloadPostGameRoomsSeats) => 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: payload.token, seatTotal: payload.seatTotal }),
     })
-    if (!res.ok) throw new Error(res.statusText)
-    return res.json()
+    return getGameRoomsBody(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error
@@ -99,8 +104,7 @@ export const postGameRoomsLeave = async (payload: PayloadPostGameRoomsLeave) => 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: payload.token }),
     })
-    if (!res.ok) throw new Error(res.statusText)
-    return res.json()
+    return getGameRoomsBody(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error
@@ -125,8 +129,7 @@ export const postGameRoomsMove = async (payload: PayloadPostGameRoomsMove) => {
         cellIndex: payload.cellIndex,
       }),
     })
-    if (!res.ok) throw new Error(res.statusText)
-    return res.json()
+    return getGameRoomsBody(res)
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') return null
     throw error

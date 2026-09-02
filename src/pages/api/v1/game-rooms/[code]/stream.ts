@@ -3,6 +3,7 @@ import { getGameRoomSeat, getGameRoomView } from '@/shared/lib/gameRoom'
 import type { GameRoomRow } from '@/shared/lib/gameRoomStore'
 import { getGameRoomRow, updateGameRoomSeen } from '@/shared/lib/gameRoomStore'
 import { getGameRoomSubscription } from '@/shared/lib/gameRoomEvents'
+import { postApiMethodNotAllowed } from '@/shared/lib/apiResponse'
 
 const PING_INTERVAL = 15000
 // Siaran dalam proses menutup kebutuhan utama; pembacaan cadangan tetap ada supaya perubahan dari
@@ -10,10 +11,7 @@ const PING_INTERVAL = 15000
 const SAFETY_INTERVAL = 4000
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET')
-    return res.status(405).json({ message: 'Method not allowed' })
-  }
+  if (req.method !== 'GET') return postApiMethodNotAllowed(res, 'GET')
 
   const code = String(req.query.code ?? '').toUpperCase()
   const token = String(req.query.token ?? '')
@@ -40,7 +38,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!room) return
       const seat = getGameRoomSeat(room.players, token)
       const view = { ...getGameRoomView(room, seat), token: seat ? token : '' }
-      const payload = JSON.stringify(view)
+      // Setiap pesan aliran memakai selubung yang sama dengan balasan REST supaya klien
+      // membaca data ruangan lewat satu bentuk saja.
+      const payload = JSON.stringify({ success: true, data: view, message: 'Room updated' })
       // Cap waktu diabaikan saat membandingkan supaya keadaan yang sama tidak dikirim dua kali.
       const fingerprint = JSON.stringify({ ...view, updatedAt: '' })
       if (fingerprint === lastSent) return

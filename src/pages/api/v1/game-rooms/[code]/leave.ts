@@ -2,23 +2,30 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { getGameRoomSeat, getGameRoomView } from '@/shared/lib/gameRoom'
 import { getGameRoomRow, updateGameRoomRow } from '@/shared/lib/gameRoomStore'
 import { postGameRoomEvent } from '@/shared/lib/gameRoomEvents'
+import { postApiError, postApiMethodNotAllowed, postApiSuccess } from '@/shared/lib/apiResponse'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST')
-    return res.status(405).json({ message: 'Method not allowed' })
-  }
+  if (req.method !== 'POST') return postApiMethodNotAllowed(res, 'POST')
 
   const code = String(req.query.code ?? '').toUpperCase()
   const token = String(req.body?.token ?? '')
 
   try {
     const room = await getGameRoomRow(code)
-    if (!room) return res.status(404).json({ message: 'Room not found' })
+    if (!room) {
+      return postApiError(res, { status: 404, code: 'ROOM_NOT_FOUND', message: 'Room not found' })
+    }
 
     const seat = getGameRoomSeat(room.players, token)
-    if (!seat) return res.status(403).json({ message: 'Seat not found' })
-    if (room.status === 'finished') return res.status(200).json({ ...getGameRoomView(room, seat), token })
+    if (!seat) {
+      return postApiError(res, { status: 403, code: 'SEAT_NOT_FOUND', message: 'You do not hold a seat in this room' })
+    }
+    if (room.status === 'finished') {
+      return postApiSuccess(res, {
+        data: { ...getGameRoomView(room, seat), token },
+        message: 'Room already finished',
+      })
+    }
 
     // Pemain yang keluar mengakhiri sesi; lawan terakhir yang bertahan dinyatakan menang.
     const rivals = room.players.filter((player) => player.seat !== seat)
@@ -27,11 +34,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       winner: rivals.length === 1 ? rivals[0].seat : '',
       state: { ...room.state, leftSeat: seat },
     })
-    if (!updated) return res.status(404).json({ message: 'Room not found' })
+    if (!updated) {
+      return postApiError(res, { status: 404, code: 'ROOM_NOT_FOUND', message: 'Room not found' })
+    }
     postGameRoomEvent(code, updated)
 
-    return res.status(200).json({ ...getGameRoomView(updated, seat), token })
+    return postApiSuccess(res, {
+      data: { ...getGameRoomView(updated, seat), token },
+      message: 'Room left successfully',
+    })
   } catch {
-    return res.status(500).json({ message: 'Failed to leave room' })
+    return postApiError(res, {
+      status: 500,
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'An unexpected error occurred',
+    })
   }
 }

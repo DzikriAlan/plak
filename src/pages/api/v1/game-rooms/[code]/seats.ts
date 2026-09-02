@@ -7,12 +7,10 @@ import {
 } from '@/shared/lib/gameRoom'
 import { getGameRoomRow, updateGameRoomRow } from '@/shared/lib/gameRoomStore'
 import { postGameRoomEvent } from '@/shared/lib/gameRoomEvents'
+import { postApiError, postApiMethodNotAllowed, postApiSuccess } from '@/shared/lib/apiResponse'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST')
-    return res.status(405).json({ message: 'Method not allowed' })
-  }
+  if (req.method !== 'POST') return postApiMethodNotAllowed(res, 'POST')
 
   const code = String(req.query.code ?? '').toUpperCase()
   const token = String(req.body?.token ?? '')
@@ -20,17 +18,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const room = await getGameRoomRow(code)
-    if (!room) return res.status(404).json({ message: 'Room not found' })
+    if (!room) {
+      return postApiError(res, { status: 404, code: 'ROOM_NOT_FOUND', message: 'Room not found' })
+    }
 
     const seat = getGameRoomSeat(room.players, token)
-    if (!seat) return res.status(403).json({ message: 'Seat not found' })
+    if (!seat) {
+      return postApiError(res, { status: 403, code: 'SEAT_NOT_FOUND', message: 'You do not hold a seat in this room' })
+    }
     // Jumlah pemain hanya boleh diatur pemilik ruangan sebelum permainan dimulai.
-    if (seat !== room.players[0]?.seat) return res.status(403).json({ message: 'Only the host can set seats' })
-    if (room.status !== 'lobby') return res.status(409).json({ message: 'Room already started' })
+    if (seat !== room.players[0]?.seat) {
+      return postApiError(res, { status: 403, code: 'HOST_ONLY', message: 'Only the host can set the seat total' })
+    }
+    if (room.status !== 'lobby') {
+      return postApiError(res, { status: 409, code: 'ROOM_ALREADY_STARTED', message: 'This room has already started' })
+    }
 
     const options = getGameRoomSeatOptions(room.game)
-    if (!options.includes(seatTotal)) return res.status(422).json({ message: 'Seat total not allowed' })
-    if (seatTotal < room.players.length) return res.status(422).json({ message: 'Too many players already joined' })
+    if (!options.includes(seatTotal)) {
+      return postApiError(res, {
+        status: 422,
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid request data',
+        details: { seatTotal: ['This seat total is not available for this game'] },
+      })
+    }
+    if (seatTotal < room.players.length) {
+      return postApiError(res, {
+        status: 422,
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid request data',
+        details: { seatTotal: ['More players have already joined than this seat total'] },
+      })
+    }
 
     // Meja langsung dibagikan bila kursi yang dipilih sudah terisi penuh.
     const seats = room.players.map((player) => player.seat)
@@ -41,11 +61,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       status: dealt ? 'playing' : 'lobby',
       ...(dealt ? { state: dealt, turn: seats[0], moveTotal: 0 } : {}),
     })
-    if (!updated) return res.status(404).json({ message: 'Room not found' })
+    if (!updated) {
+      return postApiError(res, { status: 404, code: 'ROOM_NOT_FOUND', message: 'Room not found' })
+    }
     postGameRoomEvent(code, updated)
 
-    return res.status(200).json({ ...getGameRoomView(updated, seat), token })
+    return postApiSuccess(res, {
+      data: { ...getGameRoomView(updated, seat), token },
+      message: 'Seat total updated successfully',
+    })
   } catch {
-    return res.status(500).json({ message: 'Failed to set seats' })
+    return postApiError(res, {
+      status: 500,
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'An unexpected error occurred',
+    })
   }
 }

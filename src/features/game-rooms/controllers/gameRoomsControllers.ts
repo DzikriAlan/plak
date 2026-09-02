@@ -163,9 +163,11 @@ export const useGameRoomsControllers = () => {
     // Aliran baru dibuka setelah kursi diketahui supaya tampilan tidak tertimpa data penonton.
     if (!streamCode || !streamToken) return
 
+    // Pesan aliran memakai selubung yang sama dengan balasan REST, jadi isinya dibuka lebih dulu.
     const getStreamedRoom = (event: MessageEvent<string>) => {
       try {
-        return JSON.parse(event.data)
+        const body = JSON.parse(event.data)
+        return body?.success ? body.data : null
       } catch {
         return null
       }

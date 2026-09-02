@@ -2,12 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { getGameRoomAppliedMove, getGameRoomSeat, getGameRoomView } from '@/shared/lib/gameRoom'
 import { getGameRoomRow, updateGameRoomRow } from '@/shared/lib/gameRoomStore'
 import { postGameRoomEvent } from '@/shared/lib/gameRoomEvents'
+import { postApiError, postApiMethodNotAllowed, postApiSuccess } from '@/shared/lib/apiResponse'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST')
-    return res.status(405).json({ message: 'Method not allowed' })
-  }
+  if (req.method !== 'POST') return postApiMethodNotAllowed(res, 'POST')
 
   const code = String(req.query.code ?? '').toUpperCase()
   const token = String(req.body?.token ?? '')
@@ -23,10 +21,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const room = await getGameRoomRow(code)
-    if (!room) return res.status(404).json({ message: 'Room not found' })
+    if (!room) {
+      return postApiError(res, { status: 404, code: 'ROOM_NOT_FOUND', message: 'Room not found' })
+    }
 
     const seat = getGameRoomSeat(room.players, token)
-    if (!seat) return res.status(403).json({ message: 'Seat not found' })
+    if (!seat) {
+      return postApiError(res, { status: 403, code: 'SEAT_NOT_FOUND', message: 'You do not hold a seat in this room' })
+    }
 
     const applied = getGameRoomAppliedMove(room, seat, {
       holeIndex,
@@ -39,18 +41,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       lineIndex,
       cellIndex,
     })
-    if (!applied) return res.status(422).json({ message: 'Move not allowed' })
+    if (!applied) {
+      return postApiError(res, {
+        status: 422,
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid request data',
+        details: { move: ['This move is not allowed right now'] },
+      })
+    }
 
     // Lawan dikabari lebih dulu supaya papannya ikut berubah tanpa menunggu tulisan basis data,
     // lalu hasil simpanan disiarkan ulang sebagai kebenaran akhir.
     postGameRoomEvent(code, { ...room, ...applied, updatedAt: new Date() })
 
     const updated = await updateGameRoomRow(code, applied)
-    if (!updated) return res.status(404).json({ message: 'Room not found' })
+    if (!updated) {
+      return postApiError(res, { status: 404, code: 'ROOM_NOT_FOUND', message: 'Room not found' })
+    }
     postGameRoomEvent(code, updated)
 
-    return res.status(200).json({ ...getGameRoomView(updated, seat), token })
+    return postApiSuccess(res, {
+      data: { ...getGameRoomView(updated, seat), token },
+      message: 'Move applied successfully',
+    })
   } catch {
-    return res.status(500).json({ message: 'Failed to apply move' })
+    return postApiError(res, {
+      status: 500,
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'An unexpected error occurred',
+    })
   }
 }
