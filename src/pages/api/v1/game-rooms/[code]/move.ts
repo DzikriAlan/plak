@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getGameRoomAppliedMove, getGameRoomSeat, getGameRoomView } from '@/shared/lib/gameRoom'
-import { getGameRoomRow, updateGameRoomRow } from '@/shared/lib/gameRoomStore'
+import { getGameRoomRow, getGameRoomSeenPlayers, postGameRoomSeen, updateGameRoomRow } from '@/shared/lib/gameRoomStore'
 import { postGameRoomEvent } from '@/shared/lib/gameRoomEvents'
 import { postApiError, postApiMethodNotAllowed, postApiSuccess } from '@/shared/lib/apiResponse'
 
@@ -50,11 +50,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
     }
 
+    // Pemain yang baru saja melangkah pasti masih ada, jadi kehadirannya ikut ditandai supaya
+    // lawannya tidak terus melihat pemberitahuan menunggu sambungan.
+    postGameRoomSeen(code, token)
+    const players = getGameRoomSeenPlayers(code, room.players)
+
     // Lawan dikabari lebih dulu supaya papannya ikut berubah tanpa menunggu tulisan basis data,
     // lalu hasil simpanan disiarkan ulang sebagai kebenaran akhir.
-    postGameRoomEvent(code, { ...room, ...applied, updatedAt: new Date() })
+    postGameRoomEvent(code, { ...room, ...applied, players, updatedAt: new Date() })
 
-    const updated = await updateGameRoomRow(code, applied)
+    const updated = await updateGameRoomRow(code, { ...applied, players })
     if (!updated) {
       return postApiError(res, { status: 404, code: 'ROOM_NOT_FOUND', message: 'Room not found' })
     }

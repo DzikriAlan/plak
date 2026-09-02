@@ -51,8 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  await updateGameRoomSeen(code, token)
-  await postRoomState()
+  await postRoomState(await updateGameRoomSeen(code, token, true))
   // Siaran dalam proses memberi kabar seketika, penarikan cadangan menjaga bila ada instans lain.
   const clearSubscription = getGameRoomSubscription(code, (row) => {
     void postRoomState(row)
@@ -60,7 +59,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Denyut kehadiran menandai kursi masih dipakai supaya tidak diambil alih pemain lain.
   const safetyTimer = setInterval(() => {
     if (res.writableEnded || res.destroyed) return clearStream()
-    void updateGameRoomSeen(code, token).then(() => postRoomState())
+    // Baris dibaca segar supaya langkah lawan yang ditulis instans lain tidak tertahan singgahan.
+    void updateGameRoomSeen(code, token, true).then((room) => postRoomState(room))
   }, SAFETY_INTERVAL)
   const pingTimer = setInterval(() => {
     if (res.writableEnded || res.destroyed) return clearStream()
