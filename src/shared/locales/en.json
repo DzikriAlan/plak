@@ -179,6 +179,22 @@
             "Whoever owns more boxes wins, and an equal count is a draw.",
             "Long chains of boxes usually decide the result, so choose carefully when you must open one."
           ]
+        },
+        "game2048": {
+          "title": "2048 Guide",
+          "goal": "Merge matching numbers until a tile reaches 2048.",
+          "play": [
+            "The four by four board starts with two tiles worth 2 or 4.",
+            "Swipe up, down, left or right; every tile slides as far as it can in that direction.",
+            "Two tiles of the same value that collide merge into one tile of double the value, and that value is added to your score.",
+            "A tile can only merge once per swipe, so four equal tiles become two pairs.",
+            "Every swipe that changes the board spawns one new tile worth 2, occasionally 4."
+          ],
+          "win": [
+            "You win the moment a tile reaches 2048, and you may keep playing afterwards.",
+            "The game ends when the board is full and no pair can be merged any more.",
+            "Keep your biggest tile in one corner and order the numbers downwards from it so the board does not lock up."
+          ]
         }
       }
     }

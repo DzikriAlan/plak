@@ -179,6 +179,22 @@
             "Pemilik kotak terbanyak menjadi pemenang, dan jumlah yang sama berarti seri.",
             "Rantai kotak panjang biasanya menentukan hasil akhir, jadi aturlah kapan kamu terpaksa membukanya."
           ]
+        },
+        "game2048": {
+          "title": "Panduan 2048",
+          "goal": "Gabungkan angka yang sama sampai terbentuk ubin bernilai 2048.",
+          "play": [
+            "Papan empat kali empat dimulai dengan dua ubin bernilai 2 atau 4.",
+            "Geser papan ke atas, bawah, kiri, atau kanan; seluruh ubin bergerak sejauh mungkin ke arah itu.",
+            "Dua ubin bernilai sama yang bertabrakan menyatu menjadi satu ubin bernilai dua kali lipat, dan nilainya ditambahkan ke skor.",
+            "Satu ubin hanya boleh menyatu sekali dalam satu geseran, jadi empat ubin sama menjadi dua pasang.",
+            "Setiap geseran yang mengubah papan memunculkan satu ubin baru bernilai 2, sesekali 4."
+          ],
+          "win": [
+            "Kamu menang begitu salah satu ubin mencapai nilai 2048, dan permainan masih boleh dilanjutkan setelahnya.",
+            "Permainan berakhir bila papan penuh dan tidak ada lagi pasangan yang bisa disatukan.",
+            "Tahan ubin terbesar di satu sudut dan susun angka menurun dari sudut itu supaya papan tidak cepat buntu."
+          ]
         }
       }
     }
