@@ -389,44 +389,59 @@ export default function StoreCover({ gameId, tone, accent }: Props) {
   }
 
   if (gameId === 'rubik') {
-    const faceTones = ['#e0452a', '#f0b429', '#2f8f46', '#3b6fd4', '#e8862c', '#f2ede1']
-    const top = [0, 1, 2].flatMap((row) => [0, 1, 2].map((column) => ({ row, column })))
+    const STEP_ACROSS = 26
+    const STEP_DEPTH = 14
+    const STEP_DOWN = 28
+    const APEX = { x: 160, y: 18 }
+    // Titik kubus dihitung dari tiga sumbu isometrik supaya semua ubin bertemu rapi di tiap rusuk.
+    const getPoint = (across: number, back: number, down: number) =>
+      `${APEX.x + (across - back) * STEP_ACROSS},${APEX.y + (across + back) * STEP_DEPTH + down * STEP_DOWN}`
+    const getTile = (corners: string[]) => corners.join(' ')
+
+    const cells = [0, 1, 2].flatMap((row) => [0, 1, 2].map((column) => ({ row, column })))
+    const topTones = ['#f2ede1', '#f2ede1', '#3b6fd4', '#f0b429', '#f2ede1', '#f2ede1', '#f2ede1', '#e8862c', '#f2ede1']
+    const leftTones = ['#2f8f46', '#2f8f46', '#f0b429', '#2f8f46', '#2f8f46', '#2f8f46', '#3b6fd4', '#2f8f46', '#2f8f46']
+    const rightTones = ['#e0452a', '#e8862c', '#e0452a', '#e0452a', '#e0452a', '#f0b429', '#e0452a', '#e0452a', '#3b6fd4']
+
     return (
       <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={frame} aria-hidden="true">
         <rect width="320" height="200" fill={PAPER} />
-        <circle cx="52" cy="40" r="42" fill={accent} />
-        <g stroke={INK} strokeWidth="4" strokeLinejoin="round">
-          {top.map((cell) => (
+        <circle cx="44" cy="40" r="40" fill={accent} />
+        <g stroke={INK} strokeWidth="3" strokeLinejoin="round">
+          {cells.map((cell) => (
             <polygon
               key={`top-${cell.row}-${cell.column}`}
-              points={`${160 + (cell.column - cell.row) * 34},${44 + (cell.column + cell.row) * 19} ${
-                194 + (cell.column - cell.row) * 34
-              },${63 + (cell.column + cell.row) * 19} ${160 + (cell.column - cell.row) * 34},${
-                82 + (cell.column + cell.row) * 19
-              } ${126 + (cell.column - cell.row) * 34},${63 + (cell.column + cell.row) * 19}`}
-              fill={faceTones[(cell.row + cell.column) % faceTones.length]}
+              points={getTile([
+                getPoint(cell.column, cell.row, 0),
+                getPoint(cell.column + 1, cell.row, 0),
+                getPoint(cell.column + 1, cell.row + 1, 0),
+                getPoint(cell.column, cell.row + 1, 0),
+              ])}
+              fill={topTones[cell.row * 3 + cell.column]}
             />
           ))}
-          {top.map((cell) => (
+          {cells.map((cell) => (
             <polygon
               key={`left-${cell.row}-${cell.column}`}
-              points={`${92 + cell.column * 34},${101 + cell.column * 19 + cell.row * 30} ${
-                126 + cell.column * 34
-              },${120 + cell.column * 19 + cell.row * 30} ${126 + cell.column * 34},${
-                150 + cell.column * 19 + cell.row * 30
-              } ${92 + cell.column * 34},${131 + cell.column * 19 + cell.row * 30}`}
-              fill={faceTones[(cell.row + cell.column + 2) % faceTones.length]}
+              points={getTile([
+                getPoint(cell.column, 3, cell.row),
+                getPoint(cell.column + 1, 3, cell.row),
+                getPoint(cell.column + 1, 3, cell.row + 1),
+                getPoint(cell.column, 3, cell.row + 1),
+              ])}
+              fill={leftTones[cell.row * 3 + cell.column]}
             />
           ))}
-          {top.map((cell) => (
+          {cells.map((cell) => (
             <polygon
               key={`right-${cell.row}-${cell.column}`}
-              points={`${194 + cell.column * 34},${120 - cell.column * 19 + cell.row * 30} ${
-                228 + cell.column * 34
-              },${101 - cell.column * 19 + cell.row * 30} ${228 + cell.column * 34},${
-                131 - cell.column * 19 + cell.row * 30
-              } ${194 + cell.column * 34},${150 - cell.column * 19 + cell.row * 30}`}
-              fill={faceTones[(cell.row + cell.column + 4) % faceTones.length]}
+              points={getTile([
+                getPoint(3, 3 - cell.column, cell.row),
+                getPoint(3, 2 - cell.column, cell.row),
+                getPoint(3, 2 - cell.column, cell.row + 1),
+                getPoint(3, 3 - cell.column, cell.row + 1),
+              ])}
+              fill={rightTones[cell.row * 3 + cell.column]}
             />
           ))}
         </g>
