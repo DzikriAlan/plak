@@ -11,6 +11,9 @@ import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import GomokuHeader from './GomokuHeader'
 import GomokuBoard from './GomokuBoard'
 import GomokuResult from './GomokuResult'
+import { useLocaleStates } from '@/shared/states/localeStates'
+import type { LocaleCode } from '@/shared/states/localeStates'
+import GameGuide from '@/shared/components/reusable/GameGuide'
 
 const BOT_DELAY = 620
 
@@ -19,7 +22,9 @@ export default function GomokuPlay() {
   const { gameRooms } = useGameRoomsStates()
   const { storeGameRooms } = useGameRoomsControllers()
   const router = useRouter()
+  const { activeLocale, text, setLocale, setLocaleInit } = useLocaleStates()
   const [filters, setFilters] = useState({
+    isGuideOpen: false,
     isExitOpen: false,
     isSoundOn: true,
     isInviting: false,
@@ -42,6 +47,11 @@ export default function GomokuPlay() {
     const botScore = game?.botScore ?? 0
 
     return {
+      isGuideOpen: filters.isGuideOpen,
+      guide: text.guide,
+      guideText: text.guide.games.gomoku,
+      activeLocale,
+      switchLabel: text.locale.switch,
       isExitOpen: filters.isExitOpen,
       data: cells,
       isLoading: gomokuGame.status === 'loading',
@@ -67,7 +77,7 @@ export default function GomokuPlay() {
       isInviting: filters.isInviting,
       cue: filters.cue,
     }
-  }, [gomokuGame, filters])
+  }, [gomokuGame, filters, text, activeLocale])
   const submitGomokuCell = (cellIndex: number) => {
     setGomokuCell(cellIndex)
   }
@@ -83,6 +93,15 @@ export default function GomokuPlay() {
     setGomokuRestart()
   }
 
+  const loadGomokuGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: true }))
+  }
+  const clearGomokuGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: false }))
+  }
+  const editGomokuLocale = (locale: string) => {
+    setLocale(locale as LocaleCode)
+  }
   const loadGomokuExit = () => {
     setFilters((prev) => ({ ...prev, isExitOpen: true }))
   }
@@ -93,6 +112,10 @@ export default function GomokuPlay() {
     // Sesi permainan berakhir begitu pemain benar-benar keluar dari halaman.
     window.location.href = '/'
   }
+  useEffect(() => {
+    // Pilihan bahasa baru dibaca di peramban supaya hasil render server tetap sama.
+    setLocaleInit()
+  }, [setLocaleInit])
   useEffect(() => {
     setGomokuInit()
   }, [setGomokuInit])
@@ -136,6 +159,7 @@ export default function GomokuPlay() {
           isInviteVisible
           isInviteLoading={data.isInviting}
           onSubmitGomokuInvite={submitGomokuInvite}
+          onLoadGomokuGuide={loadGomokuGuide}
           onEditGomokuSound={editGomokuSound}
         />
 
@@ -204,6 +228,22 @@ export default function GomokuPlay() {
           confirmLabel="Keluar"
           onClearGameExit={clearGomokuExit}
           onSubmitGameExit={submitGomokuExit}
+        />
+      ) : null}
+      {data.isGuideOpen ? (
+        <GameGuide
+          title={data.guideText.title}
+          goalLabel={data.guide.goalLabel}
+          goal={data.guideText.goal}
+          playLabel={data.guide.playLabel}
+          play={data.guideText.play}
+          winLabel={data.guide.winLabel}
+          win={data.guideText.win}
+          closeLabel={data.guide.close}
+          activeLocale={data.activeLocale}
+          switchLabel={data.switchLabel}
+          onEditLocale={editGomokuLocale}
+          onClearGameGuide={clearGomokuGuide}
         />
       ) : null}
     </div>
