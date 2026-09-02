@@ -15,13 +15,24 @@ export default function TetrisControls({
   onSubmitTetrisSoftDrop,
   onSubmitTetrisHardDrop,
 }: Props) {
-  // Tombol ganti posisi diletakkan tepat di tengah, diapit turun selangkah dan jatuh sekaligus.
+  // Turun selangkah berada tepat di tengah, diapit jatuh sekaligus di kiri dan ganti posisi di kanan.
   const controls = [
     {
       id: 'left',
       label: 'Geser kiri',
       icon: <path d="M14 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />,
       onLoad: () => onSubmitTetrisShift(-1),
+    },
+    {
+      id: 'hard-drop',
+      label: 'Jatuhkan sekaligus',
+      icon: (
+        <>
+          <path d="M12 4v10M7 10l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M5 20h14" strokeLinecap="round" />
+        </>
+      ),
+      onLoad: onSubmitTetrisHardDrop,
     },
     {
       id: 'soft-drop',
@@ -39,17 +50,6 @@ export default function TetrisControls({
         </>
       ),
       onLoad: onSubmitTetrisRotate,
-    },
-    {
-      id: 'hard-drop',
-      label: 'Jatuhkan sekaligus',
-      icon: (
-        <>
-          <path d="M12 4v10M7 10l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M5 20h14" strokeLinecap="round" />
-        </>
-      ),
-      onLoad: onSubmitTetrisHardDrop,
     },
     {
       id: 'right',
