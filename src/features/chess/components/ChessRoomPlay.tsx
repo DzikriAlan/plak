@@ -10,6 +10,9 @@ import GameTurnStatus from '@/shared/components/reusable/GameTurnStatus'
 import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import ChessRoomHeader from './ChessRoomHeader'
 import ChessBoard from './ChessBoard'
+import { useLocaleStates } from '@/shared/states/localeStates'
+import type { LocaleCode } from '@/shared/states/localeStates'
+import GameGuide from '@/shared/components/reusable/GameGuide'
 
 interface Props {
   code: string
@@ -18,7 +21,9 @@ interface Props {
 export default function ChessRoomPlay({ code }: Props) {
   const { gameRooms, setGameRooms, setGetGameRooms } = useGameRoomsStates()
   const { storeGameRoomsJoin, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
+  const { activeLocale, text, setLocale, setLocaleInit } = useLocaleStates()
   const [filters, setFilters] = useState({
+    isGuideOpen: false,
     isExitOpen: false,
     selected: '',
     isCopied: false,
@@ -81,6 +86,11 @@ export default function ChessRoomPlay({ code }: Props) {
     const board = getBoard()
 
     return {
+      isGuideOpen: filters.isGuideOpen,
+      guide: text.guide,
+      guideText: text.guide.games.chess,
+      activeLocale,
+      switchLabel: text.locale.switch,
       isExitOpen: filters.isExitOpen,
       data: board,
       isLoading: gameRooms.status === 'loading' && !room,
@@ -121,7 +131,7 @@ export default function ChessRoomPlay({ code }: Props) {
       resultLabel: getResultLabel(room?.winner ?? ''),
       selected: filters.selected,
     }
-  }, [gameRooms, filters, code, storeGameRoomsMove.isPending])
+  }, [gameRooms, filters, code, storeGameRoomsMove.isPending, text, activeLocale])
   const submitChessSquare = (square: string) => {
     const room = gameRooms.data
     if (!room || data.isLocked) return
@@ -177,6 +187,15 @@ export default function ChessRoomPlay({ code }: Props) {
     window.location.href = data.isLeftByRival ? '/' : '/chess'
   }
 
+  const loadChessGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: true }))
+  }
+  const clearChessGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: false }))
+  }
+  const editChessLocale = (locale: string) => {
+    setLocale(locale as LocaleCode)
+  }
   const loadChessExit = () => {
     setFilters((prev) => ({ ...prev, isExitOpen: true }))
   }
@@ -189,6 +208,10 @@ export default function ChessRoomPlay({ code }: Props) {
     if (room?.token) storeGameRoomsLeave.mutate({ code, token: room.token })
     window.location.href = '/'
   }
+  useEffect(() => {
+    // Pilihan bahasa baru dibaca di peramban supaya hasil render server tetap sama.
+    setLocaleInit()
+  }, [setLocaleInit])
   useEffect(() => {
     // Kursi disimpan per tab supaya dua tab di peramban yang sama tetap dapat kursi berbeda.
     const getStoredToken = () => {
@@ -227,6 +250,7 @@ export default function ChessRoomPlay({ code }: Props) {
     <div className="flex h-[100dvh] w-full items-stretch justify-center overflow-hidden bg-[#0a0a0b] p-3 sm:p-5">
       <div className="flex h-full w-full max-w-[480px] flex-col gap-3">
         <ChessRoomHeader
+          onLoadChessGuide={loadChessGuide}
           onLoadChessExit={loadChessExit}
           seatLabel={data.seatLabel}
           turnLabel={data.turnLabel}
@@ -289,6 +313,22 @@ export default function ChessRoomPlay({ code }: Props) {
         />
       ) : null}
 
+      {data.isGuideOpen ? (
+        <GameGuide
+          title={data.guideText.title}
+          goalLabel={data.guide.goalLabel}
+          goal={data.guideText.goal}
+          playLabel={data.guide.playLabel}
+          play={data.guideText.play}
+          winLabel={data.guide.winLabel}
+          win={data.guideText.win}
+          closeLabel={data.guide.close}
+          activeLocale={data.activeLocale}
+          switchLabel={data.switchLabel}
+          onEditLocale={editChessLocale}
+          onClearGameGuide={clearChessGuide}
+        />
+      ) : null}
     </div>
   )
 }

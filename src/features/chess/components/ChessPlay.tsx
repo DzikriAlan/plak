@@ -11,6 +11,9 @@ import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import ChessBoard from './ChessBoard'
 import ChessCaptured from './ChessCaptured'
 import ChessSettings from './ChessSettings'
+import { useLocaleStates } from '@/shared/states/localeStates'
+import type { LocaleCode } from '@/shared/states/localeStates'
+import GameGuide from '@/shared/components/reusable/GameGuide'
 
 const LEVELS = [
   { id: 0, label: 'Casual', skill: 2, depth: 4, movetime: 200 },
@@ -46,7 +49,9 @@ export default function ChessPlay() {
   const { storeGameRooms } = useGameRoomsControllers()
   const router = useRouter()
   const engineRef = useRef<Worker | null>(null)
+  const { activeLocale, text, setLocale, setLocaleInit } = useLocaleStates()
   const [filters, setFilters] = useState({
+    isGuideOpen: false,
     isExitOpen: false,
     activeLevel: 2,
     activeMode: 'solo',
@@ -71,6 +76,11 @@ export default function ChessPlay() {
     const isEngineDriven = isAutoMode && !!game?.moveTotal
 
     return {
+      isGuideOpen: filters.isGuideOpen,
+      guide: text.guide,
+      guideText: text.guide.games.chess,
+      activeLocale,
+      switchLabel: text.locale.switch,
       isExitOpen: filters.isExitOpen,
       data: board,
       isLoading: chessGame.status === 'loading',
@@ -110,7 +120,7 @@ export default function ChessPlay() {
       resultTitle: game?.resultTitle ?? '',
       resultSubtitle: game?.resultSubtitle ?? '',
     }
-  }, [chessGame, filters])
+  }, [chessGame, filters, text, activeLocale])
   const submitChessSquare = (square: string) => {
     const game = chessGame.data
     if (!game || data.isLocked) return
@@ -154,6 +164,15 @@ export default function ChessPlay() {
     setChessRestart()
   }
 
+  const loadChessGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: true }))
+  }
+  const clearChessGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: false }))
+  }
+  const editChessLocale = (locale: string) => {
+    setLocale(locale as LocaleCode)
+  }
   const loadChessExit = () => {
     setFilters((prev) => ({ ...prev, isExitOpen: true }))
   }
@@ -164,6 +183,10 @@ export default function ChessPlay() {
     // Sesi permainan berakhir begitu pemain benar-benar keluar dari halaman.
     window.location.href = '/'
   }
+  useEffect(() => {
+    // Pilihan bahasa baru dibaca di peramban supaya hasil render server tetap sama.
+    setLocaleInit()
+  }, [setLocaleInit])
   useEffect(() => {
     setChessInit()
   }, [setChessInit])
@@ -239,6 +262,7 @@ export default function ChessPlay() {
           onLoadChessExit={loadChessExit}
           isInviteLoading={data.isInviting}
           onSubmitChessInvite={submitChessInvite}
+          onLoadChessGuide={loadChessGuide}
           onLoadChessSettings={loadChessSettings}
         />
 
@@ -347,6 +371,22 @@ export default function ChessPlay() {
         />
       ) : null}
 
+      {data.isGuideOpen ? (
+        <GameGuide
+          title={data.guideText.title}
+          goalLabel={data.guide.goalLabel}
+          goal={data.guideText.goal}
+          playLabel={data.guide.playLabel}
+          play={data.guideText.play}
+          winLabel={data.guide.winLabel}
+          win={data.guideText.win}
+          closeLabel={data.guide.close}
+          activeLocale={data.activeLocale}
+          switchLabel={data.switchLabel}
+          onEditLocale={editChessLocale}
+          onClearGameGuide={clearChessGuide}
+        />
+      ) : null}
     </div>
   )
 }

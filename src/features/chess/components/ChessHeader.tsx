@@ -5,10 +5,17 @@ interface Props {
   onLoadChessExit: () => void
   isInviteLoading?: boolean
   onSubmitChessInvite?: () => void
+  onLoadChessGuide: () => void
   onLoadChessSettings: () => void
 }
 
-export default function ChessHeader({ onLoadChessExit, isInviteLoading = false, onSubmitChessInvite, onLoadChessSettings }: Props) {
+export default function ChessHeader({
+  onLoadChessExit,
+  isInviteLoading = false,
+  onSubmitChessInvite,
+  onLoadChessGuide,
+  onLoadChessSettings,
+}: Props) {
   return (
     <header className="flex shrink-0 items-center gap-2">
       <button
@@ -35,6 +42,19 @@ export default function ChessHeader({ onLoadChessExit, isInviteLoading = false, 
         <span className="text-[9px] font-semibold uppercase tracking-[0.16em]">
           {isInviteLoading ? 'Menyiapkan…' : 'Main berdua'}
         </span>
+      </button>
+
+      <button
+        type="button"
+        aria-label="Panduan permainan"
+        onClick={onLoadChessGuide}
+        className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl border border-[#26262b] bg-[#121214] text-[#f2ede1] transition-colors hover:border-[#43434d]"
+      >
+        <svg viewBox="0 0 24 24" className="h-[16px] w-[16px]" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.6 9.4a2.5 2.5 0 1 1 3.2 2.4c-.6.2-.9.7-.9 1.3v.5" strokeLinecap="round" />
+          <path d="M12 17h.01" strokeLinecap="round" />
+        </svg>
       </button>
 
       <button
