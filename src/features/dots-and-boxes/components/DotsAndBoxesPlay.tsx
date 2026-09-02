@@ -11,6 +11,9 @@ import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import DotsAndBoxesHeader from './DotsAndBoxesHeader'
 import DotsAndBoxesBoard from './DotsAndBoxesBoard'
 import DotsAndBoxesResult from './DotsAndBoxesResult'
+import { useLocaleStates } from '@/shared/states/localeStates'
+import type { LocaleCode } from '@/shared/states/localeStates'
+import GameGuide from '@/shared/components/reusable/GameGuide'
 
 const BOT_DELAY = 620
 
@@ -20,7 +23,9 @@ export default function DotsAndBoxesPlay() {
   const { gameRooms } = useGameRoomsStates()
   const { storeGameRooms } = useGameRoomsControllers()
   const router = useRouter()
+  const { activeLocale, text, setLocale, setLocaleInit } = useLocaleStates()
   const [filters, setFilters] = useState({
+    isGuideOpen: false,
     isExitOpen: false,
     isSoundOn: true,
     isInviting: false,
@@ -43,6 +48,11 @@ export default function DotsAndBoxesPlay() {
     const botScore = game?.botScore ?? 0
 
     return {
+      isGuideOpen: filters.isGuideOpen,
+      guide: text.guide,
+      guideText: text.guide.games.dotsAndBoxes,
+      activeLocale,
+      switchLabel: text.locale.switch,
       isExitOpen: filters.isExitOpen,
       data: lines,
       isLoading: dotsAndBoxesGame.status === 'loading',
@@ -69,7 +79,7 @@ export default function DotsAndBoxesPlay() {
       isInviting: filters.isInviting,
       cue: filters.cue,
     }
-  }, [dotsAndBoxesGame, filters])
+  }, [dotsAndBoxesGame, filters, text, activeLocale])
   const submitDotsAndBoxesLine = (lineIndex: number) => {
     setDotsAndBoxesLine(lineIndex)
   }
@@ -85,6 +95,15 @@ export default function DotsAndBoxesPlay() {
     setDotsAndBoxesRestart()
   }
 
+  const loadDotsAndBoxesGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: true }))
+  }
+  const clearDotsAndBoxesGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: false }))
+  }
+  const editDotsAndBoxesLocale = (locale: string) => {
+    setLocale(locale as LocaleCode)
+  }
   const loadDotsAndBoxesExit = () => {
     setFilters((prev) => ({ ...prev, isExitOpen: true }))
   }
@@ -95,6 +114,10 @@ export default function DotsAndBoxesPlay() {
     // Sesi permainan berakhir begitu pemain benar-benar keluar dari halaman.
     window.location.href = '/'
   }
+  useEffect(() => {
+    // Pilihan bahasa baru dibaca di peramban supaya hasil render server tetap sama.
+    setLocaleInit()
+  }, [setLocaleInit])
   useEffect(() => {
     setDotsAndBoxesInit()
   }, [setDotsAndBoxesInit])
@@ -138,6 +161,7 @@ export default function DotsAndBoxesPlay() {
           isInviteVisible
           isInviteLoading={data.isInviting}
           onSubmitDotsAndBoxesInvite={submitDotsAndBoxesInvite}
+          onLoadDotsAndBoxesGuide={loadDotsAndBoxesGuide}
           onEditDotsAndBoxesSound={editDotsAndBoxesSound}
         />
 
@@ -207,6 +231,22 @@ export default function DotsAndBoxesPlay() {
           confirmLabel="Keluar"
           onClearGameExit={clearDotsAndBoxesExit}
           onSubmitGameExit={submitDotsAndBoxesExit}
+        />
+      ) : null}
+      {data.isGuideOpen ? (
+        <GameGuide
+          title={data.guideText.title}
+          goalLabel={data.guide.goalLabel}
+          goal={data.guideText.goal}
+          playLabel={data.guide.playLabel}
+          play={data.guideText.play}
+          winLabel={data.guide.winLabel}
+          win={data.guideText.win}
+          closeLabel={data.guide.close}
+          activeLocale={data.activeLocale}
+          switchLabel={data.switchLabel}
+          onEditLocale={editDotsAndBoxesLocale}
+          onClearGameGuide={clearDotsAndBoxesGuide}
         />
       ) : null}
     </div>

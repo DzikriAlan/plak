@@ -17,6 +17,9 @@ import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import DotsAndBoxesHeader from './DotsAndBoxesHeader'
 import DotsAndBoxesBoard from './DotsAndBoxesBoard'
 import DotsAndBoxesResult from './DotsAndBoxesResult'
+import { useLocaleStates } from '@/shared/states/localeStates'
+import type { LocaleCode } from '@/shared/states/localeStates'
+import GameGuide from '@/shared/components/reusable/GameGuide'
 
 interface Props {
   code: string
@@ -25,7 +28,9 @@ interface Props {
 export default function DotsAndBoxesRoomPlay({ code }: Props) {
   const { gameRooms, setGetGameRooms } = useGameRoomsStates()
   const { storeGameRoomsJoin, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
+  const { activeLocale, text, setLocale, setLocaleInit } = useLocaleStates()
   const [filters, setFilters] = useState({
+    isGuideOpen: false,
     isExitOpen: false,
     isSoundOn: true,
     isCopied: false,
@@ -80,6 +85,11 @@ export default function DotsAndBoxesRoomPlay({ code }: Props) {
     const rivalScore = getSeatTotal(rivalSeat)
 
     return {
+      isGuideOpen: filters.isGuideOpen,
+      guide: text.guide,
+      guideText: text.guide.games.dotsAndBoxes,
+      activeLocale,
+      switchLabel: text.locale.switch,
       isExitOpen: filters.isExitOpen,
       data: lines,
       isLoading: gameRooms.status === 'loading' && !room,
@@ -118,7 +128,7 @@ export default function DotsAndBoxesRoomPlay({ code }: Props) {
       resultLabel: getResultLabel(room?.winner ?? ''),
       isSoundOn: filters.isSoundOn,
     }
-  }, [gameRooms, filters, code])
+  }, [gameRooms, filters, code, text, activeLocale])
   const submitDotsAndBoxesLine = (lineIndex: number) => {
     const room = gameRooms.data
     if (!room || room.turn !== room.seat) return
@@ -142,6 +152,15 @@ export default function DotsAndBoxesRoomPlay({ code }: Props) {
     window.location.href = data.isLeftByRival ? '/' : '/dots-and-boxes'
   }
 
+  const loadDotsAndBoxesGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: true }))
+  }
+  const clearDotsAndBoxesGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: false }))
+  }
+  const editDotsAndBoxesLocale = (locale: string) => {
+    setLocale(locale as LocaleCode)
+  }
   const loadDotsAndBoxesExit = () => {
     setFilters((prev) => ({ ...prev, isExitOpen: true }))
   }
@@ -154,6 +173,10 @@ export default function DotsAndBoxesRoomPlay({ code }: Props) {
     if (room?.token) storeGameRoomsLeave.mutate({ code, token: room.token })
     window.location.href = '/'
   }
+  useEffect(() => {
+    // Pilihan bahasa baru dibaca di peramban supaya hasil render server tetap sama.
+    setLocaleInit()
+  }, [setLocaleInit])
   useEffect(() => {
     // Kursi disimpan per tab supaya dua tab di peramban yang sama tetap dapat kursi berbeda.
     const getStoredToken = () => {
@@ -194,6 +217,7 @@ export default function DotsAndBoxesRoomPlay({ code }: Props) {
         <DotsAndBoxesHeader
           onLoadDotsAndBoxesExit={loadDotsAndBoxesExit}
           isSoundOn={data.isSoundOn}
+          onLoadDotsAndBoxesGuide={loadDotsAndBoxesGuide}
           onEditDotsAndBoxesSound={editDotsAndBoxesSound}
         />
 
@@ -265,6 +289,22 @@ export default function DotsAndBoxesRoomPlay({ code }: Props) {
           isConfirmLoading={storeGameRoomsLeave.isPending}
           onClearGameExit={clearDotsAndBoxesExit}
           onSubmitGameExit={submitDotsAndBoxesExit}
+        />
+      ) : null}
+      {data.isGuideOpen ? (
+        <GameGuide
+          title={data.guideText.title}
+          goalLabel={data.guide.goalLabel}
+          goal={data.guideText.goal}
+          playLabel={data.guide.playLabel}
+          play={data.guideText.play}
+          winLabel={data.guide.winLabel}
+          win={data.guideText.win}
+          closeLabel={data.guide.close}
+          activeLocale={data.activeLocale}
+          switchLabel={data.switchLabel}
+          onEditLocale={editDotsAndBoxesLocale}
+          onClearGameGuide={clearDotsAndBoxesGuide}
         />
       ) : null}
     </div>
