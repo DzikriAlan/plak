@@ -92,6 +92,95 @@
       "minute": "min",
       "player": "player",
       "players": "players"
+    },
+    "guide": {
+      "open": "Guide",
+      "close": "Close",
+      "goalLabel": "Goal",
+      "playLabel": "How to play",
+      "winLabel": "How to win",
+      "games": {
+        "uno": {
+          "title": "UNO Guide",
+          "goal": "Empty your hand before anyone else does.",
+          "play": [
+            "Every player starts with seven cards, and one card is turned over to start the discard pile.",
+            "On your turn, play a card that matches the top card by colour or by number.",
+            "Action cards change the flow: Skip jumps over the next player, Reverse flips the direction, and Draw Two makes the next player pick up two cards.",
+            "A Wild card can be played anytime and you choose the next colour; Wild Draw Four also hands the next player four cards.",
+            "If nothing matches, draw one card from the pile. Play it right away if it fits, otherwise your turn passes."
+          ],
+          "win": [
+            "Call UNO when you are down to two cards and about to play one of them.",
+            "You win the moment your last card leaves your hand.",
+            "In a two-player room the game also ends if your rival leaves the room."
+          ]
+        },
+        "othello": {
+          "title": "Othello Guide",
+          "goal": "Own more discs than your rival on the eight by eight board when the game ends.",
+          "play": [
+            "The board starts with four discs in the middle, two yours and two your rival's.",
+            "Place a disc on an empty square so a line of rival discs is trapped between your new disc and one you already own.",
+            "Every trapped disc flips to your colour, along rows, columns and diagonals alike.",
+            "Legal squares are marked with a yellow dot; a square that traps nothing cannot be played.",
+            "If you have no legal move your turn is skipped automatically and your rival plays again."
+          ],
+          "win": [
+            "The game ends when neither player has a legal move, usually once the board is full.",
+            "Whoever owns more discs at that moment wins, and an equal count is a draw.",
+            "Corners are precious because a disc in a corner can never be flipped back."
+          ]
+        },
+        "chess": {
+          "title": "Chess Guide",
+          "goal": "Attack the enemy king until it has no way out, which is checkmate.",
+          "play": [
+            "White moves first, then both players alternate one move at a time.",
+            "Each piece moves its own way: pawns step forward and capture diagonally, rooks go straight, bishops go diagonally, the queen does both, knights jump in an L, and the king steps one square any direction.",
+            "An enemy piece standing on your destination square is captured and leaves the board.",
+            "Castling tucks the king away by moving it two squares towards a rook, as long as neither has moved and the path is safe.",
+            "A pawn that reaches the far rank is promoted, usually to a queen."
+          ],
+          "win": [
+            "You win when the enemy king is in check and no move can save it.",
+            "The game is drawn when the player to move has no legal move but is not in check, or when too little material is left to checkmate.",
+            "In a two-player room the game also ends if your rival leaves the room."
+          ]
+        },
+        "gomoku": {
+          "title": "Gomoku Guide",
+          "goal": "Be the first to line up five of your stones on the fifteen by fifteen board.",
+          "play": [
+            "Players take turns placing one stone on any empty point.",
+            "A placed stone is never moved and can never be captured.",
+            "The stone you played last is ringed so the sequence is easy to follow.",
+            "Watch your rival's rows of three and four, and block an open end before it becomes five.",
+            "Playing near the centre gives you more directions to build a row."
+          ],
+          "win": [
+            "You win as soon as five of your stones sit in a row, a column, or a diagonal.",
+            "The winning line is highlighted in red when the game ends.",
+            "If the whole board fills up with no line of five, the game is a draw."
+          ]
+        },
+        "dotsAndBoxes": {
+          "title": "Dots & Box Guide",
+          "goal": "Claim the most boxes on a five by five grid of dots that holds sixteen boxes.",
+          "play": [
+            "Players take turns drawing one line between two neighbouring dots.",
+            "Lines run horizontally or vertically, and a line that is already drawn cannot be reused.",
+            "A box becomes yours when you draw its fourth side; your boxes are marked A and your rival's are marked B.",
+            "Closing a box earns you another turn, so several boxes can fall in a row.",
+            "Avoid drawing the third side of a box, because your rival only has to close it."
+          ],
+          "win": [
+            "The game ends once every line on the board has been drawn.",
+            "Whoever owns more boxes wins, and an equal count is a draw.",
+            "Long chains of boxes usually decide the result, so choose carefully when you must open one."
+          ]
+        }
+      }
     }
   }
 }

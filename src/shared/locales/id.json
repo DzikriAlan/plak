@@ -92,6 +92,95 @@
       "minute": "menit",
       "player": "pemain",
       "players": "pemain"
+    },
+    "guide": {
+      "open": "Panduan",
+      "close": "Tutup",
+      "goalLabel": "Tujuan",
+      "playLabel": "Cara bermain",
+      "winLabel": "Cara menang",
+      "games": {
+        "uno": {
+          "title": "Panduan UNO",
+          "goal": "Habiskan seluruh kartu di tanganmu lebih dulu sebelum pemain lain.",
+          "play": [
+            "Setiap pemain mulai dengan tujuh kartu, lalu satu kartu dibuka sebagai tumpukan buangan.",
+            "Giliranmu: buang satu kartu yang warnanya atau angkanya sama dengan kartu teratas.",
+            "Kartu aksi mengubah jalannya permainan: Skip melewati giliran lawan, Reverse membalik arah, dan Draw Two membuat pemain berikutnya menarik dua kartu.",
+            "Kartu Wild boleh dibuang kapan saja dan kamu yang memilih warna berikutnya; Wild Draw Four menambah empat kartu untuk pemain sesudahmu.",
+            "Kalau tidak ada kartu yang cocok, tarik satu kartu dari tumpukan. Bila kartu itu bisa dibuang, kamu boleh langsung membuangnya, jika tidak giliran berpindah."
+          ],
+          "win": [
+            "Tekan tombol UNO saat kartumu tersisa dua dan kamu akan membuang satu di giliran itu.",
+            "Kamu menang begitu kartu terakhir di tanganmu berhasil dibuang.",
+            "Di ruangan berdua, permainan juga selesai bila lawan keluar dari ruangan."
+          ]
+        },
+        "othello": {
+          "title": "Panduan Othello",
+          "goal": "Kuasai papan delapan kali delapan dengan bidak warnamu sebanyak mungkin saat permainan berakhir.",
+          "play": [
+            "Papan dimulai dengan empat bidak di tengah, dua milikmu dan dua milik lawan.",
+            "Taruh bidak di petak kosong sehingga satu baris bidak lawan terjepit antara bidak barumu dan bidak lamamu.",
+            "Semua bidak lawan yang terjepit langsung berubah menjadi warnamu, baik mendatar, tegak, maupun menyerong.",
+            "Petak yang sah ditandai titik kuning; petak yang tidak menjepit bidak lawan tidak boleh dipakai.",
+            "Bila kamu tidak punya langkah sah, giliranmu otomatis dilewati dan lawan berjalan lagi."
+          ],
+          "win": [
+            "Permainan berakhir saat kedua pemain sama-sama tidak punya langkah sah, biasanya ketika papan penuh.",
+            "Pemilik bidak terbanyak saat itu menjadi pemenang, dan jumlah yang sama berarti seri.",
+            "Sudut papan sangat berharga karena bidak di sudut tidak bisa dibalik lagi."
+          ]
+        },
+        "chess": {
+          "title": "Panduan Catur",
+          "goal": "Serang raja lawan sampai ia tidak punya langkah penyelamat, itulah skakmat.",
+          "play": [
+            "Putih berjalan lebih dulu, lalu kedua pemain berjalan bergantian satu langkah.",
+            "Setiap buah punya cara jalan sendiri: pion maju lurus dan memakan menyerong, benteng lurus, gajah menyerong, menteri gabungan keduanya, kuda melompat huruf L, dan raja satu petak ke segala arah.",
+            "Buah lawan yang berdiri di petak tujuanmu akan termakan dan keluar dari papan.",
+            "Rokade menyelamatkan raja dengan menggeser raja dua petak ke arah benteng, selama keduanya belum pernah berjalan dan jalurnya aman.",
+            "Pion yang mencapai baris terakhir naik pangkat, biasanya menjadi menteri."
+          ],
+          "win": [
+            "Kamu menang bila raja lawan terkena skak dan tidak ada langkah yang bisa menyelamatkannya.",
+            "Permainan seri bila pemain yang mendapat giliran tidak punya langkah sah tetapi rajanya tidak terkena skak, atau bila buah yang tersisa tidak cukup untuk menyekakmat.",
+            "Di ruangan berdua, permainan juga selesai bila lawan keluar dari ruangan."
+          ]
+        },
+        "gomoku": {
+          "title": "Panduan Gomoku",
+          "goal": "Susun lima batu warnamu berjajar lebih dulu di papan lima belas kali lima belas.",
+          "play": [
+            "Pemain bergantian menaruh satu batu di petak kosong mana saja.",
+            "Batu yang sudah diletakkan tidak bisa dipindahkan atau diambil lawan.",
+            "Batu terakhir yang diletakkan diberi lingkaran penanda supaya mudah diikuti.",
+            "Perhatikan deretan tiga dan empat milik lawan, lalu tutup ujungnya sebelum sempat menjadi lima.",
+            "Bermain di sekitar tengah papan memberi lebih banyak arah untuk membentuk deretan."
+          ],
+          "win": [
+            "Kamu menang begitu lima batumu berjajar mendatar, tegak, atau menyerong.",
+            "Garis kemenangan langsung disorot merah saat permainan selesai.",
+            "Bila seluruh papan terisi tanpa ada yang berhasil, permainan dinyatakan seri."
+          ]
+        },
+        "dotsAndBoxes": {
+          "title": "Panduan Dots & Box",
+          "goal": "Tutup kotak sebanyak mungkin di papan lima kali lima titik yang berisi enam belas kotak.",
+          "play": [
+            "Pemain bergantian menarik satu garis antara dua titik yang bersebelahan.",
+            "Garis boleh mendatar atau tegak, dan garis yang sudah ditarik tidak bisa dipakai lagi.",
+            "Kotak menjadi milikmu saat kamu menarik garis keempat yang melengkapinya, lalu diberi huruf A untuk kotakmu dan B untuk kotak lawan.",
+            "Menutup kotak memberi giliran tambahan, jadi beberapa kotak bisa ditutup berturut-turut.",
+            "Hindari menarik garis ketiga pada sebuah kotak karena lawan tinggal menutupnya."
+          ],
+          "win": [
+            "Permainan berakhir ketika seluruh garis di papan sudah ditarik.",
+            "Pemilik kotak terbanyak menjadi pemenang, dan jumlah yang sama berarti seri.",
+            "Rantai kotak panjang biasanya menentukan hasil akhir, jadi aturlah kapan kamu terpaksa membukanya."
+          ]
+        }
+      }
     }
   }
 }
