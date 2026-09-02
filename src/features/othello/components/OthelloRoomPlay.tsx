@@ -16,6 +16,9 @@ import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import OthelloHeader from './OthelloHeader'
 import OthelloBoard from './OthelloBoard'
 import OthelloResult from './OthelloResult'
+import { useLocaleStates } from '@/shared/states/localeStates'
+import type { LocaleCode } from '@/shared/states/localeStates'
+import GameGuide from '@/shared/components/reusable/GameGuide'
 
 interface Props {
   code: string
@@ -24,7 +27,9 @@ interface Props {
 export default function OthelloRoomPlay({ code }: Props) {
   const { gameRooms, setGetGameRooms } = useGameRoomsStates()
   const { storeGameRoomsJoin, storeGameRoomsMove, storeGameRoomsLeave } = useGameRoomsControllers()
+  const { activeLocale, text, setLocale, setLocaleInit } = useLocaleStates()
   const [filters, setFilters] = useState({
+    isGuideOpen: false,
     isExitOpen: false,
     isSoundOn: true,
     isCopied: false,
@@ -63,6 +68,11 @@ export default function OthelloRoomPlay({ code }: Props) {
     const rivalScore = getSeatTotal(rivalSeat)
 
     return {
+      isGuideOpen: filters.isGuideOpen,
+      guide: text.guide,
+      guideText: text.guide.games.othello,
+      activeLocale,
+      switchLabel: text.locale.switch,
       isExitOpen: filters.isExitOpen,
       data: cells,
       isLoading: gameRooms.status === 'loading' && !room,
@@ -100,7 +110,7 @@ export default function OthelloRoomPlay({ code }: Props) {
       resultLabel: getResultLabel(room?.winner ?? ''),
       isSoundOn: filters.isSoundOn,
     }
-  }, [gameRooms, filters, code])
+  }, [gameRooms, filters, code, text, activeLocale])
   const submitOthelloCell = (cellIndex: number) => {
     const room = gameRooms.data
     if (!room || room.turn !== room.seat) return
@@ -124,6 +134,15 @@ export default function OthelloRoomPlay({ code }: Props) {
     window.location.href = data.isLeftByRival ? '/' : '/othello'
   }
 
+  const loadOthelloGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: true }))
+  }
+  const clearOthelloGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: false }))
+  }
+  const editOthelloLocale = (locale: string) => {
+    setLocale(locale as LocaleCode)
+  }
   const loadOthelloExit = () => {
     setFilters((prev) => ({ ...prev, isExitOpen: true }))
   }
@@ -136,6 +155,10 @@ export default function OthelloRoomPlay({ code }: Props) {
     if (room?.token) storeGameRoomsLeave.mutate({ code, token: room.token })
     window.location.href = '/'
   }
+  useEffect(() => {
+    // Pilihan bahasa baru dibaca di peramban supaya hasil render server tetap sama.
+    setLocaleInit()
+  }, [setLocaleInit])
   useEffect(() => {
     // Kursi disimpan per tab supaya dua tab di peramban yang sama tetap dapat kursi berbeda.
     const getStoredToken = () => {
@@ -176,6 +199,7 @@ export default function OthelloRoomPlay({ code }: Props) {
         <OthelloHeader
           onLoadOthelloExit={loadOthelloExit}
           isSoundOn={data.isSoundOn}
+          onLoadOthelloGuide={loadOthelloGuide}
           onEditOthelloSound={editOthelloSound}
         />
 
@@ -246,6 +270,22 @@ export default function OthelloRoomPlay({ code }: Props) {
           isConfirmLoading={storeGameRoomsLeave.isPending}
           onClearGameExit={clearOthelloExit}
           onSubmitGameExit={submitOthelloExit}
+        />
+      ) : null}
+      {data.isGuideOpen ? (
+        <GameGuide
+          title={data.guideText.title}
+          goalLabel={data.guide.goalLabel}
+          goal={data.guideText.goal}
+          playLabel={data.guide.playLabel}
+          play={data.guideText.play}
+          winLabel={data.guide.winLabel}
+          win={data.guideText.win}
+          closeLabel={data.guide.close}
+          activeLocale={data.activeLocale}
+          switchLabel={data.switchLabel}
+          onEditLocale={editOthelloLocale}
+          onClearGameGuide={clearOthelloGuide}
         />
       ) : null}
     </div>

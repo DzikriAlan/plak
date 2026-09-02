@@ -11,6 +11,9 @@ import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import OthelloHeader from './OthelloHeader'
 import OthelloBoard from './OthelloBoard'
 import OthelloResult from './OthelloResult'
+import { useLocaleStates } from '@/shared/states/localeStates'
+import type { LocaleCode } from '@/shared/states/localeStates'
+import GameGuide from '@/shared/components/reusable/GameGuide'
 
 const BOT_DELAY = 620
 
@@ -19,7 +22,9 @@ export default function OthelloPlay() {
   const { gameRooms } = useGameRoomsStates()
   const { storeGameRooms } = useGameRoomsControllers()
   const router = useRouter()
+  const { activeLocale, text, setLocale, setLocaleInit } = useLocaleStates()
   const [filters, setFilters] = useState({
+    isGuideOpen: false,
     isExitOpen: false,
     isSoundOn: true,
     isInviting: false,
@@ -42,6 +47,11 @@ export default function OthelloPlay() {
     const botScore = game?.botScore ?? 0
 
     return {
+      isGuideOpen: filters.isGuideOpen,
+      guide: text.guide,
+      guideText: text.guide.games.othello,
+      activeLocale,
+      switchLabel: text.locale.switch,
       isExitOpen: filters.isExitOpen,
       data: cells,
       isLoading: othelloGame.status === 'loading',
@@ -67,7 +77,7 @@ export default function OthelloPlay() {
       isInviting: filters.isInviting,
       cue: filters.cue,
     }
-  }, [othelloGame, filters])
+  }, [othelloGame, filters, text, activeLocale])
   const submitOthelloCell = (cellIndex: number) => {
     setOthelloCell(cellIndex)
   }
@@ -83,6 +93,15 @@ export default function OthelloPlay() {
     setOthelloRestart()
   }
 
+  const loadOthelloGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: true }))
+  }
+  const clearOthelloGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: false }))
+  }
+  const editOthelloLocale = (locale: string) => {
+    setLocale(locale as LocaleCode)
+  }
   const loadOthelloExit = () => {
     setFilters((prev) => ({ ...prev, isExitOpen: true }))
   }
@@ -93,6 +112,10 @@ export default function OthelloPlay() {
     // Sesi permainan berakhir begitu pemain benar-benar keluar dari halaman.
     window.location.href = '/'
   }
+  useEffect(() => {
+    // Pilihan bahasa baru dibaca di peramban supaya hasil render server tetap sama.
+    setLocaleInit()
+  }, [setLocaleInit])
   useEffect(() => {
     setOthelloInit()
   }, [setOthelloInit])
@@ -136,6 +159,7 @@ export default function OthelloPlay() {
           isInviteVisible
           isInviteLoading={data.isInviting}
           onSubmitOthelloInvite={submitOthelloInvite}
+          onLoadOthelloGuide={loadOthelloGuide}
           onEditOthelloSound={editOthelloSound}
         />
 
@@ -204,6 +228,22 @@ export default function OthelloPlay() {
           confirmLabel="Keluar"
           onClearGameExit={clearOthelloExit}
           onSubmitGameExit={submitOthelloExit}
+        />
+      ) : null}
+      {data.isGuideOpen ? (
+        <GameGuide
+          title={data.guideText.title}
+          goalLabel={data.guide.goalLabel}
+          goal={data.guideText.goal}
+          playLabel={data.guide.playLabel}
+          play={data.guideText.play}
+          winLabel={data.guide.winLabel}
+          win={data.guideText.win}
+          closeLabel={data.guide.close}
+          activeLocale={data.activeLocale}
+          switchLabel={data.switchLabel}
+          onEditLocale={editOthelloLocale}
+          onClearGameGuide={clearOthelloGuide}
         />
       ) : null}
     </div>
