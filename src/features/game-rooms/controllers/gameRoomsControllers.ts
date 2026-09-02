@@ -28,6 +28,9 @@ const POLL_FINISHED = 4000
 // banyak instans, jadi penarikan cadangan hanya dilonggarkan selama pesan aliran memang berdatangan.
 const POLL_STREAMING = 1500
 const STREAM_SILENCE = 2500
+// Kursi yang ditinggalkan baru boleh diambil alih setelah pemiliknya lama tidak terlihat, jadi
+// permintaan bergabung diulang berkala selama pemain masih terlempar menjadi penonton.
+const REJOIN_INTERVAL = 3000
 
 export const useGameRoomsControllers = () => {
   const queryClient = useQueryClient()
@@ -162,6 +165,18 @@ export const useGameRoomsControllers = () => {
   // Langganan hanya dibuat ulang saat kode atau kursinya benar-benar berubah, bukan tiap render.
   const streamCode = payloadGetGameRooms.code
   const streamToken = payloadGetGameRooms.token
+  // Pemain yang membuka ulang tautan kehilangan tanda kursinya, jadi keadaan tanpa kursi ditandai
+  // sebagai keadaan sementara yang masih bisa dipulihkan, bukan sebagai penonton selamanya.
+  const isSeatMissing = !!gameRooms.data && !gameRooms.data.seat && gameRooms.data.status !== 'finished'
+
+  useEffect(() => {
+    if (!isSeatMissing || !streamCode) return
+    const timer = window.setInterval(() => {
+      storeGameRoomsJoin.mutate({ code: streamCode, token: streamToken, name: '' })
+    }, REJOIN_INTERVAL)
+    return () => window.clearInterval(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSeatMissing, streamCode, streamToken])
 
   useEffect(() => {
     // Aliran baru dibuka setelah kursi diketahui supaya tampilan tidak tertimpa data penonton.
