@@ -11,6 +11,9 @@ import UnoHeader from './UnoHeader'
 import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import UnoBoard from './UnoBoard'
 import UnoHand from './UnoHand'
+import { useLocaleStates } from '@/shared/states/localeStates'
+import type { LocaleCode } from '@/shared/states/localeStates'
+import GameGuide from '@/shared/components/reusable/GameGuide'
 
 const BOT_TONE = ['bg-[#ffd23f]', 'bg-[#7c3aed]', 'bg-[#23a94a]']
 const COLOR_CHOICES: Array<{ color: UnoColor; label: string; tone: string }> = [
@@ -35,7 +38,9 @@ export default function UnoPlay() {
   const { gameRooms } = useGameRoomsStates()
   const { storeGameRooms } = useGameRoomsControllers()
   const router = useRouter()
+  const { activeLocale, text, setLocale, setLocaleInit } = useLocaleStates()
   const [filters, setFilters] = useState({
+    isGuideOpen: false,
     isExitOpen: false,
     isSoundOn: true,
     isInviting: false,
@@ -50,6 +55,11 @@ export default function UnoPlay() {
     const handCards = (human?.hand ?? []).map((card) => ({ card }))
 
     return {
+      isGuideOpen: filters.isGuideOpen,
+      guide: text.guide,
+      guideText: text.guide.games.uno,
+      activeLocale,
+      switchLabel: text.locale.switch,
       isExitOpen: filters.isExitOpen,
       data: handCards,
       isLoading: unoGame.status === 'loading',
@@ -87,7 +97,7 @@ export default function UnoPlay() {
       isInviting: filters.isInviting,
       cue: filters.cue,
     }
-  }, [unoGame, filters])
+  }, [unoGame, filters, text, activeLocale])
   const submitUnoCard = (cardId: string) => {
     setUnoPlayCard(cardId)
   }
@@ -114,6 +124,15 @@ export default function UnoPlay() {
     setUnoRestart()
   }
 
+  const loadUnoGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: true }))
+  }
+  const clearUnoGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: false }))
+  }
+  const editUnoLocale = (locale: string) => {
+    setLocale(locale as LocaleCode)
+  }
   const loadUnoExit = () => {
     setFilters((prev) => ({ ...prev, isExitOpen: true }))
   }
@@ -124,6 +143,10 @@ export default function UnoPlay() {
     // Sesi permainan berakhir begitu pemain benar-benar keluar dari halaman.
     window.location.href = '/'
   }
+  useEffect(() => {
+    // Pilihan bahasa baru dibaca di peramban supaya hasil render server tetap sama.
+    setLocaleInit()
+  }, [setLocaleInit])
   useEffect(() => {
     // Ruangan baru langsung dibuka setelah server mengirim kode dan kursi tuan rumah.
     const room = gameRooms.data
@@ -181,6 +204,7 @@ export default function UnoPlay() {
           isInviteVisible
           isInviteLoading={data.isInviting}
           onSubmitUnoInvite={submitUnoInvite}
+          onLoadUnoGuide={loadUnoGuide}
           onEditUnoSound={editUnoSound}
         />
 
@@ -262,6 +286,22 @@ export default function UnoPlay() {
         />
       ) : null}
 
+      {data.isGuideOpen ? (
+        <GameGuide
+          title={data.guideText.title}
+          goalLabel={data.guide.goalLabel}
+          goal={data.guideText.goal}
+          playLabel={data.guide.playLabel}
+          play={data.guideText.play}
+          winLabel={data.guide.winLabel}
+          win={data.guideText.win}
+          closeLabel={data.guide.close}
+          activeLocale={data.activeLocale}
+          switchLabel={data.switchLabel}
+          onEditLocale={editUnoLocale}
+          onClearGameGuide={clearUnoGuide}
+        />
+      ) : null}
     </div>
   )
 }

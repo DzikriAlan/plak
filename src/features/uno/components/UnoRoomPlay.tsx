@@ -10,6 +10,9 @@ import GameExitConfirm from '@/shared/components/reusable/GameExitConfirm'
 import UnoHeader from './UnoHeader'
 import UnoBoard from './UnoBoard'
 import UnoHand from './UnoHand'
+import { useLocaleStates } from '@/shared/states/localeStates'
+import type { LocaleCode } from '@/shared/states/localeStates'
+import GameGuide from '@/shared/components/reusable/GameGuide'
 
 const OPPONENT_TONE = ['bg-[#ffd23f]', 'bg-[#7c3aed]', 'bg-[#23a94a]']
 const COLOR_CHOICES: Array<{ color: UnoColor; label: string; tone: string }> = [
@@ -27,7 +30,9 @@ export default function UnoRoomPlay({ code }: Props) {
   const { gameRooms, setGameRooms, setGetGameRooms } = useGameRoomsStates()
   const { storeGameRoomsJoin, storeGameRoomsStart, storeGameRoomsMove, storeGameRoomsLeave, storeGameRoomsSeats } =
     useGameRoomsControllers()
+  const { activeLocale, text, setLocale, setLocaleInit } = useLocaleStates()
   const [filters, setFilters] = useState({
+    isGuideOpen: false,
     isExitOpen: false,
     pendingWildCardId: '',
     isCopied: false,
@@ -62,6 +67,11 @@ export default function UnoRoomPlay({ code }: Props) {
     const isHost = !!seat && seat === room?.hostSeat
 
     return {
+      isGuideOpen: filters.isGuideOpen,
+      guide: text.guide,
+      guideText: text.guide.games.uno,
+      activeLocale,
+      switchLabel: text.locale.switch,
       isExitOpen: filters.isExitOpen,
       data: hand.map((card) => ({ card })),
       isLoading: gameRooms.status === 'loading' && !room,
@@ -112,7 +122,7 @@ export default function UnoRoomPlay({ code }: Props) {
       resultLabel: getResultLabel(room?.winner ?? ''),
       isMyTurn,
     }
-  }, [gameRooms, filters, code, storeGameRoomsMove.isPending, storeGameRoomsStart.isPending, storeGameRoomsSeats.isPending])
+  }, [gameRooms, filters, code, storeGameRoomsMove.isPending, storeGameRoomsStart.isPending, storeGameRoomsSeats.isPending, text, activeLocale])
   const submitUnoCard = (cardId: string) => {
     const room = gameRooms.data
     if (!room || !data.isMyTurn) return
@@ -188,6 +198,15 @@ export default function UnoRoomPlay({ code }: Props) {
     window.location.href = data.isLeftByRival ? '/' : '/uno'
   }
 
+  const loadUnoGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: true }))
+  }
+  const clearUnoGuide = () => {
+    setFilters((prev) => ({ ...prev, isGuideOpen: false }))
+  }
+  const editUnoLocale = (locale: string) => {
+    setLocale(locale as LocaleCode)
+  }
   const loadUnoExit = () => {
     setFilters((prev) => ({ ...prev, isExitOpen: true }))
   }
@@ -200,6 +219,10 @@ export default function UnoRoomPlay({ code }: Props) {
     if (room?.token) storeGameRoomsLeave.mutate({ code, token: room.token })
     window.location.href = '/'
   }
+  useEffect(() => {
+    // Pilihan bahasa baru dibaca di peramban supaya hasil render server tetap sama.
+    setLocaleInit()
+  }, [setLocaleInit])
   useEffect(() => {
     // Kursi disimpan per tab supaya dua tab di peramban yang sama tetap dapat kursi berbeda.
     const getStoredToken = () => {
@@ -242,6 +265,7 @@ export default function UnoRoomPlay({ code }: Props) {
           roomCode={data.code}
           turnName={data.turnLabel}
           isSoundOn={data.isSoundOn}
+          onLoadUnoGuide={loadUnoGuide}
           onEditUnoSound={editUnoSound}
         />
 
@@ -341,6 +365,22 @@ export default function UnoRoomPlay({ code }: Props) {
         />
       ) : null}
 
+      {data.isGuideOpen ? (
+        <GameGuide
+          title={data.guideText.title}
+          goalLabel={data.guide.goalLabel}
+          goal={data.guideText.goal}
+          playLabel={data.guide.playLabel}
+          play={data.guideText.play}
+          winLabel={data.guide.winLabel}
+          win={data.guideText.win}
+          closeLabel={data.guide.close}
+          activeLocale={data.activeLocale}
+          switchLabel={data.switchLabel}
+          onEditLocale={editUnoLocale}
+          onClearGameGuide={clearUnoGuide}
+        />
+      ) : null}
     </div>
   )
 }

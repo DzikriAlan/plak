@@ -10,6 +10,7 @@ interface Props {
   isInviteVisible?: boolean
   isInviteLoading?: boolean
   onSubmitUnoInvite?: () => void
+  onLoadUnoGuide: () => void
   onEditUnoSound: () => void
 }
 
@@ -21,10 +22,11 @@ export default function UnoHeader({
   isInviteVisible = false,
   isInviteLoading = false,
   onSubmitUnoInvite,
+  onLoadUnoGuide,
   onEditUnoSound,
 }: Props) {
   return (
-    <header className="grid shrink-0 grid-cols-[auto_1fr_auto] gap-px border-b border-[#26262b] bg-[#26262b]">
+    <header className="grid shrink-0 grid-cols-[auto_1fr_auto_auto] gap-px border-b border-[#26262b] bg-[#26262b]">
       <button
         type="button"
         onClick={onLoadUnoExit}
@@ -70,6 +72,19 @@ export default function UnoHeader({
           </span>
         )}
       </div>
+
+      <button
+        type="button"
+        aria-label="Panduan permainan"
+        onClick={onLoadUnoGuide}
+        className="flex w-[42px] items-center justify-center bg-[#121214] text-[#f2ede1] transition-colors active:bg-[#1b1b1f]"
+      >
+        <svg viewBox="0 0 24 24" className="h-[16px] w-[16px]" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.6 9.4a2.5 2.5 0 1 1 3.2 2.4c-.6.2-.9.7-.9 1.3v.5" strokeLinecap="round" />
+          <path d="M12 17h.01" strokeLinecap="round" />
+        </svg>
+      </button>
 
       <GameSoundToggle
         isSoundOn={isSoundOn}
