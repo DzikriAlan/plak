@@ -1,6 +1,7 @@
 'use client'
 
 import LocaleToggle from '@/shared/components/reusable/LocaleToggle'
+import AuthStatus from '@/features/auth/components/AuthStatus'
 
 interface Props {
   activeLocale: string
@@ -20,12 +21,10 @@ export default function StoreHeader({ activeLocale, switchLabel, onEditStoreLoca
         </p>
       </div>
 
-      <LocaleToggle
-        activeLocale={activeLocale}
-        switchLabel={switchLabel}
-        className="mt-1"
-        onEditLocale={onEditStoreLocale}
-      />
+      <div className="mt-1 flex shrink-0 items-center gap-3">
+        <AuthStatus />
+        <LocaleToggle activeLocale={activeLocale} switchLabel={switchLabel} onEditLocale={onEditStoreLocale} />
+      </div>
     </header>
   )
 }
